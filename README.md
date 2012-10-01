@@ -12,11 +12,11 @@ only for creating the schema, queries, and transactions.
 class Person
   include Diametric
 
-  attribute :name, String, :index => true
-  attribute :email, String, :cardinality => :many
-  attribute :birthday, DateTime
-  attribute :iq, Integer
-  attribute :website, URI
+  attr :name, String, :index => true
+  attr :email, String, :cardinality => :many
+  attr :birthday, DateTime
+  attr :iq, Integer
+  attr :website, URI
 end
 
 Person.schema
@@ -48,7 +48,7 @@ Person.schema
 #   :db/cardinality :db.cardinality/one
 #   :db.install/_attribute :db.part/db}]
 
-Person.query(:name => "Clinton Dreisbach")
+Person.query_data(:name => "Clinton Dreisbach")
 # Datomic query:
 # [:find ?e ?name ?email ?birthday ?iq ?website
 #  :from $ ?name
@@ -70,13 +70,13 @@ person = Person.new(Hash[*(Person.attrs.zip(results_from_query).flatten)])
 person = Person.from_query(results_from_query)
 
 person.iq = 180
-person.transact(:iq)
+person.tx_data(:iq)
 # Datomic transaction:
 # [{:db/id person.dbid
 #   :person/iq 180}]
 
 person = Person.new(:name => "Peanut")
-person.transact
+person.tx_data
 # Datomic transaction:
 # [{:db/id #db/id[:db.part/user]
 #   :person/name "Peanut"}]
