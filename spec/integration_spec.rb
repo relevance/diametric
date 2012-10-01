@@ -11,6 +11,7 @@ describe Diametric, :integration => true do
     @dbname = ENV['DATOMIC_NAME'] || "test-#{Time.now.to_i}"
     @client = Datomic::Client.new @datomic_uri, @storage
     @client.create_database(@dbname)
+    sleep 0.5
   end
 
   it "can load the schema" do
