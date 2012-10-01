@@ -1,6 +1,7 @@
 require "diametric/version"
 require "bigdecimal"
 require "edn"
+require 'active_support/inflector'
 
 module Diametric
   VALUE_TYPES = {
@@ -25,16 +26,16 @@ module Diametric
   end
 
   module ClassMethods
-    def namespace(ns, val)
-      [ns.to_s, val.to_s].join("/").to_sym
-    end
-
     def partition=(partition)
       self.partition = partition.to_sym
     end
 
     def attr(name, value_type, opts = {})
       @attrs << [name, value_type, opts]
+    end
+
+    def attrs
+      @attrs
     end
 
     def schema
@@ -83,12 +84,20 @@ module Diametric
     end
 
     def from_query(query_results)
+      dbid = query_results.shift
+      widget = self.new(Hash[*(@attrs.map { |attr, _, _| attr }.zip(query_results).flatten)])
+      widget.dbid = dbid
+      widget
+    end
+
+    def prefix
+      self.to_s.underscore.sub('/', '.')
     end
 
     private
 
-    def prefix
-      self.to_s.downcase
+    def namespace(ns, val)
+      [ns.to_s, val.to_s].join("/").to_sym
     end
 
     def tempid(*e)
@@ -105,9 +114,38 @@ module Diametric
 
   module InstanceMethods
     def initialize(params = {})
+      params.each do |k, v|
+        self.send("#{k}=", v)
+      end
     end
 
     def tx_data(*attrs)
+    end
+
+    def attrs
+      self.class.attrs
+    end
+
+    def dbid
+      @dbid
+    end
+
+    def dbid=(dbid)
+      @dbid = dbid
+    end
+
+    def method_missing(method, *params)
+      if attrs.assoc(method)
+        instance_variable_get("@#{method}")
+      elsif method.to_s.end_with?('=') && attrs.assoc(method.to_s.chop.to_sym)
+        if params.length == 1
+          instance_variable_set("@#{method.to_s.chop}", params.first)
+        else
+          raise "Wrong number of arguments to #{method}: #{params.length} given, 1 expected."
+        end
+      else
+        super
+      end
     end
   end
 end

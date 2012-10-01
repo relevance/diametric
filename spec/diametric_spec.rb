@@ -78,9 +78,36 @@ describe Diametric do
     subject { Person.new }
 
     it { should respond_to(:tx_data) }
+
+    it "should handle attributes correctly" do
+      subject.name.should be_nil
+      subject.name = "Clinton"
+      subject.name.should == "Clinton"
+    end
   end
 
-  describe "queries" do
+  describe ".new" do
+    it "should work without arguments" do
+      Person.new.should be_a(Person)
+    end
+
+    it "should assign attributes based off argument keys" do
+      person = Person.new(:name => "Dashiell D", :secret_name => "Monito")
+      person.name.should == "Dashiell D"
+      person.secret_name.should == "Monito"
+    end
+  end
+
+  describe ".from_query" do
+    it "should assign dbid and attributes" do
+      goat = Goat.from_query([1, "Beans", DateTime.parse("1976/9/4")])
+      goat.dbid.should == 1
+      goat.name.should == "Beans"
+      goat.birthday.should == DateTime.parse("1976/9/4")
+    end
+  end
+
+  describe "#query_data" do
     it "should generate a query given no arguments" do
       Goat.query_data.should == [
         [
