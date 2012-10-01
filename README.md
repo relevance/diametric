@@ -69,9 +69,8 @@ person = Person.new(Hash[*(Person.attrs.zip(results_from_query).flatten)])
 # or
 person = Person.from_query(results_from_query)
 
-person.clean # Sets all attributes as unchanged.
 person.iq = 180
-person.transact
+person.transact(:iq)
 # Datomic transaction:
 # [{:db/id person.dbid
 #   :person/iq 180}]
