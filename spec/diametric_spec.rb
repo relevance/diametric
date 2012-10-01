@@ -149,4 +149,40 @@ describe Diametric do
       ]
     end
   end
+
+  describe "#tx_data" do
+    let(:goat) { Goat.new(:name => "Beans", :birthday => Date.parse("2002-04-15"))}
+
+    describe "without a dbid" do
+      it "should generate a transaction with a new tempid" do
+        # Equivalence is currently wrong on EDN tagged values.
+        tx = goat.tx_data.first
+        tx.keys.should == [:"db/id", :"goat/name", :"goat/birthday"]
+        tx[:"db/id"].to_edn.should == "#db/id [:db.part/db]"
+        tx[:"goat/name"].should == "Beans"
+        tx[:"goat/birthday"].should == goat.birthday
+      end
+    end
+
+    describe "with a dbid" do
+      it "should generate a transaction with the dbid" do
+        goat.dbid = 1
+        goat.tx_data.should == [
+          { :"db/id" => 1,
+            :"goat/name" => "Beans",
+            :"goat/birthday" => goat.birthday
+          }
+        ]
+      end
+
+      it "should generate a transaction with only specified attrs" do
+        goat.dbid = 1
+        goat.tx_data(:name).should == [
+          { :"db/id" => 1,
+            :"goat/name" => "Beans"
+          }
+        ]
+      end
+    end
+  end
 end

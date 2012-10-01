@@ -26,6 +26,10 @@ module Diametric
   end
 
   module ClassMethods
+    def partition
+      @partition
+    end
+
     def partition=(partition)
       self.partition = partition.to_sym
     end
@@ -94,14 +98,12 @@ module Diametric
       self.to_s.underscore.sub('/', '.')
     end
 
-    private
+    def tempid(*e)
+      EDN.tagged_element('db/id', e)
+    end
 
     def namespace(ns, val)
       [ns.to_s, val.to_s].join("/").to_sym
-    end
-
-    def tempid(*e)
-      EDN.tagged_element('db/id', e)
     end
 
     def value_type(vt)
@@ -120,10 +122,17 @@ module Diametric
     end
 
     def tx_data(*attrs)
+      tx = {:"db/id" => dbid || tempid}
+      attrs = self.attr_names if attrs.empty?
+      attrs.reduce(tx) do |t, attr|
+        t[self.class.namespace(self.class.prefix, attr)] = self.send(attr)
+        t
+      end
+      [tx]
     end
 
-    def attrs
-      self.class.attrs
+    def attr_names
+      self.class.attrs.map { |attr, _, _| attr }
     end
 
     def dbid
@@ -134,10 +143,14 @@ module Diametric
       @dbid = dbid
     end
 
+    def tempid
+      self.class.send(:tempid, self.class.partition)
+    end
+
     def method_missing(method, *params)
-      if attrs.assoc(method)
+      if attr_names.include?(method)
         instance_variable_get("@#{method}")
-      elsif method.to_s.end_with?('=') && attrs.assoc(method.to_s.chop.to_sym)
+      elsif method.to_s.end_with?('=') && attr_names.include?(method.to_s.chop.to_sym)
         if params.length == 1
           instance_variable_set("@#{method.to_s.chop}", params.first)
         else
