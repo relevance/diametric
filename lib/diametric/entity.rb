@@ -3,7 +3,7 @@ require "edn"
 require 'active_support/inflector'
 
 module Diametric
-  module Data
+  module Entity
     VALUE_TYPES = {
       Symbol => "keyword",
       String => "string",

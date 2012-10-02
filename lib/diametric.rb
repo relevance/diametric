@@ -1,5 +1,5 @@
 require "diametric/version"
-require "diametric/data"
+require "diametric/entity"
 
 module Diametric
 end
