@@ -8,11 +8,15 @@ only for creating the schema, queries, and transactions.
 
 ## Usage
 
-### Data API
+### Entity API
+
+The `Entity` module is interesting, in that it is primarily made of pure functions that take their receiver (an instance of the class they are included in) and return data that you can use in Datomic. This makes it not an ORM-like thing at all, but instead a Ruby-ish data builder for Datomic. And yet, a `Diametric::Entity` is fully `ActiveModel` compliant! You can use them anywhere you would use an `ActiveRecord` model or another `ActiveModel`-compliant instance.
+
+They do not include all `ActiveModel` modules by default, only the ones needed to establish compliance. You may want to include others yourself, such as `Validations`, `Callbacks`, or `Dirty`.
 
 ```ruby
 class Person
-  include Diametric::Data
+  include Diametric::Entity
 
   attribute :name, String, :index => true
   attribute :email, String, :cardinality => :many
@@ -85,6 +89,8 @@ person.tx_data
 ```
 
 ### Persisting Objects
+
+**not yet implemented**
 
 With `Diametric::Persistence`, you can create objects that know how to store themselves to Datomic without using an external client.
 
