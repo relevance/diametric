@@ -10,7 +10,7 @@ only for creating the schema, queries, and transactions.
 
 ```ruby
 class Person
-  include Diametric
+  include Diametric::Data
 
   attr :name, String, :index => true
   attr :email, String, :cardinality => :many
@@ -57,10 +57,10 @@ Person.query_data(:name => "Clinton Dreisbach")
 #         [?e :person/birthday ?birthday]
 #         [?e :person/iq ?iq]
 #         [?e :person/website ?website]]
-# Options:
-#   :args => ["Clinton Dreisbach"]
+# Args:
+#   ["Clinton Dreisbach"]
 #
-# Returns as an array, [query, options].
+# Returns as an array, [query, args].
 
 Person.attrs
 # [:dbid, :name, :email, :birthday, :iq, :website]

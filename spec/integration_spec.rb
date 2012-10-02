@@ -4,7 +4,7 @@ require 'datomic/client'
 # Datomic's `rest` needs to run for these tests to pass:
 #   bin/rest 9000 test datomic:mem://
 
-describe Diametric, :integration => true do
+describe Diametric::Data, :integration => true do
   before(:all) do
     @datomic_uri = ENV['DATOMIC_URI'] || 'http://localhost:9000'
     @storage = ENV['DATOMIC_STORAGE'] || 'test'

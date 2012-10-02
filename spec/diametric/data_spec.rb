@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Diametric do
+describe Diametric::Data do
   describe "in a class" do
     subject { Person }
 

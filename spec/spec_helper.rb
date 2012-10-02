@@ -13,7 +13,7 @@ RSpec.configure do |c|
 end
 
 class Person
-  include Diametric
+  include Diametric::Data
 
   attr :name, String, :index => true
   attr :email, String, :cardinality => :many
@@ -25,7 +25,7 @@ class Person
 end
 
 class Goat
-  include Diametric
+  include Diametric::Data
 
   attr :name, String
   attr :birthday, DateTime
