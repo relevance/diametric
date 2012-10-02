@@ -1,4 +1,5 @@
 require 'rspec'
+require 'pry'
 require 'diametric'
 
 RSpec.configure do |c|
@@ -10,6 +11,23 @@ RSpec.configure do |c|
   c.alias_example_to :fit, :focused => true
   c.run_all_when_everything_filtered = true
   c.treat_symbols_as_metadata_keys_with_true_values = true
+end
+
+shared_examples "ActiveModel" do |model|
+  require 'test/unit/assertions'
+  require 'active_model/lint'
+  include Test::Unit::Assertions
+  include ActiveModel::Lint::Tests
+
+  active_model_lints = ActiveModel::Lint::Tests.public_instance_methods.map(&:to_s).grep(/^test/)
+
+  let(:model) { subject }
+
+  active_model_lints.each do |test_name|
+    it "#{test_name.sub(/^test_/, '')}" do
+      send(test_name)
+    end
+  end
 end
 
 class Person

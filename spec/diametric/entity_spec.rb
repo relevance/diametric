@@ -57,6 +57,9 @@ describe Diametric::Entity do
 
   describe "in an instance" do
     subject { Person.new }
+    let(:model) { Person.new }
+
+    it_should_behave_like "ActiveModel"
 
     it { should respond_to(:tx_data) }
 

@@ -1,6 +1,8 @@
 require "bigdecimal"
 require "edn"
+require 'active_support/core_ext'
 require 'active_support/inflector'
+require 'active_model'
 
 module Diametric
   module Entity
@@ -15,8 +17,10 @@ module Diametric
     }
 
     def self.included(base)
-      base.send(:include, InstanceMethods)
       base.send(:extend, ClassMethods)
+      base.send(:include, InstanceMethods)
+      base.send(:extend, ActiveModel::Naming)
+      base.send(:include, ActiveModel::Conversion)
 
       # TODO set up :db/id
       base.class_eval do
@@ -144,6 +148,36 @@ module Diametric
 
       def tempid
         self.class.send(:tempid, self.class.partition)
+      end
+
+      # methods for ActiveModel compliance
+
+      def to_model
+        self
+      end
+
+      def to_key
+        persisted? ? [dbid] : nil
+      end
+
+      def persisted?
+        !dbid.nil?
+      end
+
+      def valid?
+        true
+      end
+
+      def new_record?
+        !persisted?
+      end
+
+      def destroyed?
+        false
+      end
+
+      def errors
+        @errors ||= ActiveModel::Errors.new(self)
       end
     end
   end
