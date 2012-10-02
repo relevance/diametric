@@ -14,11 +14,11 @@ only for creating the schema, queries, and transactions.
 class Person
   include Diametric::Data
 
-  attr :name, String, :index => true
-  attr :email, String, :cardinality => :many
-  attr :birthday, DateTime
-  attr :iq, Integer
-  attr :website, URI
+  attribute :name, String, :index => true
+  attribute :email, String, :cardinality => :many
+  attribute :birthday, DateTime
+  attribute :iq, Integer
+  attribute :website, URI
 end
 
 Person.schema
@@ -64,10 +64,10 @@ Person.query_data(:name => "Clinton Dreisbach")
 #
 # Returns as an array, [query, args].
 
-Person.attrs
+Person.attributes
 # [:dbid, :name, :email, :birthday, :iq, :website]
 
-person = Person.new(Hash[*(Person.attrs.zip(results_from_query).flatten)])
+person = Person.new(Hash[*(Person.attributes.zip(results_from_query).flatten)])
 # or
 person = Person.from_query(results_from_query)
 
@@ -92,7 +92,7 @@ With `Diametric::Persistence`, you can create objects that know how to store the
 class Goat
   include Diametric::Persistence
   
-  attr :name, String, :index => true
+  attribute :name, String, :index => true
 end
 
 Diametric::Persistence.connect('http://localhost:9000', 'test')

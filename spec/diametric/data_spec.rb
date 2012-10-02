@@ -4,7 +4,7 @@ describe Diametric::Data do
   describe "in a class" do
     subject { Person }
 
-    it { should respond_to(:attr) }
+    it { should respond_to(:attribute) }
     it { should respond_to(:schema) }
     it { should respond_to(:query_data) }
     it { should respond_to(:from_query) }
@@ -156,7 +156,7 @@ describe Diametric::Data do
         ]
       end
 
-      it "should generate a transaction with only specified attrs" do
+      it "should generate a transaction with only specified attributes" do
         goat.dbid = 1
         goat.tx_data(:name).should == [
           { :"db/id" => 1,
