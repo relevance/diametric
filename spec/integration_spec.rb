@@ -37,4 +37,31 @@ describe Diametric, :integration => true do
     end
   end
 
+  describe "with an entity" do
+    before(:all) do
+      goat = Goat.new(:name => "Beans", :birthday => DateTime.parse("1976-09-04"))
+      @client.transact(@dbname, goat.tx_data)
+    end
+
+    it "can query for that entity" do
+      query, args = Goat.query_data(:name => "Beans")
+      args = args.unshift({:"db/alias" => "#{@storage}/#{@dbname}"})
+      resp = @client.query(query, args)
+      resp.code.should == 200
+      resp.data.should be_a(Array)
+      resp.data.count.should == 1
+      resp.data.first.count.should == 3
+    end
+
+    it "can rehydrate an entity from a query" do
+      query, args = Goat.query_data(:name => "Beans")
+      args = args.unshift({:"db/alias" => "#{@storage}/#{@dbname}"})
+      resp = @client.query(query, args)
+      resp.code.should == 200
+
+      goats = resp.data.map { |data| Goat.from_query(data) }
+      goats.first.name.should == "Beans"
+    end
+  end
+
 end

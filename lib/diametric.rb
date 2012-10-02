@@ -50,6 +50,7 @@ module Diametric
       }
 
       @attrs.reduce([]) do |schema, (attr, value_type, opts)|
+        opts = opts.dup
         unless opts.empty?
           opts[:cardinality] = namespace("db.cardinality", opts[:cardinality]) if opts[:cardinality]
           opts[:unique] = namespace("db.unique", opts[:unique]) if opts[:unique]
@@ -77,14 +78,11 @@ module Diametric
 
       query = [
         :find, ~"?e", *vars,
-        :from, ~"\$", *from,
+        :in, ~"\$", *from,
         :where, *clauses
       ]
 
-      options = {}
-      options[:args] = args unless args.empty?
-
-      [query, options]
+      [query, args]
     end
 
     def from_query(query_results)

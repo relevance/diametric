@@ -93,12 +93,12 @@ describe Diametric do
       Goat.query_data.should == [
         [
           :find, ~"?e", ~"?name", ~"?birthday",
-          :from, ~"\$",
+          :in, ~"\$",
           :where,
           [~"?e", :"goat/name", ~"?name"],
           [~"?e", :"goat/birthday", ~"?birthday"]
         ],
-        {}
+        []
       ]
     end
 
@@ -106,12 +106,12 @@ describe Diametric do
       Goat.query_data(:name => "Beans").should == [
         [
           :find, ~"?e", ~"?name", ~"?birthday",
-          :from, ~"\$", ~"?name",
+          :in, ~"\$", ~"?name",
           :where,
           [~"?e", :"goat/name", ~"?name"],
           [~"?e", :"goat/birthday", ~"?birthday"]
         ],
-        {:args => ["Beans"]}
+        ["Beans"]
       ]
     end
 
@@ -121,12 +121,12 @@ describe Diametric do
       Goat.query_data(:name => "Beans", :birthday => bday).should == [
         [
           :find, ~"?e", ~"?name", ~"?birthday",
-          :from, ~"\$", ~"?name", ~"?birthday",
+          :in, ~"\$", ~"?name", ~"?birthday",
           :where,
           [~"?e", :"goat/name", ~"?name"],
           [~"?e", :"goat/birthday", ~"?birthday"]
         ],
-        {:args => ["Beans", bday]}
+        ["Beans", bday]
       ]
     end
   end
