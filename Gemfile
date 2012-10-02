@@ -4,4 +4,4 @@ source 'https://rubygems.org'
 gemspec
 gem 'pry'
 gem 'rspec'
-gem 'datomic-client', :git => 'https://github.com/crnixon/datomic-client.git'
+gem 'datomic-client', :git => 'https://github.com/cldwalker/datomic-client.git'

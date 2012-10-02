@@ -90,6 +90,7 @@ With `Diametric::Persistence`, you can create objects that know how to store the
 
 ```ruby
 class Goat
+  include Diametric::Entity
   include Diametric::Persistence
   
   attribute :name, String, :index => true
@@ -99,7 +100,7 @@ Diametric::Persistence.connect('http://localhost:9000', 'test')
 # database url and database alias
 
 Goat.database = 'goats'
-# will create database if it does not exist
+Goat.create_database # will create database if it does not exist
 
 goat = Goat.new(:name => 'Beans')
 goat.dbid # => nil

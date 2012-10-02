@@ -18,6 +18,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_dependency 'edn', '~> 1.0'
+#  gem.add_dependency 'datomic-client', '>= 0.4.0'
   gem.add_dependency 'activesupport', '>= 3.0.0'
   gem.add_dependency 'activemodel', '>= 3.0.0'
 end
