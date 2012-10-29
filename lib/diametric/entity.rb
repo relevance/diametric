@@ -146,6 +146,8 @@ module Diametric
         @dbid = dbid
       end
 
+      alias :id :dbid
+
       def tempid
         self.class.send(:tempid, self.class.partition)
       end

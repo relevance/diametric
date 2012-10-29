@@ -4,4 +4,10 @@ source 'https://rubygems.org'
 gemspec
 gem 'pry'
 gem 'rspec'
-gem 'datomic-client', :git => 'https://github.com/crnixon/datomic-client.git'
+gem 'guard'
+gem 'guard-rspec'
+gem 'rb-fsevent'
+
+platform :jruby do
+  gem 'jbundler'
+end

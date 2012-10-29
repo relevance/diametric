@@ -2,10 +2,14 @@
 *.rbc
 .bundle
 .config
+.jbundler
+.rspec
 .yardoc
 Gemfile.lock
 InstalledFiles
+Jarfile.lock
 _yardoc
+bin/
 coverage
 doc/
 lib/bundler/man
@@ -15,4 +19,4 @@ spec/reports
 test/tmp
 test/version_tmp
 tmp
-.rspec
+vendor/

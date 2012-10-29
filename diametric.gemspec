@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.version       = Diametric::VERSION
   gem.authors       = ["Clinton N. Dreisbach"]
   gem.email         = ["crnixon@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{ActiveModel for Datomic}
+  gem.summary       = %q{ActiveModel for Datomic}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($/)
@@ -20,4 +20,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'edn', '~> 1.0'
   gem.add_dependency 'activesupport', '>= 3.0.0'
   gem.add_dependency 'activemodel', '>= 3.0.0'
+  gem.add_dependency 'datomic-client', '~> 0.4.1'
 end
