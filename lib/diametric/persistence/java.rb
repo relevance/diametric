@@ -3,6 +3,7 @@ unless defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
 end
 
 require 'java'
+require 'bundler'
 require 'jbundler'
 # This is here to ensure it is loaded before Datomic is used.
 java_import "com.google.common.cache.CacheBuilder"

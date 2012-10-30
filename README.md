@@ -3,9 +3,6 @@
 Diametric is a library for building schemas, queries, and transactions for
 [Datomic][] from Ruby objects.
 
-Currently, Diametric does not contain the logic for communicating with Datomic,
-only for creating the schema, queries, and transactions.
-
 ## Usage
 
 ### Entity API
@@ -15,6 +12,8 @@ The `Entity` module is interesting, in that it is primarily made of pure functio
 They do not include all `ActiveModel` modules by default, only the ones needed to establish compliance. You may want to include others yourself, such as `Validations`, `Callbacks`, or `Dirty`.
 
 ```ruby
+require 'diametric'
+
 class Person
   include Diametric::Entity
 
@@ -88,13 +87,18 @@ person.tx_data
 #   :person/name "Peanut"}]
 ```
 
-### Persisting Objects
+### Persistence API
 
 #### JRuby
 
 With `Diametric::Persistence::Java`, you can create objects that know how to store themselves to Datomic through the Datomic Java API.
 
+To use the `Diametric::Persistence::Java`, you will need to use JRuby and require `diametric/persistence/java`. When you first require this file, all JAR files needed to run Datomic will be downloaded. After the first time, the JARs will not be downloaded again.
+
 ```ruby
+require 'diametric'
+require 'diametric/persistence/java'
+
 class Goat
   include Diametric::Entity
   include Diametric::Persistence::Java
@@ -132,6 +136,9 @@ goat = Goat.first(:name => "Beans")
 With `Diametric::Persistence::REST`, you can create objects that know how to store themselves to Datomic through the Datomic REST API. This is your only option unless you are using JRuby
 
 ```ruby
+require 'diametric'
+require 'diametric/persistence/rest'
+
 class Goat
   include Diametric::Entity
   include Diametric::Persistence::REST
