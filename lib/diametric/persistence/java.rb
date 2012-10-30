@@ -30,11 +30,8 @@ module Diametric
       module ClassMethods
         include_package "datomic"
 
-        def create_database(uri)
-          Peer.create_database(uri)
-        end
-
         def connect(uri)
+          Peer.create_database(uri)
           @connection = Peer.connect(uri)
         end
 

@@ -12,30 +12,18 @@ if RUBY_ENGINE == 'jruby'
 end
 
 describe Diametric::Persistence::Java, :java do
-  it "can create a Datomic database" do
-    res = Diametric::Persistence::Java.create_database('datomic:mem://hello')
-    res.should be_true
-  end
+  let(:db_uri) { 'datomic:mem://hello' }
 
-  context "with a Datomic database" do
-    let(:db_uri) { 'datomic:mem://hello' }
-
-    before do
-      subject.create_database(db_uri)
-    end
-
-    it "can connect to a Datomic database" do
-      subject.connect(db_uri)
-      subject.connection.should be_a(Java::DatomicPeer::LocalConnection)
-    end
+  it "can connect to a Datomic database" do
+    subject.connect(db_uri)
+    subject.connection.should be_a(Java::DatomicPeer::LocalConnection)
   end
 
   describe "an instance" do
     let(:mouse) { Mouse.new }
-    let(:db_uri) { 'datomic:mem://hello' }
 
     before(:all) do
-      subject.create_database(db_uri)
+      subject.connect(db_uri)
       Diametric::Persistence::Java.create_schemas
     end
 
