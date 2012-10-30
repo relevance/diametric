@@ -50,4 +50,14 @@ class JRClj
   def self.persistent_map entries=[]
     Java::ClojureLang::PersistentArrayMap.new entries.to_java
   end
+
+  def edn_convert(obj)
+    self.read_string(obj.to_edn)
+  end
+end
+
+class Symbol
+  def to_clj
+    Java::ClojureLang::Keyword.intern(self.to_s)
+  end
 end

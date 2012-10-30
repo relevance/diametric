@@ -6,7 +6,7 @@ require 'java'
 require 'jbundler'
 # This is here to ensure it is loaded before Datomic is used.
 java_import "com.google.common.cache.CacheBuilder"
-require 'diametric/persistence/jrclj'
+require 'jrclj'
 java_import "clojure.lang.Keyword"
 
 module Diametric
@@ -33,13 +33,9 @@ module Diametric
         end
 
         def transact(data)
-          data = clj.read_string(data.to_edn)
+          data = clj.edn_convert(data)
           res = connection.transact(data)
-
-          # r = res.get
-          # r.keys.last => :tempids
-          # r[r.keys.last] => {-9223367638809264705=>63}
-          # r[r.keys.last].to_a.first.last => 63
+          res.get
         end
 
         def clj
@@ -52,6 +48,10 @@ module Diametric
       module InstanceMethods
         include_package "datomic"
 
+        def clj
+          self.class.clj
+        end
+
         def connection
           self.class.connection
         end
@@ -60,7 +60,10 @@ module Diametric
 
         def save
           res = self.class.transact(tx_data)
-          binding.pry
+          if dbid.nil?
+            self.dbid = Peer.resolve_tempid(res[:"db-after".to_clj], res[:tempids.to_clj], clj.edn_convert(tempid))
+          end
+          res
         end
       end
     end

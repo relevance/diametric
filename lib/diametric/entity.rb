@@ -16,6 +16,8 @@ module Diametric
       URI => "uri"
     }
 
+    @temp_ref = -1000
+
     def self.included(base)
       base.send(:extend, ClassMethods)
       base.send(:include, InstanceMethods)
@@ -27,6 +29,10 @@ module Diametric
         @attributes = []
         @partition = :"db.part/db"
       end
+    end
+
+    def self.next_temp_ref
+      @temp_ref -= 1
     end
 
     module ClassMethods
@@ -124,6 +130,10 @@ module Diametric
         end
       end
 
+      def temp_ref
+        @temp_ref ||= Diametric::Entity.next_temp_ref
+      end
+
       def tx_data(*attributes)
         tx = {:"db/id" => dbid || tempid}
         attributes = self.attribute_names if attributes.empty?
@@ -149,7 +159,7 @@ module Diametric
       alias :id :dbid
 
       def tempid
-        self.class.send(:tempid, self.class.partition)
+        self.class.send(:tempid, self.class.partition, temp_ref)
       end
 
       # methods for ActiveModel compliance
