@@ -1,20 +1,9 @@
-unless defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
-  raise "This module requires the use of JRuby."
-end
-
 require 'diametric'
-
-require 'java'
-require 'bundler'
-require 'jbundler'
-# This is here to ensure it is loaded before Datomic is used.
-java_import "com.google.common.cache.CacheBuilder"
-require 'jrclj'
-java_import "clojure.lang.Keyword"
+require 'datomic/client'
 
 module Diametric
   module Persistence
-    module Java
+    module REST
       @persisted_classes = Set.new
 
       def self.included(base)
@@ -31,15 +20,21 @@ module Diametric
       end
 
       module ClassMethods
-        include_package "datomic"
+        def connect(uri, dbalias, database)
+          @uri = uri
+          @dbalias = dbalias
+          @database = database
 
-        def connect(uri)
-          Peer.create_database(uri)
-          @connection = Peer.connect(uri)
+          @connection = Datomic::Client.new(uri, dbalias)
+          @connection.create_database(database)
         end
 
         def connection
-          @connection || Diametric::Persistence::Java.connection
+          @connection || Diametric::Persistence::REST.connection
+        end
+
+        def database
+          @database || Diametric::Persistence::REST.database
         end
 
         def create_schema
@@ -47,59 +42,53 @@ module Diametric
         end
 
         def transact(data)
-          data = clj.edn_convert(data)
-          res = connection.transact(data)
-          res.get
+          connection.transact(database, data)
         end
 
         def get(dbid)
-          entity_map = connection.db.entity(dbid)
-          attrs = entity_map.key_set.map { |attr_keyword|
-            attr = attr_keyword.to_s.gsub(%r"^:\w+/", '')
-            value = entity_map.get(attr_keyword)
+          res = connection.entity(database, dbid)
+
+          # TODO tighten regex to only allow fields with the model name
+          attrs = res.data.map { |attr_symbol, value|
+            attr = attr_symbol.to_s.gsub(%r"^\w+/", '')
             [attr, value]
           }
 
           entity = self.new(Hash[*attrs.flatten])
           entity.dbid = dbid
-
           entity
         end
 
         def first(conditions = {})
           res = q(conditions)
-          from_query(res.first.map { |x| x })
+          from_query(res.data.first)
         end
 
         def where(conditions = {})
           res = q(conditions)
-          res.map { |entity|
-            from_query(entity.map { |x| x })
+          res.data.map { |entity|
+            from_query(entity)
           }
         end
 
         def q(conditions = {})
           query, args = query_data(conditions)
-          Peer.q(clj.edn_convert(query), connection.db, *args)
-        end
-
-        def clj
-          @clj ||= JRClj.new
+          args.unshift(connection.db_alias(database))
+          res = connection.query(query, args)
         end
       end
 
       extend ClassMethods
 
       module InstanceMethods
-        include_package "datomic"
+        def id=(dbid)
+          self.dbid = dbid
+        end
 
         def save
           res = self.class.transact(tx_data)
           if dbid.nil?
-            self.dbid = Peer.resolve_tempid(
-                                     res[:"db-after".to_clj],
-                                     res[:tempids.to_clj],
-                                     clj.edn_convert(tempid))
+            self.dbid = res.data[:tempids].values.first
           end
           res
         end
@@ -123,12 +112,6 @@ module Diametric
           end
 
           true
-        end
-
-        private
-
-        def clj
-          self.class.clj
         end
       end
     end

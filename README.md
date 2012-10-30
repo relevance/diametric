@@ -131,9 +131,7 @@ goat = Goat.first(:name => "Beans")
 
 #### REST
 
-**not yet implemented**
-
-With `Diametric::Persistence::REST`, you can create objects that know how to store themselves to Datomic through the Datomic REST API. This is your only option unless you are using JRuby
+With `Diametric::Persistence::REST`, you can create objects that know how to store themselves to Datomic through the Datomic REST API. This is your only option unless you are using JRuby.
 
 ```ruby
 require 'diametric'
