@@ -7,7 +7,6 @@
 .yardoc
 Gemfile.lock
 InstalledFiles
-Jarfile.lock
 _yardoc
 bin/
 coverage

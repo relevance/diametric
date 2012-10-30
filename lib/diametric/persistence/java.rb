@@ -5,10 +5,11 @@ end
 require 'diametric'
 
 require 'java'
-require 'bundler'
-require 'jbundler'
-# This is here to ensure it is loaded before Datomic is used.
-java_import "com.google.common.cache.CacheBuilder"
+require 'lock_jar'
+lockfile = File.expand_path( "../../../../Jarfile.lock", __FILE__ )
+# Loads the classpath with Jars from the lockfile
+LockJar.load(lockfile)
+
 require 'jrclj'
 java_import "clojure.lang.Keyword"
 

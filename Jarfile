@@ -1,4 +1,6 @@
-repository :clojars, 'http://clojars.org/repo/'
-repository :spymemcached, 'http://files.couchbase.com/maven2/'
+repository 'http://clojars.org/repo/'
+repository 'https://repository.jboss.org/nexus/content/groups/public/'
 
-jar "com.datomic:datomic-free", "0.8.3563"
+group :default, :runtime do
+  jar "com.datomic:datomic-free:0.8.3563"
+end
