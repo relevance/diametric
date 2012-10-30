@@ -36,7 +36,7 @@ describe Diametric::Persistence::Java, :java do
 
     before(:all) do
       subject.create_database(db_uri)
-      subject.transact(Mouse.schema)
+      Diametric::Persistence::Java.create_schemas
     end
 
     it "can save" do

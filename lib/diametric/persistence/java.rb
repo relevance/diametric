@@ -12,9 +12,19 @@ java_import "clojure.lang.Keyword"
 module Diametric
   module Persistence
     module Java
+      @persisted_classes = Set.new
+
       def self.included(base)
         base.send(:extend, ClassMethods)
         base.send(:include, InstanceMethods)
+
+        @persisted_classes.add(base)
+      end
+
+      def self.create_schemas
+        @persisted_classes.each do |klass|
+          klass.create_schema
+        end
       end
 
       module ClassMethods
@@ -30,6 +40,10 @@ module Diametric
 
         def connection
           @connection || Diametric::Persistence::Java.connection
+        end
+
+        def create_schema
+          transact(schema)
         end
 
         def transact(data)
