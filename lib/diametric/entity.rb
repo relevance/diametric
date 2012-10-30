@@ -53,6 +53,10 @@ module Diametric
         @attributes
       end
 
+      def attribute_names
+        @attributes.map { |name, _, _| name }
+      end
+
       def schema
         defaults = {
           :"db/id" => tempid(@partition),
@@ -79,12 +83,16 @@ module Diametric
         end
       end
 
-      def query_data(params = {})
+      def query_data(params = {}, filters = [])
         vars = @attributes.map { |attribute, _, _| ~"?#{attribute}" }
+
+        from = params.map { |k, _| ~"?#{k}" }
+
         clauses = @attributes.map { |attribute, _, _|
           [~"?e", namespace(prefix, attribute), ~"?#{attribute}"]
         }
-        from = params.map { |k, _| ~"?#{k}" }
+        clauses += filters
+
         args = params.map { |_, v| v }
 
         query = [

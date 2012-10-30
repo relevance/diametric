@@ -6,6 +6,7 @@ class Mouse
   include Diametric::Persistence::REST
 
   attribute :name, String, :index => true
+  attribute :age, Integer
 end
 
 describe Diametric::Persistence::REST, :integration do
@@ -27,7 +28,9 @@ describe Diametric::Persistence::REST, :integration do
     end
 
     it "can save" do
+      # TODO deal correctly with nil values
       mouse.name = "Wilbur"
+      mouse.age = 2
       mouse.save.should be_true
       mouse.should be_persisted
     end
@@ -35,6 +38,7 @@ describe Diametric::Persistence::REST, :integration do
     context "that is saved in Datomic" do
       before(:each) do
         mouse.name = "Wilbur"
+        mouse.age = 2
         mouse.save
       end
 
@@ -61,8 +65,16 @@ describe Diametric::Persistence::REST, :integration do
       end
 
       it "can find all matching conditions" do
-        mice = Mouse.where(:name => "Wilbur")
+        mice = Mouse.where(:name => "Wilbur").where(:age => 2).all
         mice.should == [mouse]
+      end
+
+      it "can filter entities" do
+        mice = Mouse.filter(:<, :age, 3).all
+        mice.should == [mouse]
+
+        mice = Mouse.filter(:>, :age, 3).all
+        mice.should == []
       end
     end
   end

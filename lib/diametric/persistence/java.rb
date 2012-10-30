@@ -3,6 +3,7 @@ unless defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
 end
 
 require 'diametric'
+require 'diametric/persistence/query'
 
 require 'java'
 require 'lock_jar'
@@ -26,6 +27,7 @@ module Diametric
       end
 
       def self.create_schemas
+        p @persisted_classes
         @persisted_classes.each do |klass|
           klass.create_schema
         end
@@ -68,15 +70,13 @@ module Diametric
         end
 
         def first(conditions = {})
-          res = q(conditions)
-          from_query(res.first.map { |x| x })
+          where(conditions).first
         end
 
         def where(conditions = {})
-          res = q(conditions)
-          res.map { |entity|
-            from_query(entity.map { |x| x })
-          }
+          query = Query.new(self)
+          query.where(conditions)
+          query
         end
 
         def q(conditions = {})
