@@ -44,5 +44,27 @@ describe Diametric::Persistence::Java, :java do
       mouse.save.should be_true
       mouse.should be_persisted
     end
+
+    context "that is saved in Datomic" do
+      before(:each) do
+        mouse.name = "Wilbur"
+        mouse.save
+      end
+
+      it "can find it by dbid" do
+        mouse2 = Mouse.get(mouse.dbid)
+        mouse2.should_not be_nil
+        mouse2.should be_a(Mouse)
+        mouse2.name.should == mouse.name
+      end
+
+      it "can save it back to Datomic with changes" do
+        mouse.name = "Mr. Wilbur"
+        mouse.save.should be_true
+
+        mouse2 = Mouse.get(mouse.dbid)
+        mouse2.name.should == "Mr. Wilbur"
+      end
+    end
   end
 end

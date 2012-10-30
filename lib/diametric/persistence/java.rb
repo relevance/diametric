@@ -38,6 +38,20 @@ module Diametric
           res.get
         end
 
+        def get(dbid)
+          entity_map = connection.db.entity(dbid)
+          attrs = entity_map.key_set.map { |attr_keyword|
+            attr = attr_keyword.to_s.gsub(%r"^:\w+/", '')
+            value = entity_map.get(attr_keyword)
+            [attr, value]
+          }
+
+          entity = self.new(Hash[*attrs.flatten])
+          entity.dbid = dbid
+
+          entity
+        end
+
         def clj
           @clj ||= JRClj.new
         end
@@ -47,10 +61,6 @@ module Diametric
 
       module InstanceMethods
         include_package "datomic"
-
-        def clj
-          self.class.clj
-        end
 
         def connection
           self.class.connection
@@ -64,6 +74,12 @@ module Diametric
             self.dbid = Peer.resolve_tempid(res[:"db-after".to_clj], res[:tempids.to_clj], clj.edn_convert(tempid))
           end
           res
+        end
+
+        private
+
+        def clj
+          self.class.clj
         end
       end
     end
