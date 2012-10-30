@@ -52,6 +52,23 @@ module Diametric
           entity
         end
 
+        def first(conditions = {})
+          res = q(conditions)
+          from_query(res.first.map { |x| x })
+        end
+
+        def where(conditions = {})
+          res = q(conditions)
+          res.map { |entity|
+            from_query(entity.map { |x| x })
+          }
+        end
+
+        def q(conditions = {})
+          query, args = query_data(conditions)
+          Peer.q(clj.edn_convert(query), connection.db, *args)
+        end
+
         def clj
           @clj ||= JRClj.new
         end
@@ -71,9 +88,33 @@ module Diametric
         def save
           res = self.class.transact(tx_data)
           if dbid.nil?
-            self.dbid = Peer.resolve_tempid(res[:"db-after".to_clj], res[:tempids.to_clj], clj.edn_convert(tempid))
+            self.dbid = Peer.resolve_tempid(
+                                     res[:"db-after".to_clj],
+                                     res[:tempids.to_clj],
+                                     clj.edn_convert(tempid))
           end
           res
+        end
+
+        # == checks to see if the two objects are the same entity in Datomic.
+        def ==(other)
+          return false if self.dbid.nil?
+          return false unless other.respond_to?(:dbid)
+          return false unless self.dbid == other.dbid
+          true
+        end
+
+        # eql? checks to see if the two objects are of the same type, are the same
+        # entity, and have the same attribute values.
+        def eql?(other)
+          return false unless self == other
+          return false unless self.class == other.class
+
+          attribute_names.each do |attr|
+            return false unless self.send(attr) == other.send(attr)
+          end
+
+          true
         end
 
         private

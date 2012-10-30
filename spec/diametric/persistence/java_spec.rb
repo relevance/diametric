@@ -54,8 +54,8 @@ describe Diametric::Persistence::Java, :java do
       it "can find it by dbid" do
         mouse2 = Mouse.get(mouse.dbid)
         mouse2.should_not be_nil
-        mouse2.should be_a(Mouse)
         mouse2.name.should == mouse.name
+        mouse2.should == mouse
       end
 
       it "can save it back to Datomic with changes" do
@@ -64,6 +64,18 @@ describe Diametric::Persistence::Java, :java do
 
         mouse2 = Mouse.get(mouse.dbid)
         mouse2.name.should == "Mr. Wilbur"
+      end
+
+      it "can find it by attribute" do
+        mouse2 = Mouse.first(:name => "Wilbur")
+        mouse2.should_not be_nil
+        mouse2.dbid.should == mouse.dbid
+        mouse2.should == mouse
+      end
+
+      it "can find all matching conditions" do
+        mice = Mouse.where(:name => "Wilbur")
+        mice.should == [mouse]
       end
     end
   end
