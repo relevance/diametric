@@ -13,8 +13,9 @@ module Diametric
     end
 
     def where(conditions)
-      @conditions = @conditions.merge(conditions)
-      self
+      query = self.dup
+      query.conditions = query.conditions.merge(conditions)
+      query
     end
 
     # Add a filter to your Datomic query. Filters are known as expression clause
@@ -33,6 +34,8 @@ module Diametric
     #   that will be converted into a Datalog query.
     # @return [Query]
     def filter(*filter)
+      query = self.dup
+
       if filter.first.is_a?(EDN::Type::List)
         filter = filter.first
       else
@@ -40,12 +43,13 @@ module Diametric
         filter = EDN::Type::List.new(*filter)
       end
 
-      @filters << [filter]
-
-      self
+      query.filters += [[filter]]
+      query
     end
 
     def each
+      # TODO check to see if the model has a `.q` method and give
+      # an appropriate error if not.
       res = model.q(*data)
       res.each do |entity|
         # The map is for compatibility with Java persistence.
@@ -77,6 +81,16 @@ module Diametric
       ]
 
       [query, args]
+    end
+
+    protected
+
+    def conditions=(conditions)
+      @conditions = conditions
+    end
+
+    def filters=(filters)
+      @filters = filters
     end
 
     private

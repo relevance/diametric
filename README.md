@@ -3,9 +3,7 @@
 Diametric is a library for building schemas, queries, and transactions for
 [Datomic][] from Ruby objects.
 
-## Usage
-
-### Entity API
+## Entity API
 
 The `Entity` module is interesting, in that it is primarily made of pure functions that take their receiver (an instance of the class they are included in) and return data that you can use in Datomic. This makes it not an ORM-like thing at all, but instead a Ruby-ish data builder for Datomic. And yet, a `Diametric::Entity` is fully `ActiveModel` compliant! You can use them anywhere you would use an `ActiveRecord` model or another `ActiveModel`-compliant instance.
 
@@ -53,6 +51,35 @@ Person.schema
 #   :db/cardinality :db.cardinality/one
 #   :db.install/_attribute :db.part/db}]
 
+Person.attributes
+# [:dbid, :name, :email, :birthday, :iq, :website]
+
+person = Person.new(Hash[*(Person.attributes.zip(results_from_query).flatten)])
+# or
+person = Person.from_query(results_from_query)
+
+person.iq = 180
+person.tx_data(:iq)
+# Datomic transaction:
+# [{:db/id person.dbid
+#   :person/iq 180}]
+
+person = Person.new(:name => "Peanut")
+person.tx_data
+# Datomic transaction:
+# [{:db/id #db/id[:db.part/user]
+#   :person/name "Peanut"}]
+```
+
+## Query API
+
+The query API is used for generating Datomic queries, whether to send via an external client or via the persistence API. The two methods used to generate a query are `.where` and `.filter`, both of which are chainable. 
+
+To get query data and args for a query, call `.data` on a `Query`.
+
+If you are using a persistence API, you can ask `Query` to get the results of a Datomic query. `Diametric::Query` is an `Enumerable`. To get the results of a query, use `Enumerable` methods such as `.each` or `.first`. `Query` also provides a `.all` method to run the query and get the results.
+
+```ruby
 query = Datomic::Query.new(Person).where(:name => "Clinton Dreisbach")
 query.data
 # Datomic query:
@@ -83,32 +110,13 @@ query.data
 #   ["Clinton Dreisbach"]
 #
 # Returns as an array, [query, args].
-
-Person.attributes
-# [:dbid, :name, :email, :birthday, :iq, :website]
-
-person = Person.new(Hash[*(Person.attributes.zip(results_from_query).flatten)])
-# or
-person = Person.from_query(results_from_query)
-
-person.iq = 180
-person.tx_data(:iq)
-# Datomic transaction:
-# [{:db/id person.dbid
-#   :person/iq 180}]
-
-person = Person.new(:name => "Peanut")
-person.tx_data
-# Datomic transaction:
-# [{:db/id #db/id[:db.part/user]
-#   :person/name "Peanut"}]
 ```
 
-### Persistence API
+## Persistence API
 
 The persistence API comes in two flavors: REST- and Java-based. For the most part, they have the same API.
 
-#### JRuby
+### JRuby
 
 With `Diametric::Persistence::Java`, you can create objects that know how to store themselves to Datomic through the Datomic Java API.
 
@@ -123,7 +131,7 @@ require 'diametric/persistence/java'
 Diametric::Persistence::Java.connect('datomic:mem://animals')
 ```
 
-#### REST
+### REST
 
 With `Diametric::Persistence::REST`, you can create objects that know how to store themselves to Datomic through the Datomic REST API. This is your only option unless you are using JRuby.
 
@@ -136,7 +144,7 @@ require 'diametric/persistence/rest'
 Diametric::Persistence::REST.connect('http://localhost:9000', 'test', 'animals')
 ```
 
-#### Using persisted models
+### Using persisted models
 
 ```ruby
 class Goat
