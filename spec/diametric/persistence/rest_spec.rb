@@ -1,15 +1,15 @@
 require 'spec_helper'
 require 'diametric/persistence/rest'
 
-class Mouse
-  include Diametric::Entity
-  include Diametric::Persistence::REST
-
-  attribute :name, String, :index => true
-  attribute :age, Integer
-end
-
 describe Diametric::Persistence::REST, :integration do
+  class Mouse
+    include Diametric::Entity
+    include Diametric::Persistence::REST
+
+    attribute :name, String, :index => true
+    attribute :age, Integer
+  end
+
   let(:db_uri) { ENV['DATOMIC_URI'] || 'http://localhost:9000' }
   let(:storage) { ENV['DATOMIC_STORAGE'] || 'test' }
   let(:dbname) { ENV['DATOMIC_NAME'] || "test-#{Time.now.to_i}" }

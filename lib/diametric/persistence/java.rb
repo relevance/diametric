@@ -27,7 +27,6 @@ module Diametric
       end
 
       def self.create_schemas
-        p @persisted_classes
         @persisted_classes.each do |klass|
           klass.create_schema
         end
@@ -79,8 +78,8 @@ module Diametric
           query
         end
 
-        def q(conditions = {})
-          query, args = query_data(conditions)
+        def q(conditions = {}, filters = [])
+          query, args = query_data(conditions, filters)
           Peer.q(clj.edn_convert(query), connection.db, *args)
         end
 
