@@ -1,6 +1,7 @@
 require 'rspec'
 require 'pry'
 require 'diametric'
+Dir["./spec/support/**/*.rb"].each {|f| require f}
 
 RSpec.configure do |c|
 #  c.fail_fast = true

@@ -1,0 +1,56 @@
+shared_examples "persistence API" do
+  let(:model) { model_class.new }
+
+  describe "an instance" do
+    it "can save" do
+      # TODO deal correctly with nil values
+      model.name = "Wilbur"
+      model.age = 2
+      model.save.should be_true
+      model.should be_persisted
+    end
+
+    context "that is saved in Datomic" do
+      before(:each) do
+        model.name = "Wilbur"
+        model.age = 2
+        model.save
+      end
+
+      it "can find it by dbid" do
+        model2 = model_class.get(model.dbid)
+        model2.should_not be_nil
+        model2.name.should == model.name
+        model2.should == model
+      end
+
+      it "can save it back to Datomic with changes" do
+        model.name = "Mr. Wilbur"
+        model.save.should be_true
+
+        model2 = model_class.get(model.dbid)
+        model2.name.should == "Mr. Wilbur"
+      end
+
+      it "can find it by attribute" do
+        model2 = model_class.first(:name => "Wilbur")
+        model2.should_not be_nil
+        model2.dbid.should == model.dbid
+        model2.should == model
+      end
+
+      it "can find all matching conditions" do
+        mice = model_class.where(:name => "Wilbur").where(:age => 2).all
+        mice.should == [model]
+      end
+
+      it "can filter entities" do
+        mice = model_class.filter(:<, :age, 3).all
+        mice.should == [model]
+
+        mice = model_class.filter(:>, :age, 3).all
+        mice.should == []
+      end
+    end
+  end
+end
