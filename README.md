@@ -1,13 +1,22 @@
 # Diametric
 
-Diametric is a library for building schemas, queries, and transactions for
-[Datomic][] from Ruby objects.
+Diametric is a library for building schemas, queries, and transactions
+for [Datomic][] from Ruby objects. It is also used to map Ruby objects
+as entities into a Datomic database.
 
 ## Entity API
 
-The `Entity` module is interesting, in that it is primarily made of pure functions that take their receiver (an instance of the class they are included in) and return data that you can use in Datomic. This makes it not an ORM-like thing at all, but instead a Ruby-ish data builder for Datomic. And yet, a `Diametric::Entity` is fully `ActiveModel` compliant! You can use them anywhere you would use an `ActiveRecord` model or another `ActiveModel`-compliant instance.
+The `Entity` module is interesting, in that it is primarily made of
+pure functions that take their receiver (an instance of the class they
+are included in) and return data that you can use in Datomic. This
+makes it not an ORM-like thing at all, but instead a Ruby-ish data
+builder for Datomic. And yet, a `Diametric::Entity` is fully
+`ActiveModel` compliant! You can use them anywhere you would use an
+`ActiveRecord` model or another `ActiveModel`-compliant instance.
 
-They do not include all `ActiveModel` modules by default, only the ones needed to establish compliance. You may want to include others yourself, such as `Validations`, `Callbacks`, or `Dirty`.
+They do not include all `ActiveModel` modules by default, only the
+ones needed to establish compliance. You may want to include others
+yourself, such as `Validations`, `Callbacks`, or `Dirty`.
 
 ```ruby
 require 'diametric'
@@ -116,7 +125,7 @@ query.data
 
 The persistence API comes in two flavors: REST- and Java-based. For the most part, they have the same API.
 
-### JRuby
+### Java
 
 With `Diametric::Persistence::Java`, you can create objects that know how to store themselves to Datomic through the Datomic Java API.
 

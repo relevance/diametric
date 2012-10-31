@@ -5,7 +5,27 @@ require 'active_support/inflector'
 require 'active_model'
 
 module Diametric
+
+  # +Diametric::Entity+ is a module that, when included in a class,
+  # gives it the ability to generate Datomic schemas, queries, and
+  # transactions, and makes it +ActiveModel+ compliant.
+  #
+  # While this allows you to use this anywhere you would use an
+  # +ActiveRecord::Base+ model or another +ActiveModel+-compliant
+  # instance, it _does not_ include persistence. The +Entity+ module
+  # is primarily made of pure functions that take their receiver (an
+  # instance of the class they are included in) and return data that
+  # you can use in Datomic. +Entity+ can be best thought of as a data
+  # builder for Datomic.
+  #
+  # Of course, you can combine +Entity+ with one of the two available
+  # Diametric persistence modules for a fully persistent model.
+  #
+  # When +Entity+ is included in a class, that class is extended with
+  # {ClassMethods} and has {InstanceMethods} included.
   module Entity
+
+    # Conversions from Ruby types to Datomic types.
     VALUE_TYPES = {
       Symbol => "keyword",
       String => "string",
@@ -24,7 +44,6 @@ module Diametric
       base.send(:extend, ActiveModel::Naming)
       base.send(:include, ActiveModel::Conversion)
 
-      # TODO set up :db/id
       base.class_eval do
         @attributes = []
         @partition = :"db.part/db"
@@ -44,15 +63,51 @@ module Diametric
         self.partition = partition.to_sym
       end
 
+      # Add an attribute to a {Diametric::Entity}.
+      #
+      # Valid options are:
+      #
+      # * +:index+: The only valid value is +true+. This causes the
+      #   attribute to be indexed for easier lookup.
+      # * +:unique+: Valid values are +:value+ or +:identity.
+      #   * +:value+ causes the attribute value to be unique to the
+      #     entity and attempts to insert a duplicate value will fail.
+      #   * +:identity+ causes the attribute value to be unique to
+      #     the entity. Attempts to insert a duplicate value with a
+      #     temporary entity id will result in an "upsert," causing the
+      #     temporary entity's attributes to be merged with those for
+      #     the current entity in Datomic.
+      # * +:cardinality+: Specifies whether an attribute associates
+      #   a single value or a set of values with an entity. The
+      #   values allowed are:
+      #   * +:one+ - the attribute is single valued, it associates a
+      #     single value with an entity.
+      #   * +:many+ - the attribute is mutli valued, it associates a
+      #     set of values with an entity.
+      #   To be honest, I have no idea how this will work in Ruby. Try +:many+ at your own risk.
+      #   +:one+ is the default.
+      # * +:doc+: A string used in Datomic to document the attribute.
+      # * +:fulltext+: The only valid value is +true+. Indicates that a
+      #   fulltext search index should be generated for the attribute.
+      #
+      # @example Add an indexed name attribute.
+      #   attribute :name, String, :index => true
+      #
+      # @param name [String] The attribute's name.
+      # @param value_type [Class] The attribute's type.
+      #   Must exist in {Diametric::Entity::VALUE_TYPES}.
+      # @param opts [Hash] Options to pass to Datomic.
       def attribute(name, value_type, opts = {})
         @attributes << [name, value_type, opts]
         attr_accessor name
       end
 
+      # @return [Array] Definitions of each of the entity's attributes (name, type, options).
       def attributes
         @attributes
       end
 
+      # @return [Array<Symbol>] Names of the entity's attributes.
       def attribute_names
         @attributes.map { |name, _, _| name }
       end
