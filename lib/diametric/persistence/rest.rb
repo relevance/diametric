@@ -1,5 +1,4 @@
 require 'diametric'
-require 'diametric/persistence/query'
 require 'datomic/client'
 
 module Diametric
@@ -70,12 +69,11 @@ module Diametric
         end
 
         def filter(*filter)
-          query = Query.new(self)
+          query = Diametric::Query.new(self)
           query.filter(*filter)
         end
 
-        def q(conditions = {}, filters = [])
-          query, args = query_data(conditions, filters)
+        def q(query, args)
           args.unshift(connection.db_alias(database))
           res = connection.query(query, args)
           res.data

@@ -53,7 +53,8 @@ Person.schema
 #   :db/cardinality :db.cardinality/one
 #   :db.install/_attribute :db.part/db}]
 
-Person.query_data(:name => "Clinton Dreisbach")
+query = Datomic::Query.new(Person).where(:name => "Clinton Dreisbach")
+query.data
 # Datomic query:
 # [:find ?e ?name ?email ?birthday ?iq ?website
 #  :from $ ?name
@@ -67,7 +68,8 @@ Person.query_data(:name => "Clinton Dreisbach")
 #
 # Returns as an array, [query, args].
 
-Person.query_data({:name => "Clinton Dreisbach"}, [~[~">", ~"?iq", 150]])
+query = Datomic::Query.new(Person).where(:name => "Clinton Dreisbach").filter(:>, :iq, 150)
+query.data
 # Datomic query:
 # [:find ?e ?name ?email ?birthday ?iq ?website
 #  :from $ ?name
@@ -81,8 +83,6 @@ Person.query_data({:name => "Clinton Dreisbach"}, [~[~">", ~"?iq", 150]])
 #   ["Clinton Dreisbach"]
 #
 # Returns as an array, [query, args].
-# For now, the filters must be sent as EDN.
-# .query_data will gain convenience converts in the future.
 
 Person.attributes
 # [:dbid, :name, :email, :birthday, :iq, :website]

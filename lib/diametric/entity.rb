@@ -83,27 +83,6 @@ module Diametric
         end
       end
 
-      def query_data(params = {}, filters = [])
-        vars = @attributes.map { |attribute, _, _| ~"?#{attribute}" }
-
-        from = params.map { |k, _| ~"?#{k}" }
-
-        clauses = @attributes.map { |attribute, _, _|
-          [~"?e", namespace(prefix, attribute), ~"?#{attribute}"]
-        }
-        clauses += filters
-
-        args = params.map { |_, v| v }
-
-        query = [
-          :find, ~"?e", *vars,
-          :in, ~"\$", *from,
-          :where, *clauses
-        ]
-
-        [query, args]
-      end
-
       def from_query(query_results)
         dbid = query_results.shift
         widget = self.new(Hash[*(@attributes.map { |attribute, _, _| attribute }.zip(query_results).flatten)])

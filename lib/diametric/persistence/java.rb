@@ -3,7 +3,6 @@ unless defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
 end
 
 require 'diametric'
-require 'diametric/persistence/query'
 
 require 'java'
 require 'lock_jar'
@@ -73,13 +72,12 @@ module Diametric
         end
 
         def where(conditions = {})
-          query = Query.new(self)
+          query = Diametric::Query.new(self)
           query.where(conditions)
           query
         end
 
-        def q(conditions = {}, filters = [])
-          query, args = query_data(conditions, filters)
+        def q(query, args)
           Peer.q(clj.edn_convert(query), connection.db, *args)
         end
 

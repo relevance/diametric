@@ -7,5 +7,8 @@ gemspec
 gem 'rake'
 gem 'pry'
 gem 'rspec'
-gem 'yard'
-gem 'redcarpet'
+
+platform :mri do
+  gem 'yard'
+  gem 'redcarpet'
+end

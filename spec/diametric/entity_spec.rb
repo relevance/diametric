@@ -6,7 +6,6 @@ describe Diametric::Entity do
 
     it { should respond_to(:attribute) }
     it { should respond_to(:schema) }
-    it { should respond_to(:query_data) }
     it { should respond_to(:from_query) }
 
     it "should generate a schema" do
@@ -88,49 +87,6 @@ describe Diametric::Entity do
       goat.dbid.should == 1
       goat.name.should == "Beans"
       goat.birthday.should == DateTime.parse("1976/9/4")
-    end
-  end
-
-  describe "#query_data" do
-    it "should generate a query given no arguments" do
-      Goat.query_data.should == [
-        [
-          :find, ~"?e", ~"?name", ~"?birthday",
-          :in, ~"\$",
-          :where,
-          [~"?e", :"goat/name", ~"?name"],
-          [~"?e", :"goat/birthday", ~"?birthday"]
-        ],
-        []
-      ]
-    end
-
-    it "should generate a query given an argument" do
-      Goat.query_data(:name => "Beans").should == [
-        [
-          :find, ~"?e", ~"?name", ~"?birthday",
-          :in, ~"\$", ~"?name",
-          :where,
-          [~"?e", :"goat/name", ~"?name"],
-          [~"?e", :"goat/birthday", ~"?birthday"]
-        ],
-        ["Beans"]
-      ]
-    end
-
-    it "should generate a query given multiple arguments" do
-      bday = DateTime.parse("2003-09-04 11:30 AM")
-
-      Goat.query_data(:name => "Beans", :birthday => bday).should == [
-        [
-          :find, ~"?e", ~"?name", ~"?birthday",
-          :in, ~"\$", ~"?name", ~"?birthday",
-          :where,
-          [~"?e", :"goat/name", ~"?name"],
-          [~"?e", :"goat/birthday", ~"?birthday"]
-        ],
-        ["Beans", bday]
-      ]
     end
   end
 

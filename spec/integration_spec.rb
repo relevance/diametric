@@ -44,7 +44,7 @@ describe Diametric::Entity, :integration => true do
     end
 
     it "can query for that entity" do
-      query, args = Goat.query_data(:name => "Beans")
+      query, args = Diametric::Query.new(Goat).where(:name => "Beans").data
       args = args.unshift({:"db/alias" => "#{@storage}/#{@dbname}"})
       resp = @client.query(query, args)
       resp.code.should == 200
@@ -54,7 +54,7 @@ describe Diametric::Entity, :integration => true do
     end
 
     it "can rehydrate an entity from a query" do
-      query, args = Goat.query_data(:name => "Beans")
+      query, args = Diametric::Query.new(Goat).where(:name => "Beans").data
       args = args.unshift({:"db/alias" => "#{@storage}/#{@dbname}"})
       resp = @client.query(query, args)
       resp.code.should == 200
