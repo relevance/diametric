@@ -46,7 +46,7 @@ module Diametric
 
       def convert_filter_element(element)
         if element.is_a?(Symbol)
-          if @model.attribute_names.include?(element)
+          if @model.attribute_names.include?(element) || @conditions.keys.include?(element)
             EDN::Type::Symbol.new("?#{element}")
           else
             EDN::Type::Symbol.new(element.to_s)
