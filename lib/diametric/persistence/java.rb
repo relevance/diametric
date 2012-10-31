@@ -3,6 +3,7 @@ unless defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
 end
 
 require 'diametric'
+require 'diametric/persistence/common'
 
 require 'java'
 require 'lock_jar'
@@ -16,12 +17,13 @@ java_import "clojure.lang.Keyword"
 module Diametric
   module Persistence
     module Java
+      include_package "datomic"
+
       @persisted_classes = Set.new
 
       def self.included(base)
+        base.send(:include, Diametric::Persistence::Common)
         base.send(:extend, ClassMethods)
-        base.send(:include, InstanceMethods)
-
         @persisted_classes.add(base)
       end
 
@@ -41,10 +43,6 @@ module Diametric
 
         def connection
           @connection || Diametric::Persistence::Java.connection
-        end
-
-        def create_schema
-          transact(schema)
         end
 
         def transact(data)
@@ -67,16 +65,6 @@ module Diametric
           entity
         end
 
-        def first(conditions = {})
-          where(conditions).first
-        end
-
-        def where(conditions = {})
-          query = Diametric::Query.new(self)
-          query.where(conditions)
-          query
-        end
-
         def q(query, args)
           Peer.q(clj.edn_convert(query), connection.db, *args)
         end
@@ -88,46 +76,15 @@ module Diametric
 
       extend ClassMethods
 
-      module InstanceMethods
-        include_package "datomic"
-
-        def save
-          res = self.class.transact(tx_data)
-          if dbid.nil?
-            self.dbid = Peer.resolve_tempid(
-                                     res[:"db-after".to_clj],
-                                     res[:tempids.to_clj],
-                                     clj.edn_convert(tempid))
-          end
-          res
+      def save
+        res = self.class.transact(tx_data)
+        if dbid.nil?
+          self.dbid = Peer.resolve_tempid(
+                                   res[:"db-after".to_clj],
+                                   res[:tempids.to_clj],
+                                   self.class.clj.edn_convert(tempid))
         end
-
-        # == checks to see if the two objects are the same entity in Datomic.
-        def ==(other)
-          return false if self.dbid.nil?
-          return false unless other.respond_to?(:dbid)
-          return false unless self.dbid == other.dbid
-          true
-        end
-
-        # eql? checks to see if the two objects are of the same type, are the same
-        # entity, and have the same attribute values.
-        def eql?(other)
-          return false unless self == other
-          return false unless self.class == other.class
-
-          attribute_names.each do |attr|
-            return false unless self.send(attr) == other.send(attr)
-          end
-
-          true
-        end
-
-        private
-
-        def clj
-          self.class.clj
-        end
+        res
       end
     end
   end

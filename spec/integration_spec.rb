@@ -39,12 +39,12 @@ describe Diametric::Entity, :integration => true do
 
   describe "with an entity" do
     before(:all) do
-      goat = Goat.new(:name => "Beans", :birthday => DateTime.parse("1976-09-04"))
+      goat = Goat.new(:name => "Josef", :birthday => DateTime.parse("1976-09-04"))
       @client.transact(@dbname, goat.tx_data)
     end
 
     it "can query for that entity" do
-      query, args = Diametric::Query.new(Goat).where(:name => "Beans").data
+      query, args = Diametric::Query.new(Goat).where(:name => "Josef").data
       args = args.unshift({:"db/alias" => "#{@storage}/#{@dbname}"})
       resp = @client.query(query, args)
       resp.code.should == 200
@@ -54,13 +54,13 @@ describe Diametric::Entity, :integration => true do
     end
 
     it "can rehydrate an entity from a query" do
-      query, args = Diametric::Query.new(Goat).where(:name => "Beans").data
+      query, args = Diametric::Query.new(Goat).where(:name => "Josef").data
       args = args.unshift({:"db/alias" => "#{@storage}/#{@dbname}"})
       resp = @client.query(query, args)
       resp.code.should == 200
 
       goats = resp.data.map { |data| Goat.from_query(data) }
-      goats.first.name.should == "Beans"
+      goats.first.name.should == "Josef"
     end
   end
 

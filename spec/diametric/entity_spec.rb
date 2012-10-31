@@ -98,7 +98,7 @@ describe Diametric::Entity do
         # Equivalence is currently wrong on EDN tagged values.
         tx = goat.tx_data.first
         tx.keys.should == [:"db/id", :"goat/name", :"goat/birthday"]
-        tx[:"db/id"].to_edn.should match(%r"#db/id \[:db.part/db \-\d+\]")
+        tx[:"db/id"].to_edn.should match(%r"#db/id \[:db.part/user \-\d+\]")
         tx[:"goat/name"].should == "Beans"
         tx[:"goat/birthday"].should == goat.birthday
       end

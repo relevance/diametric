@@ -1,4 +1,5 @@
 require 'diametric'
+require 'diametric/persistence/common'
 require 'datomic/client'
 
 module Diametric
@@ -7,9 +8,8 @@ module Diametric
       @persisted_classes = Set.new
 
       def self.included(base)
+        base.send(:include, Diametric::Persistence::Common)
         base.send(:extend, ClassMethods)
-        base.send(:include, InstanceMethods)
-
         @persisted_classes.add(base)
       end
 
@@ -37,10 +37,6 @@ module Diametric
           @database || Diametric::Persistence::REST.database
         end
 
-        def create_schema
-          transact(schema)
-        end
-
         def transact(data)
           connection.transact(database, data)
         end
@@ -59,20 +55,6 @@ module Diametric
           entity
         end
 
-        def first(conditions = {})
-          where(conditions).first
-        end
-
-        def where(conditions = {})
-          query = Query.new(self)
-          query.where(conditions)
-        end
-
-        def filter(*filter)
-          query = Diametric::Query.new(self)
-          query.filter(*filter)
-        end
-
         def q(query, args)
           args.unshift(connection.db_alias(database))
           res = connection.query(query, args)
@@ -82,39 +64,12 @@ module Diametric
 
       extend ClassMethods
 
-      module InstanceMethods
-        def id=(dbid)
-          self.dbid = dbid
+      def save
+        res = self.class.transact(tx_data)
+        if dbid.nil?
+          self.dbid = res.data[:tempids].values.first
         end
-
-        def save
-          res = self.class.transact(tx_data)
-          if dbid.nil?
-            self.dbid = res.data[:tempids].values.first
-          end
-          res
-        end
-
-        # == checks to see if the two objects are the same entity in Datomic.
-        def ==(other)
-          return false if self.dbid.nil?
-          return false unless other.respond_to?(:dbid)
-          return false unless self.dbid == other.dbid
-          true
-        end
-
-        # eql? checks to see if the two objects are of the same type, are the same
-        # entity, and have the same attribute values.
-        def eql?(other)
-          return false unless self == other
-          return false unless self.class == other.class
-
-          attribute_names.each do |attr|
-            return false unless self.send(attr) == other.send(attr)
-          end
-
-          true
-        end
+        res
       end
     end
   end

@@ -108,7 +108,7 @@ module Diametric
     # Create a Datomic query from the conditions and filters passed to this
     # +Query+ object.
     #
-    # @return [Array<Array, Array>] The first element of the array returned
+    # @return [Array(Array, Array)] The first element of the array returned
     #   is the Datomic query composed of Ruby data. The second element is
     #   the arguments that used with the query.
     def data
