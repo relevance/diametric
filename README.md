@@ -123,21 +123,21 @@ query.data
 
 ## Persistence API
 
-The persistence API comes in two flavors: REST- and Java-based. For the most part, they have the same API.
+The persistence API comes in two flavors: REST- and peer-based. For the most part, they have the same API.
 
-### Java
+### Peer
 
-With `Diametric::Persistence::Java`, you can create objects that know how to store themselves to Datomic through the Datomic Java API.
+With `Diametric::Persistence::Peer`, you can create objects that know how to store themselves to Datomic through a Datomic peer.
 
-To use the `Diametric::Persistence::Java`, you will need to use JRuby and require `diametric/persistence/java`. When you install the `diametric` gem with JRuby, all `.jar` files needed to run Datomic will be downloaded. 
+To use `Diametric::Persistence::Peer`, you will need to use JRuby and require `diametric/persistence/peer`. When you install the `diametric` gem with JRuby, all `.jar` files needed to run Datomic will be downloaded. 
 
 ```ruby
 require 'diametric'
-require 'diametric/persistence/java'
+require 'diametric/persistence/peer'
 
 # database URI
 # will create database if it does not already exist
-Diametric::Persistence::Java.connect('datomic:mem://animals')
+Diametric::Persistence::Peer.connect('datomic:mem://animals')
 ```
 
 ### REST
@@ -159,7 +159,7 @@ Diametric::Persistence::REST.connect('http://localhost:9000', 'test', 'animals')
 class Goat
   include Diametric::Entity
   include Diametric::Persistence::REST # if using REST API
-  include Diametric::Persistence::Java # if using JRuby and not using REST
+  include Diametric::Persistence::Peer # if using JRuby and not using REST
   
   attribute :name, String, :index => true
   attribute :age, Integer
