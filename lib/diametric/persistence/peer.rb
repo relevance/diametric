@@ -86,7 +86,8 @@ module Diametric
       extend ClassMethods
 
       def save
-        return unless changed?
+        return false unless valid?
+        return true unless changed?
 
         res = self.class.transact(tx_data)
         if dbid.nil?

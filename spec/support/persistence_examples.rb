@@ -1,13 +1,25 @@
 shared_examples "persistence API" do
-  let(:model) { model_class.new }
-
   describe "an instance" do
+    let(:model) { model_class.new }
+
     it "can save" do
       # TODO deal correctly with nil values
       model.name = "Wilbur"
       model.age = 2
       model.save.should be_true
       model.should be_persisted
+    end
+
+    it "does not transact if nothing is changed" do
+      model = model_class.new
+      model.should_not be_changed
+      model.save.should be_true
+      model.should_not be_persisted
+    end
+
+    it "does not transact if invalid" do
+      model.stub(:valid? => false)
+      model.save.should be_false
     end
 
     context "that is saved in Datomic" do
