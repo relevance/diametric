@@ -5,14 +5,17 @@ require 'datomic/client'
 module Diametric
   module Persistence
     module REST
-      mattr_reader :connection, :database
-
+      @connection = nil
       @persisted_classes = Set.new
 
       def self.included(base)
         base.send(:include, Diametric::Persistence::Common)
         base.send(:extend, ClassMethods)
         @persisted_classes.add(base)
+      end
+
+      def self.connection
+        @connection
       end
 
       def self.create_schemas

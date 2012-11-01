@@ -16,16 +16,20 @@ java_import "clojure.lang.Keyword"
 
 module Diametric
   module Persistence
-    module Java
+    module Peer
       include_package "datomic"
 
-      mattr_reader :connection
+      @connection = nil
       @persisted_classes = Set.new
 
       def self.included(base)
         base.send(:include, Diametric::Persistence::Common)
         base.send(:extend, ClassMethods)
         @persisted_classes.add(base)
+      end
+
+      def self.connection
+        @connection
       end
 
       def self.create_schemas
@@ -47,7 +51,7 @@ module Diametric
         end
 
         def connection
-          @connection || Diametric::Persistence::Java.connection
+          @connection || Diametric::Persistence::Peer.connection
         end
 
         def transact(data)

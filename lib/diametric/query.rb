@@ -92,7 +92,7 @@ module Diametric
       # an appropriate error if not.
       res = model.q(*data)
       res.each do |entity|
-        # The map is for compatibility with Java persistence.
+        # The map is for compatibility with Java peer persistence.
         # TODO remove if possible
         yield model.from_query(entity.map { |x| x })
       end

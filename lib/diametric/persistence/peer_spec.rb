@@ -1,18 +1,18 @@
 require 'spec_helper'
-require 'diametric/persistence/java' if RUBY_ENGINE == 'jruby'
+require 'diametric/persistence/peer' if RUBY_ENGINE == 'jruby'
 
 # Prevent CRuby from blowing up
 module Diametric
   module Persistence
-    module Java
+    module Peer
     end
   end
 end
 
-describe Diametric::Persistence::Java, :jruby do
+describe Diametric::Persistence::Peer, :jruby do
   class Rat
     include Diametric::Entity
-    include Diametric::Persistence::Java
+    include Diametric::Persistence::Peer
 
     attribute :name, String, :index => true
     attribute :age, Integer
@@ -30,7 +30,7 @@ describe Diametric::Persistence::Java, :jruby do
 
     before(:all) do
       subject.connect(db_uri)
-      Diametric::Persistence::Java.create_schemas
+      Diametric::Persistence::Peer.create_schemas
     end
   end
 end
