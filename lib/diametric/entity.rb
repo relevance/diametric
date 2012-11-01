@@ -45,6 +45,7 @@ module Diametric
       base.send(:extend, ClassMethods)
       base.send(:extend, ActiveModel::Naming)
       base.send(:include, ActiveModel::Conversion)
+      base.send(:include, ActiveModel::Dirty)
 
       base.class_eval do
         @attributes = []
@@ -114,7 +115,14 @@ module Diametric
       # @return void
       def attribute(name, value_type, opts = {})
         @attributes << [name, value_type, opts]
-        attr_accessor name
+        define_attribute_method name
+        define_method(name) do
+          instance_variable_get("@#{name}")
+        end
+        define_method("#{name}=") do |value|
+          send("#{name}_will_change!") unless value == send(name)
+          instance_variable_set("@#{name}", value)
+        end
       end
 
       # @return [Array<Symbol>] Names of the entity's attributes.

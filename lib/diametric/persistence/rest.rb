@@ -74,6 +74,10 @@ module Diametric
         if dbid.nil?
           self.dbid = res.data[:tempids].values.first
         end
+
+        @previously_changed = changes
+        @changed_attributes.clear
+
         res
       end
     end

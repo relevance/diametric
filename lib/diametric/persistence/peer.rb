@@ -93,6 +93,10 @@ module Diametric
                                                   res[:tempids.to_clj],
                                                   self.class.clj.edn_convert(tempid))
         end
+
+        @previously_changed = changes
+        @changed_attributes.clear
+
         res
       end
     end
