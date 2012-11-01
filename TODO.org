@@ -1,3 +1,8 @@
+* Housekeeping
+** Add Travis CI
+** Improve "Getting Started" in the wiki
+*** and then link to it from the README
+
 * Entity API
 ** Add default values to attributes
 ** People probably want validations by default: include ActiveModel::Validations
