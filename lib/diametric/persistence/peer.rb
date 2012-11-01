@@ -42,8 +42,8 @@ module Diametric
         include_package "datomic"
 
         def connect(uri)
-          Peer.create_database(uri)
-          @connection = Peer.connect(uri)
+          Java::Datomic::Peer.create_database(uri)
+          @connection = Java::Datomic::Peer.connect(uri)
         end
 
         def disconnect
@@ -75,7 +75,7 @@ module Diametric
         end
 
         def q(query, args)
-          Peer.q(clj.edn_convert(query), connection.db, *args)
+          Java::Datomic::Peer.q(clj.edn_convert(query), connection.db, *args)
         end
 
         def clj
@@ -88,10 +88,10 @@ module Diametric
       def save
         res = self.class.transact(tx_data)
         if dbid.nil?
-          self.dbid = Peer.resolve_tempid(
-                                   res[:"db-after".to_clj],
-                                   res[:tempids.to_clj],
-                                   self.class.clj.edn_convert(tempid))
+          self.dbid = Java::Datomic::Peer.resolve_tempid(
+                                                  res[:"db-after".to_clj],
+                                                  res[:tempids.to_clj],
+                                                  self.class.clj.edn_convert(tempid))
         end
         res
       end
