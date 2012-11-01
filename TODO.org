@@ -5,6 +5,9 @@
 
 * Entity API
 ** Add default values to attributes
+** Support cardinality/many
+*** Probably use an array or set to store values
+*** Must retract values removed from the array
 ** People probably want validations by default: include ActiveModel::Validations
 
 * Persistence API
