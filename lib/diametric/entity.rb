@@ -120,7 +120,7 @@ module Diametric
           instance_variable_get("@#{name}")
         end
         define_method("#{name}=") do |value|
-          send("#{name}_will_change!") unless value == send(name)
+          send("#{name}_will_change!") unless value == instance_variable_get("@#{name}")
           instance_variable_set("@#{name}", value)
         end
       end
@@ -244,12 +244,13 @@ module Diametric
     # Creates data for a Datomic transaction.
     #
     # @param attributes [*Symbol] Attributes to save in the
-    #   transaction. If no attributes given, all will be saved.
+    #   transaction. If no attributes are given, any changed
+    #   attributes will be saved.
     #
     # @return [Array] Datomic transaction data.
     def tx_data(*attributes)
       tx = {:"db/id" => dbid || tempid}
-      attributes = self.attribute_names if attributes.empty?
+      attributes = self.changed_attributes.keys if attributes.empty?
       attributes.reduce(tx) do |t, attribute|
         t[self.class.namespace(self.class.prefix, attribute)] = self.send(attribute)
         t

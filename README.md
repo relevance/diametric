@@ -16,7 +16,7 @@ builder for Datomic. And yet, a `Diametric::Entity` is fully
 
 They do not include all `ActiveModel` modules by default, only the
 ones needed to establish compliance. You may want to include others
-yourself, such as `Validations`, `Callbacks`, or `Dirty`.
+yourself, such as `Validations` or `Callbacks`.
 
 ```ruby
 require 'diametric'

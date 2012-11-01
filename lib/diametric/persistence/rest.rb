@@ -70,6 +70,8 @@ module Diametric
       extend ClassMethods
 
       def save
+        return unless changed?
+
         res = self.class.transact(tx_data)
         if dbid.nil?
           self.dbid = res.data[:tempids].values.first
