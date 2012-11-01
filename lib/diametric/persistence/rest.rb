@@ -5,6 +5,8 @@ require 'datomic/client'
 module Diametric
   module Persistence
     module REST
+      mattr_reader :connection, :database
+
       @persisted_classes = Set.new
 
       def self.included(base)

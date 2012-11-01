@@ -19,6 +19,7 @@ module Diametric
     module Java
       include_package "datomic"
 
+      mattr_reader :connection
       @persisted_classes = Set.new
 
       def self.included(base)
@@ -39,6 +40,10 @@ module Diametric
         def connect(uri)
           Peer.create_database(uri)
           @connection = Peer.connect(uri)
+        end
+
+        def disconnect
+          @connection = nil
         end
 
         def connection
