@@ -1,0 +1,12 @@
+* Entity API
+** Add default values to attributes
+** People probably want validations by default: include ActiveModel::Validations
+
+* Persistence API
+** Handle Java exceptions in the Peer persistence library
+** Handle exceptions from the REST client in the REST persistence library
+** Refactor so that Diametric::Persistence is the primary module and the connection determines different behavior
+*** Yoko requests: .connect should take an argument :rest or :peer, #peer? and #rest? methods should be on the connection object
+
+* History API
+** Make it
