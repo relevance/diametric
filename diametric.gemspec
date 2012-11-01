@@ -8,9 +8,13 @@ Gem::Specification.new do |gem|
   gem.version       = Diametric::VERSION
   gem.authors       = ["Clinton N. Dreisbach"]
   gem.email         = ["crnixon@gmail.com"]
-  gem.description   = %q{ActiveModel for Datomic}
   gem.summary       = %q{ActiveModel for Datomic}
-  gem.homepage      = ""
+  gem.description   = <<EOF
+Diametric is a library for building schemas, queries, and transactions
+for Datomic from Ruby objects. It is also used to map Ruby objects
+as entities into a Datomic database.
+EOF
+  gem.homepage      = "https://github.com/crnixon/diametric"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
