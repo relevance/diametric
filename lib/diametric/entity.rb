@@ -83,7 +83,7 @@ module Diametric
       #
       # * +:index+: The only valid value is +true+. This causes the
       #   attribute to be indexed for easier lookup.
-      # * +:unique+: Valid values are +:value+ or +:identity.
+      # * +:unique+: Valid values are +:value+ or +:identity.+
       #   * +:value+ causes the attribute value to be unique to the
       #     entity and attempts to insert a duplicate value will fail.
       #   * +:identity+ causes the attribute value to be unique to
