@@ -44,6 +44,7 @@ class Person
   attribute :secret_name, String, :unique => :identity
   attribute :bio, String, :fulltext => true
   attribute :middle_name, String, :default => "Danger"
+  attribute :nicknames, String, :cardinality => :many, :default => ["Buddy", "Pal"]
 end
 
 class Goat
