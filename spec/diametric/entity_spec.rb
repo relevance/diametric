@@ -49,6 +49,11 @@ describe Diametric::Entity do
           :"db/valueType" => :"db.type/string",
           :"db/cardinality" => :"db.cardinality/one",
           :"db/fulltext" => true,
+          :"db.install/_attribute" => :"db.part/db" },
+        { :"db/id" => Person.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"person/middle_name",
+          :"db/valueType" => :"db.type/string",
+          :"db/cardinality" => :"db.cardinality/one",
           :"db.install/_attribute" => :"db.part/db" }
       ]
     end
@@ -78,6 +83,10 @@ describe Diametric::Entity do
       person = Person.new(:name => "Dashiell D", :secret_name => "Monito")
       person.name.should == "Dashiell D"
       person.secret_name.should == "Monito"
+    end
+
+    it "defaults attributes" do
+      Person.new.middle_name.should == "Danger"
     end
   end
 
