@@ -1,7 +1,9 @@
 begin
   require "bundler/gem_tasks"
+  require 'rspec/core/rake_task'
 rescue LoadError
 end
+
 
 task :default => :prepare
 
@@ -15,3 +17,6 @@ task :prepare do
     LockJar.install(lockfile)
   end
 end
+
+desc "Run all RSpec tests"
+RSpec::Core::RakeTask.new(:spec)

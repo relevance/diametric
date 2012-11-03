@@ -12,3 +12,7 @@ platform :mri do
   gem 'yard'
   gem 'redcarpet'
 end
+
+platform :jruby do
+  gem 'jruby-openssl'
+end
