@@ -4,7 +4,6 @@
 *** and then link to it from the README
 
 * Entity API
-** Add default values to attributes
 ** Support cardinality/many
 *** Probably use an array or set to store values
 *** Must retract values removed from the array

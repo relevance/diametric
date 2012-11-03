@@ -49,6 +49,7 @@ module Diametric
 
       base.class_eval do
         @attributes = []
+        @defaults = {}
         @partition = :"db.part/user"
       end
     end
@@ -64,6 +65,9 @@ module Diametric
     #
     # @!attribute [r] attributes
     #   @return [Array] Definitions of each of the entity's attributes (name, type, options).
+    #
+    # @!attribute [r] defaults
+    #   @return [Array] Default values for any entitites defined with a +:default+ key and value.
     module ClassMethods
       def partition
         @partition
@@ -75,6 +79,10 @@ module Diametric
 
       def attributes
         @attributes
+      end
+
+      def defaults
+        @defaults
       end
 
       # Add an attribute to a {Diametric::Entity}.
@@ -103,6 +111,8 @@ module Diametric
       # * +:doc+: A string used in Datomic to document the attribute.
       # * +:fulltext+: The only valid value is +true+. Indicates that a
       #   fulltext search index should be generated for the attribute.
+      # * +:default+: The value the attribute will default to when the
+      #   Entity is initialized.
       #
       # @example Add an indexed name attribute.
       #   attribute :name, String, :index => true
@@ -114,6 +124,10 @@ module Diametric
       #
       # @return void
       def attribute(name, value_type, opts = {})
+        if default = opts.delete(:default)
+          @defaults[name] = default
+        end
+
         @attributes << [name, value_type, opts]
         define_attribute_method name
         define_method(name) do
@@ -230,7 +244,7 @@ module Diametric
     # @param params [Hash] A hash of attributes and values to
     #   initialize the entity with.
     def initialize(params = {})
-      params.each do |k, v|
+      self.class.defaults.merge(params).each do |k, v|
         self.send("#{k}=", v)
       end
     end
