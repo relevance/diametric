@@ -5,12 +5,12 @@ gemspec
 
 # Development-only dependencies
 gem 'rake'
-gem 'pry'
 gem 'rspec'
+gem 'pry', :group => :development
 
 platform :mri do
-  gem 'yard'
-  gem 'redcarpet'
+  gem 'yard', :group => :development
+  gem 'redcarpet', :group => :development
 end
 
 platform :jruby do

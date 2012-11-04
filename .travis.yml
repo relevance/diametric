@@ -1,4 +1,5 @@
 language: ruby
+bundler_args: --without development
 before_script: rake prepare
 script: ./script/ci
 rvm:
