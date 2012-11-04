@@ -1,0 +1,37 @@
+#!/bin/bash
+
+DATOMIC_VERSION=0.8.3591
+
+set -e
+
+if [ ! -d "vendor/datomic/datomic-free-$DATOMIC_VERSION" ]; then
+  echo "Downloading Datomic Free $DATOMIC_VERSION"
+  mkdir -p vendor/datomic
+  curl -o datomic-free.zip "http://downloads.datomic.com/$DATOMIC_VERSION/datomic-free-$DATOMIC_VERSION.zip"
+  unzip -d vendor/datomic datomic-free.zip
+  rm datomic-free.zip
+fi
+
+pushd vendor/datomic/datomic-free-$DATOMIC_VERSION
+
+echo "Starting local Datomic REST client"
+bin/rest 9000 test datomic:mem:// 2>&1 &
+child_pid=$!
+
+popd
+
+echo "Waiting for Datomic REST client to come up on port 9000"
+max_wait=60 #  seconds to wait for bin/rest to come up
+while [ $max_wait -gt 0 ] && [ -z "`lsof -i :9000`" ]; do
+  max_wait=$((max_wait-1))
+  sleep 1
+done
+
+echo "Running specs..."
+INTEGRATION=true bundle exec rake spec
+
+# Clean up child processes
+for pid in `ps -ef | awk '$3 == '$child_pid' { print $2 }'`;  do
+  kill $pid
+done
+kill $child_pid
