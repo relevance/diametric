@@ -1,7 +1,6 @@
 [![Build Status](https://secure.travis-ci.org/crnixon/diametric.png)](http://travis-ci.org/crnixon/diametric)
-# Diametric
 
-[![Build Status](https://secure.travis-ci.org/crnixon/diametric.png)](http://travis-ci.org/crnixon/diametric)
+# Diametric
 
 Diametric is a library for building schemas, queries, and transactions
 for [Datomic][] from Ruby objects. It is also used to map Ruby objects
