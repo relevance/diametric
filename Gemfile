@@ -6,7 +6,7 @@ gemspec
 # Development-only dependencies
 gem 'rake'
 gem 'rspec'
-gem 'pry', :group => :development
+gem 'pry'
 
 platform :mri do
   gem 'yard', :group => :development
