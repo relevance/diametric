@@ -19,10 +19,12 @@ task :prepare => :install_lockjar do
 end
 
 task :install_lockjar do
-  require 'rubygems'
-  require 'rubygems/dependency_installer'
-  inst = Gem::DependencyInstaller.new
-  inst.install 'lock_jar', '~> 0.7.2'
+  if defined?(RUBY_ENGINE) && RUBY_ENGINE == 'jruby'
+    require 'rubygems'
+    require 'rubygems/dependency_installer'
+    inst = Gem::DependencyInstaller.new
+    inst.install 'lock_jar', '~> 0.7.2'
+  end
 end
 
 desc "Run all RSpec tests"
