@@ -15,4 +15,5 @@ end
 
 platform :jruby do
   gem 'jruby-openssl'
+  gem 'lock_jar'
 end
