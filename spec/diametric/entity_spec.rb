@@ -77,6 +77,16 @@ describe Diametric::Entity do
       subject.name = "Clinton"
       subject.name.should == "Clinton"
     end
+
+    describe '#tx_data' do
+      it "should generate singular protraction tx when changing :cardinality/one attributes" do
+        pending
+      end
+
+      it "should generate protraction/retractions tx when changing :cardinality/many attributes" do
+        pending
+      end
+    end
   end
 
   describe ".new" do
@@ -91,11 +101,12 @@ describe Diametric::Entity do
     end
 
     it "should defaults attributes" do
-      person = Person.new
-      person.middle_name.should == "Danger"
-      person.nicknames.should == ["Buddy", "Pal"]
+      Person.new.middle_name.should == "Danger"
     end
 
+    it "should transform default arrays into sets" do
+      Person.new.nicknames.should == Set.new(["Buddy", "Pal"])
+    end
   end
 
   describe ".from_query" do

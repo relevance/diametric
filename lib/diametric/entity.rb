@@ -112,7 +112,8 @@ module Diametric
       # * +:fulltext+: The only valid value is +true+. Indicates that a
       #   fulltext search index should be generated for the attribute.
       # * +:default+: The value the attribute will default to when the
-      #   Entity is initialized.
+      #   Entity is initialized. Defaults for attributes with +:cardinality+ of +:many+
+      #   will be transformed into a Set by passing the default to +Set.new+.
       #
       # @example Add an indexed name attribute.
       #   attribute :name, String, :index => true
@@ -124,9 +125,7 @@ module Diametric
       #
       # @return void
       def attribute(name, value_type, opts = {})
-        if default = opts.delete(:default)
-          @defaults[name] = default
-        end
+        establish_defaults(name, value_type, opts)
 
         @attributes << [name, value_type, opts]
         define_attribute_method name
@@ -226,6 +225,15 @@ module Diametric
         end
         namespace("db.type", vt)
       end
+
+      def establish_defaults(name, value_type, opts = {})
+        if default = opts.delete(:default)
+          if opts[:cardinality] == :many
+            default = Set.new(default)
+          end
+          @defaults[name] = default
+        end
+      end
     end
 
     def dbid
@@ -265,6 +273,10 @@ module Diametric
     def tx_data(*attributes)
       tx = {:"db/id" => dbid || tempid}
       attributes = self.changed_attributes.keys if attributes.empty?
+
+      # Partition attributes by cardinality
+      # Collect txes for cardinality/many attributes
+      # Collect txes for rest of attributes
       attributes.reduce(tx) do |t, attribute|
         t[self.class.namespace(self.class.prefix, attribute)] = self.send(attribute)
         t
