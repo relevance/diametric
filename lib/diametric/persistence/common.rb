@@ -10,6 +10,10 @@ module Diametric
           transact(schema)
         end
 
+        def all
+          Diametric::Query.new(self).all
+        end
+
         def first(conditions = {})
           where(conditions).first
         end
