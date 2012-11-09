@@ -28,8 +28,4 @@ describe Diametric::Persistence::REST, :integration do
       Diametric::Persistence::REST.create_schemas
     end
   end
-
-  it "should get all" do
-    puts "all"
-  end
 end
