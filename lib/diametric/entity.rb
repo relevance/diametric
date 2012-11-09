@@ -48,7 +48,7 @@ module Diametric
       base.send(:include, ActiveModel::Dirty)
 
       base.class_eval do
-        @attributes = []
+        @attributes = {}
         @partition = :"db.part/user"
       end
     end
@@ -114,7 +114,7 @@ module Diametric
       #
       # @return void
       def attribute(name, value_type, opts = {})
-        @attributes << [name, value_type, opts]
+        @attributes[name] = { :value_type => value_type }.merge(opts)
         define_attribute_method name
         define_method(name) do
           instance_variable_get("@#{name}")
@@ -127,7 +127,7 @@ module Diametric
 
       # @return [Array<Symbol>] Names of the entity's attributes.
       def attribute_names
-        @attributes.map { |name, _, _| name }
+        @attributes.keys
       end
 
       # Generates a Datomic schema for a model's attributes.
@@ -141,8 +141,10 @@ module Diametric
           :"db.install/_attribute" => :"db.part/db"
         }
 
-        @attributes.reduce([]) do |schema, (attribute, value_type, opts)|
+        @attributes.reduce([]) do |schema, (attribute, opts)|
           opts = opts.dup
+          value_type = opts.delete(:value_type)
+
           unless opts.empty?
             opts[:cardinality] = namespace("db.cardinality", opts[:cardinality]) if opts[:cardinality]
             opts[:unique] = namespace("db.unique", opts[:unique]) if opts[:unique]
@@ -166,7 +168,7 @@ module Diametric
       # @return [Entity]
       def from_query(query_results)
         dbid = query_results.shift
-        widget = self.new(Hash[*(@attributes.map { |attribute, _, _| attribute }.zip(query_results).flatten)])
+        widget = self.new(Hash[*(attribute_names.zip(query_results).flatten)])
         widget.dbid = dbid
         widget
       end
