@@ -25,7 +25,6 @@ EOF
   gem.add_dependency 'activesupport', '>= 3.0.0'
   gem.add_dependency 'activemodel', '>= 3.0.0'
   gem.add_dependency 'datomic-client', '~> 0.4.1'
-  gem.add_dependency 'lock_jar', '~> 0.7.2'
 
   gem.extensions = ['Rakefile']
 end

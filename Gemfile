@@ -5,8 +5,8 @@ gemspec
 
 # Development-only dependencies
 gem 'rake'
-gem 'pry'
 gem 'rspec'
+gem 'pry'
 
 gem 'guard'
 gem 'guard-rspec'
@@ -15,6 +15,11 @@ gem 'rb-fsevent', :require => false
 gem 'rb-fchange', :require => false
 
 platform :mri do
-  gem 'yard'
-  gem 'redcarpet'
+  gem 'yard', :group => :development
+  gem 'redcarpet', :group => :development
+end
+
+platform :jruby do
+  gem 'jruby-openssl'
+  gem 'lock_jar'
 end

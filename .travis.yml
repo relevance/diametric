@@ -1,0 +1,7 @@
+language: ruby
+bundler_args: --without development
+before_script: rake prepare
+script: ./script/ci
+rvm:
+  - 1.9.3
+  - jruby-19mode
