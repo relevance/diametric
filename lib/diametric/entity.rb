@@ -39,6 +39,10 @@ module Diametric
       URI => "uri"
     }
 
+    DEFAULT_OPTIONS = {
+      :cardinality => :one
+    }
+
     @temp_ref = -1000
 
     def self.included(base)
@@ -48,8 +52,9 @@ module Diametric
       base.send(:include, ActiveModel::Dirty)
 
       base.class_eval do
-        @defaults = {}
         @attributes = {}
+        @defaults = {}
+        @namespace_prefix = nil
         @partition = :"db.part/user"
       end
     end
@@ -85,6 +90,24 @@ module Diametric
         @defaults
       end
 
+      # Set the namespace prefix used for attribute names
+      #
+      # @param prefix [#to_s] The prefix to be used for namespacing entity attributes
+      #
+      # @example Override the default namespace prefix
+      #   class Mouse
+      #     include Diametric::Entity
+      #
+      #     namespace_prefix :mice
+      #   end
+      #
+      #   Mouse.new.prefix # => :mice
+      #
+      # @return void
+      def namespace_prefix(prefix)
+        @namespace_prefix = prefix
+      end
+
       # Add an attribute to a {Diametric::Entity}.
       #
       # Valid options are:
@@ -106,7 +129,6 @@ module Diametric
       #     single value with an entity.
       #   * +:many+ - the attribute is mutli valued, it associates a
       #     set of values with an entity.
-      #   To be honest, I have no idea how this will work in Ruby. Try +:many+ at your own risk.
       #   +:one+ is the default.
       # * +:doc+: A string used in Datomic to document the attribute.
       # * +:fulltext+: The only valid value is +true+. Indicates that a
@@ -125,17 +147,13 @@ module Diametric
       #
       # @return void
       def attribute(name, value_type, opts = {})
-        establish_defaults(name, value_type, opts)
-        @attributes[name] = { :value_type => value_type }.merge(opts)
+        opts = DEFAULT_OPTIONS.merge(opts)
 
-        define_attribute_method name
-        define_method(name) do
-          instance_variable_get("@#{name}")
-        end
-        define_method("#{name}=") do |value|
-          send("#{name}_will_change!") unless value == instance_variable_get("@#{name}")
-          instance_variable_set("@#{name}", value)
-        end
+        establish_defaults(name, value_type, opts)
+
+        @attributes[name] = {:value_type => value_type}.merge(opts)
+
+        setup_attribute_methods(name, opts[:cardinality])
       end
 
       # @return [Array<Symbol>] Names of the entity's attributes.
@@ -159,7 +177,7 @@ module Diametric
           value_type = opts.delete(:value_type)
 
           unless opts.empty?
-            opts[:cardinality] = namespace("db.cardinality", opts[:cardinality]) if opts[:cardinality]
+            opts[:cardinality] = namespace("db.cardinality", opts[:cardinality])
             opts[:unique] = namespace("db.unique", opts[:unique]) if opts[:unique]
             opts = opts.map { |k, v|
               k = namespace("db", k)
@@ -186,7 +204,8 @@ module Diametric
         widget
       end
 
-      # Returns the prefix for this model used in Datomic.
+      # Returns the prefix for this model used in Datomic. Can be
+      # overriden by declaring {#namespace_prefix}
       #
       # @example
       #   Mouse.prefix #=> "mouse"
@@ -195,7 +214,7 @@ module Diametric
       #
       # @return [String]
       def prefix
-        self.to_s.underscore.sub('/', '.')
+        @namespace_prefix || self.to_s.underscore.sub('/', '.')
       end
 
       # Create a temporary id placeholder.
@@ -229,11 +248,23 @@ module Diametric
       end
 
       def establish_defaults(name, value_type, opts = {})
-        if default = opts.delete(:default)
-          if opts[:cardinality] == :many
-            default = Set.new(default)
+        default = opts.delete(:default)
+        @defaults[name] = default if default
+      end
+
+      def setup_attribute_methods(name, cardinality)
+        define_attribute_method name
+
+        define_method(name) do
+          instance_variable_get("@#{name}")
+        end
+
+        define_method("#{name}=") do |value|
+          send("#{name}_will_change!") unless value == instance_variable_get("@#{name}")
+          if cardinality == :many
+            value = Set.new(value)
           end
-          @defaults[name] = default
+          instance_variable_set("@#{name}", value)
         end
       end
     end
@@ -267,23 +298,45 @@ module Diametric
 
     # Creates data for a Datomic transaction.
     #
-    # @param attributes [*Symbol] Attributes to save in the
-    #   transaction. If no attributes are given, any changed
+    # @param attribute_names [*Symbol] Attribute names to save in the
+    #   transaction. If no names are given, any changed
     #   attributes will be saved.
     #
     # @return [Array] Datomic transaction data.
-    def tx_data(*attributes)
-      tx = {:"db/id" => dbid || tempid}
-      attributes = self.changed_attributes.keys if attributes.empty?
+    def tx_data(*attribute_names)
+      attribute_names = self.changed_attributes.keys if attribute_names.empty?
 
-      # Partition attributes by cardinality
-      # Collect txes for cardinality/many attributes
-      # Collect txes for rest of attributes
-      attributes.reduce(tx) do |t, attribute|
-        t[self.class.namespace(self.class.prefix, attribute)] = self.send(attribute)
-        t
+      entity_tx = {}
+      txes = []
+      attribute_names.each do |attribute_name|
+        cardinality = self.class.attributes[attribute_name.to_sym][:cardinality]
+
+        if cardinality == :many
+          txes += cardinality_many_tx_data(attribute_name)
+        else
+          entity_tx[self.class.namespace(self.class.prefix, attribute_name)] = self.send(attribute_name)
+        end
       end
-      [tx]
+
+      if entity_tx.present?
+        txes << entity_tx.merge({:"db/id" => dbid || tempid})
+      end
+
+      txes
+    end
+
+    def cardinality_many_tx_data(attribute_name)
+      prev = Array(self.changed_attributes[attribute_name]).to_set
+      curr = self.send(attribute_name)
+
+      protractions = curr - prev
+      retractions = prev - curr
+
+      txes = []
+      namespaced_attribute = self.class.namespace(self.class.prefix, attribute_name)
+      txes << [:"db/retract", (dbid || tempid), namespaced_attribute, retractions.to_a] unless retractions.empty?
+      txes << [:"db/add", (dbid || tempid) , namespaced_attribute, protractions.to_a] unless protractions.empty?
+      txes
     end
 
     # @return [Array<Symbol>] Names of the entity's attributes.

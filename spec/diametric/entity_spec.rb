@@ -78,15 +78,6 @@ describe Diametric::Entity do
       subject.name.should == "Clinton"
     end
 
-    describe '#tx_data' do
-      it "should generate singular protraction tx when changing :cardinality/one attributes" do
-        pending
-      end
-
-      it "should generate protraction/retractions tx when changing :cardinality/many attributes" do
-        pending
-      end
-    end
   end
 
   describe ".new" do
@@ -119,38 +110,79 @@ describe Diametric::Entity do
   end
 
   describe "#tx_data" do
-    let(:goat) { Goat.new(:name => "Beans", :birthday => Date.parse("2002-04-15"))}
+    context "for an entity with cardinality/many attributes" do
 
-    describe "without a dbid" do
-      it "should generate a transaction with a new tempid" do
-        # Equivalence is currently wrong on EDN tagged values.
-        tx = goat.tx_data.first
-        tx.keys.should == [:"db/id", :"goat/name", :"goat/birthday"]
-        tx[:"db/id"].to_edn.should match(%r"#db/id \[:db.part/user \-\d+\]")
-        tx[:"goat/name"].should == "Beans"
-        tx[:"goat/birthday"].should == goat.birthday
+      let(:entity_class) do
+        gen_entity_class(named = "test") do
+          attribute :many, String, :cardinality => :many
+        end
+      end
+
+      describe "with a dbid" do
+        it "should generate a protraction tx for added entries" do
+          entity = entity_class.new(:many => %w|foo bar|)
+          entity.many.should == Set["foo", "bar"]
+          entity.dbid = 1
+          entity.tx_data.should == [[:"db/add", 1, :"test/many", ["foo", "bar"]]]
+        end
+
+        it "should generate a retraction tx for removed entries" do
+          entity = entity_class.new
+          entity.dbid = 1
+          entity.instance_variable_set(:"@changed_attributes", { 'many' => Set["original", "unchanged"]})
+          entity.many = Set["unchanged", "new"]
+          entity.tx_data.should == [
+            [:"db/retract", 1, :"test/many", ["original"]],
+            [:"db/add", 1, :"test/many", ["new"]]
+          ]
+        end
+      end
+
+      describe "without a db/id" do
+        it "should generate a protraction tx" do
+          entity = entity_class.new(:many => %w|foo bar|)
+          tx = entity.tx_data.first
+          tx.should =~ [:"db/add", entity.send(:tempid), :"test/many", ['foo', 'bar']]
+        end
       end
     end
 
-    describe "with a dbid" do
-      it "should generate a transaction with the dbid" do
-        goat.dbid = 1
-        goat.tx_data.should == [
-          { :"db/id" => 1,
-            :"goat/name" => "Beans",
-            :"goat/birthday" => goat.birthday
-          }
-        ]
+    context "for an entity with only cardinality/one attributes" do
+      let(:goat) { Goat.new(:name => "Beans", :birthday => Date.parse("2002-04-15"))}
+
+      describe "without a dbid" do
+        it "should generate a transaction with a new tempid" do
+          # Equivalence is currently wrong on EDN tagged values.
+          tx = goat.tx_data.first
+          tx.keys.should =~ [:"db/id", :"goat/name", :"goat/birthday"]
+          tx[:"db/id"].to_edn.should match(%r"#db/id \[:db.part/user \-\d+\]")
+          tx[:"goat/name"].should == "Beans"
+          tx[:"goat/birthday"].should == goat.birthday
+        end
       end
 
-      it "should generate a transaction with only specified attributes" do
-        goat.dbid = 1
-        goat.tx_data(:name).should == [
-          { :"db/id" => 1,
-            :"goat/name" => "Beans"
-          }
-        ]
+      describe "with a dbid" do
+        it "should generate a transaction with the dbid" do
+          goat.dbid = 1
+          goat.tx_data.should == [
+            { :"db/id" => 1,
+              :"goat/name" => "Beans",
+              :"goat/birthday" => goat.birthday
+            }
+          ]
+        end
+
+        it "should generate a transaction with only specified attributes" do
+          goat.dbid = 1
+          goat.tx_data(:name).should == [
+            { :"db/id" => 1,
+              :"goat/name" => "Beans"
+            }
+          ]
+        end
       end
+
     end
+
   end
 end

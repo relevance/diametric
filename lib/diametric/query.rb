@@ -91,7 +91,8 @@ module Diametric
       # TODO check to see if the model has a `.q` method and give
       # an appropriate error if not.
       res = model.q(*data)
-      res.each do |entity|
+
+      collapse_results(res).each do |entity|
         # The map is for compatibility with Java peer persistence.
         # TODO remove if possible
         yield model.from_query(entity.map { |x| x })
@@ -112,11 +113,11 @@ module Diametric
     #   is the Datomic query composed of Ruby data. The second element is
     #   the arguments that used with the query.
     def data
-      vars = model.attributes.map { |attribute, _, _| ~"?#{attribute}" }
+      vars = model.attribute_names.map { |attribute| ~"?#{attribute}" }
 
       from = conditions.map { |k, _| ~"?#{k}" }
 
-      clauses = model.attributes.map { |attribute, _, _|
+      clauses = model.attribute_names.map { |attribute|
         [~"?e", model.namespace(model.prefix, attribute), ~"?#{attribute}"]
       }
       clauses += filters
@@ -151,6 +152,34 @@ module Diametric
         end
       else
         element
+      end
+    end
+
+    def collapse_results(res)
+      res.group_by(&:first).map do |dbid, results|
+        # extract dbid from results
+        results = results.map {|(head, *tail)| tail}
+
+        # Group values from all results into one result set
+        # [["b", 123], ["c", 123]] #=> [["b", "c"], [123, 123]]
+        grouped_values = results.transpose
+
+        # Attach attribute names to each collection of values
+        # => [[:letters, ["b", "c"]], [:number, [123, 123]]]
+        attr_to_values = model.attributes.keys.zip(grouped_values)
+
+        # Retain cardinality/many attributes as a collection,
+        # but pick only one value for cardinality/one attributes
+        collapsed_values = attr_to_values.map do |attr, values|
+          if model.attributes[attr][:cardinality] == :many
+            values
+          else
+            values.first
+          end
+        end
+
+        # Returning a singular result for each dbid
+        [dbid, *collapsed_values]
       end
     end
   end
