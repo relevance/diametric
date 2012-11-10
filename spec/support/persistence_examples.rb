@@ -63,6 +63,18 @@ shared_examples "persistence API" do
         mice = model_class.filter(:>, :age, 3).all
         mice.should == []
       end
+
+      it "can find all" do
+        model_class.new(:name => "Smith", :age => 5).save
+        mice = model_class.all
+        mice.size.should == 2
+        names = ["Smith", "Wilbur"]
+        mice.each do |m|
+          names.include?(m.name).should be_true
+          names.delete(m.name).should == m.name
+        end
+        names.size.should == 0
+      end
     end
   end
 end

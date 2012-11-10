@@ -32,12 +32,5 @@ describe Diametric::Persistence::Peer, :jruby do
       subject.connect(db_uri)
       Diametric::Persistence::Peer.create_schemas
     end
-
-    it "should get all" do
-      puts "all"
-      Rat.new(:name => 'uncle').save
-      Rat.new(:name => 'granpa').save
-      p Rat.all
-    end
   end
 end
