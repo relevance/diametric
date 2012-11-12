@@ -1,18 +1,9 @@
 #!/bin/bash
 
-DATOMIC_VERSION=0.8.3591
-
 set -e
 
-if [ ! -d "vendor/datomic/datomic-free-$DATOMIC_VERSION" ]; then
-  echo "Downloading Datomic Free $DATOMIC_VERSION"
-  mkdir -p vendor/datomic
-  curl -o datomic-free.zip "http://downloads.datomic.com/$DATOMIC_VERSION/datomic-free-$DATOMIC_VERSION.zip"
-  unzip -d vendor/datomic datomic-free.zip
-  rm datomic-free.zip
-fi
-
-pushd vendor/datomic/datomic-free-$DATOMIC_VERSION
+script/vendor-datomic-free
+pushd `ls -d -1 vendor/datomic/* | tail -n 1` > /dev/null
 
 echo "Starting local Datomic REST client"
 bin/rest 9000 test datomic:mem:// 2>&1 &
