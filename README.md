@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/crnixon/diametric.png)](http://travis-ci.org/crnixon/diametric)
+[![Build Status](https://secure.travis-ci.org/relevance/diametric.png)](http://travis-ci.org/relevance/diametric)
 
 # Diametric
 
