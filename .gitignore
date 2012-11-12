@@ -2,6 +2,7 @@
 *.rbc
 .bundle
 .config
+.idea
 .jbundler
 .rspec
 .yardoc

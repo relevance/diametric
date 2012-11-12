@@ -17,6 +17,7 @@ describe Diametric::Persistence::REST, :integration do
   it "can connect to a Datomic database" do
     subject.connect(db_uri, storage, dbname)
     subject.connection.should be_a(Datomic::Client)
+    puts "connect"
   end
 
   it_behaves_like "persistence API" do
