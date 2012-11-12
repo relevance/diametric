@@ -47,6 +47,7 @@ module Diametric
       base.send(:extend, ActiveModel::Naming)
       base.send(:include, ActiveModel::Conversion)
       base.send(:include, ActiveModel::Dirty)
+      base.send(:include, ActiveModel::Validations)
 
       base.class_eval do
         @attributes = {}
