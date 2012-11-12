@@ -158,7 +158,9 @@ module Diametric
     def collapse_results(res)
       res.group_by(&:first).map do |dbid, results|
         # extract dbid from results
-        results = results.map {|(head, *tail)| tail}
+        # NOTE: we prefer to_a.drop(1) over block arg decomposition because
+        #       result may be a Java::ClojureLang::PersistentVector
+        results = results.map {|result| result.to_a.drop(1) }
 
         # Group values from all results into one result set
         # [["b", 123], ["c", 123]] #=> [["b", "c"], [123, 123]]
