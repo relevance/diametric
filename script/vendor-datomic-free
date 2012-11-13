@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+DEFAULT_DATOMIC_VERSION="0.8.3599"
+VERSION=${1:-$DEFAULT_DATOMIC_VERSION}
+
+if [ ! -d "vendor/datomic/datomic-free-$VERSION" ]; then
+  echo "Downloading Datomic Free $VERSION"
+
+  mkdir -p vendor/datomic
+  curl --progress-bar -o datomic-free.zip "http://downloads.datomic.com/$VERSION/datomic-free-$VERSION.zip"
+  unzip -d vendor/datomic datomic-free.zip > /dev/null
+  rm datomic-free.zip
+
+  echo "Done. Datomic Free $VERSION now available in vendor/datomic/datomic-free-$VERSION"
+
+else
+  echo "Datomic Free $VERSION already present in vendor/datomic/datomic-free-$VERSION"
+fi
+

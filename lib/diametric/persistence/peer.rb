@@ -102,6 +102,10 @@ module Diametric
 
         res
       end
+
+      def to_edn
+        self.dbid
+      end
     end
   end
 end

@@ -9,7 +9,7 @@ describe Diametric::Entity do
     it { should respond_to(:from_query) }
 
     it "should generate a schema" do
-      Person.schema.should == [
+      expected = [
         { :"db/id" => Person.send(:tempid, :"db.part/db"),
           :"db/ident" => :"person/name",
           :"db/valueType" => :"db.type/string",
@@ -59,8 +59,17 @@ describe Diametric::Entity do
           :"db/ident" => :"person/nicknames",
           :"db/valueType" => :"db.type/string",
           :"db/cardinality" => :"db.cardinality/many",
+          :"db.install/_attribute" => :"db.part/db" },
+        { :"db/id" => Person.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"person/parent",
+          :"db/valueType" => :"db.type/ref",
+          :"db/cardinality" => :"db.cardinality/many",
+          :"db/doc" => "A person's parent",
           :"db.install/_attribute" => :"db.part/db" }
       ]
+      Person.schema.each do |s|
+        s.should == expected.shift
+      end
     end
   end
 

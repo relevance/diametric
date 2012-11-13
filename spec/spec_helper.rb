@@ -45,6 +45,7 @@ class Person
   attribute :bio, String, :fulltext => true
   attribute :middle_name, String, :default => "Danger"
   attribute :nicknames, String, :cardinality => :many, :default => ["Buddy", "Pal"]
+  attribute :parent, Ref, :cardinality => :many, :doc => "A person's parent"
 end
 
 class Goat
