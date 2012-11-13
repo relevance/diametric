@@ -28,6 +28,7 @@ module Diametric
   #   The database id assigned to the entity by Datomic.
   #   @return [Integer]
   module Entity
+    Ref = "ref"
     # Conversions from Ruby types to Datomic types.
     VALUE_TYPES = {
       Symbol => "keyword",
