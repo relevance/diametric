@@ -43,6 +43,7 @@ class Person
   attribute :ssn, String, :unique => :value
   attribute :secret_name, String, :unique => :identity
   attribute :bio, String, :fulltext => true
+  attribute :parent, Ref, :cardinality => :many, :doc => "A person's parent"
 end
 
 class Goat
