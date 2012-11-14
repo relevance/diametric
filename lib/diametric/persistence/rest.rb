@@ -2,6 +2,7 @@ require 'diametric'
 require 'diametric/persistence/common'
 require 'datomic/client'
 
+# TODO: nice errors when unable to connect
 module Diametric
   module Persistence
     module REST
@@ -25,13 +26,13 @@ module Diametric
       end
 
       module ClassMethods
-        def connect(uri, dbalias, database)
-          @uri = uri
-          @dbalias = dbalias
-          @database = database
+        def connect(options = {})
+          @uri = options[:uri]
+          @dbalias = options[:alias]
+          @database = options[:database]
 
-          @connection = Datomic::Client.new(uri, dbalias)
-          @connection.create_database(database)
+          @connection = Datomic::Client.new(@uri, @dbalias)
+          @connection.create_database(@database)
         end
 
         def connection

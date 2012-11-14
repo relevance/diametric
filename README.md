@@ -12,6 +12,8 @@ Development of Diametric was sponsored by [Relevance][]. They are the
 best Clojure shop around and one of the best Ruby shops. I highly
 recommend them for help with your corporate projects.
 
+Special thanks to Mongoid for writing some solid ORM code that was liberally borrowed from to add Rails support to Diametric.
+
 ## Entity API
 
 The `Entity` module is interesting, in that it is primarily made of
