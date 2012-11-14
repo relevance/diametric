@@ -41,7 +41,8 @@ module Diametric
       module ClassMethods
         include_package "datomic"
 
-        def connect(uri)
+        def connect(options = {})
+          uri = options[:uri]
           Java::Datomic::Peer.create_database(uri)
           @connection = Java::Datomic::Peer.connect(uri)
         end
