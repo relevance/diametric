@@ -1,54 +1,52 @@
 require 'diametric/config/environment'
 require 'diametric/persistence'
 
-# TODO: Require connection-mode
 module Diametric
+  # Program-level configuration services including configuration loading and base connections.
   module Config
     extend self
 
+    # The current configuration Diametric will use in {#connect!}
+    #
+    # @return [Hash]
     def configuration
       @configuration ||= {}
     end
 
-    # TODO: Flesh-out and document
+    # Determine if Diametric has been configured
+    #
+    # @return [Boolean]
     def configured?
       configuration.present?
     end
 
-    # From a hash of settings, load all the configuration.
-    #
-    # @example Load the configuration.
-    #   config.load_configuration(settings)
-    #
-    # @param [ Hash ] settings The configuration settings.
-    def load_configuration(settings)
-      @configuration = settings.with_indifferent_access
-    end
-
-    # Load the settings from a compliant mongoid.yml file. This can be used for
+    # Load settings from a compliant diametric.yml file and make a connection. This can be used for
     # easy setup with frameworks other than Rails.
     #
-    # @example Configure Mongoid.
-    #   Mongoid.load!("/path/to/mongoid.yml")
+    # See {Persistence} for valid options.
+    #
+    # @example Configure Diametric.
+    #   Diametric.load_and_connect!("/path/to/diametric.yml")
     #
     # @param [ String ] path The path to the file.
     # @param [ String, Symbol ] environment The environment to load.
-    #
-    # @since 2.0.1
-    def load!(path, environment = nil)
+    def load_and_connect!(path, environment = nil)
       settings = Environment.load_yaml(path, environment)
-      load_configuration(settings) if settings.present?
-      connect!
+      @configuration = settings.with_indifferent_access
+      connect!(configuration)
       configuration
     end
 
-    # TODO: document
-    def connect!(config = configuration)
-      unless config.present?
+    # Establish a base connection from the supplied configuration hash.
+    #
+    # @raise [ "Diametric has not been configured..." ] If no configuration present.
+    # @param [ Hash ] configuration The configuration of the database to connect to. See {Persistence.establish_base_connection} for valid options.
+    def connect!(configuration)
+      unless configuration.present?
         raise "Diametric has not been configured. Add a config to config/diametric.yml or run rails g diametric:config to make one"
       end
 
-      ::Diametric::Persistence.connect(config)
+      ::Diametric::Persistence.establish_base_connection(configuration)
     end
   end
 end

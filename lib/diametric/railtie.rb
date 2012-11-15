@@ -7,34 +7,15 @@ module Rails
   module Diametric
     class Railtie < Rails::Railtie
 
-      # TODO: Include?
-      def self.generator
-        :app_generators
-      end
-
-      # TODO
-      # rake_tasks do
-      #   load "mongoid/railties/database.rake"
-      # end
-
       # Initialize Diametric. This will look for a diametric.yml in the config
       # directory and configure diametric appropriately.
       initializer "setup database" do
         config_file = Rails.root.join("config", "diametric.yml")
         if config_file.file?
           begin
-            ::Diametric::Config.load!(config_file)
+            ::Diametric::Config.load_and_connect!(config_file)
           rescue Exception => e
             handle_configuration_error(e)
-          # TODO
-          # rescue ::Mongoid::Errors::NoSessionsConfig => e
-          #   handle_configuration_error(e)
-          # rescue ::Mongoid::Errors::NoDefaultSession => e
-          #   handle_configuration_error(e)
-          # rescue ::Mongoid::Errors::NoSessionDatabase => e
-          #   handle_configuration_error(e)
-          # rescue ::Mongoid::Errors::NoSessionHosts => e
-          #   handle_configuration_error(e)
           end
         end
       end
