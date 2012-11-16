@@ -1,7 +1,6 @@
 module Diametric
   # Persistence is the main entry point for adding persistence to your diametric entities.
   module Persistence
-    autoload :Peer, 'diametric/persistence/peer'
     autoload :REST, 'diametric/persistence/rest'
 
     # Establish a base connection for your application that is used unless specified otherwise. This method can
@@ -28,7 +27,12 @@ module Diametric
     private
 
     def self.persistence_class(uri)
-      uri =~ /^datomic:/ ? Peer : REST
+      if uri =~ /^datomic:/
+        require 'diametric/persistence/peer'
+        Peer
+      else
+        REST
+      end
     end
   end
 end
