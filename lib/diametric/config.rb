@@ -39,13 +39,8 @@ module Diametric
 
     # Establish a base connection from the supplied configuration hash.
     #
-    # @raise [ "Diametric has not been configured..." ] If no configuration present.
     # @param [ Hash ] configuration The configuration of the database to connect to. See {Persistence.establish_base_connection} for valid options.
     def connect!(configuration)
-      unless configuration.present?
-        raise "Diametric has not been configured. Add a config to config/diametric.yml or run rails g diametric:config to make one"
-      end
-
       ::Diametric::Persistence.establish_base_connection(configuration)
     end
   end

@@ -21,7 +21,7 @@ describe Diametric::Persistence::Peer, :jruby do
   let(:db_uri) { 'datomic:mem://hello' }
 
   it "can connect to a Datomic database" do
-    subject.connect(db_uri)
+    subject.connect(:uri => db_uri)
     subject.connection.should be_a(Java::DatomicPeer::LocalConnection)
   end
 
@@ -29,7 +29,7 @@ describe Diametric::Persistence::Peer, :jruby do
     let(:model_class) { Rat }
 
     before(:all) do
-      subject.connect(db_uri)
+      subject.connect(:uri => db_uri)
       Diametric::Persistence::Peer.create_schemas
     end
   end

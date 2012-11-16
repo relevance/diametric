@@ -8,6 +8,8 @@ describe Diametric::Query do
       query.where(:age => 2)
       query.conditions.should be_empty
     end
+
+    it "raises when non-searchable conditions are passed"
   end
 
   describe "#filter" do
