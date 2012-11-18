@@ -3,6 +3,18 @@ module Diametric
     module Common
       def self.included(base)
         base.send(:extend, ClassMethods)
+        base.send(:include, InstanceMethods)
+      end
+
+      module InstanceMethods
+        def update_attributes(new_attributes)
+          assign_attributes(new_attributes)
+          save
+        end
+
+        def assign_attributes(new_attributes)
+
+        end
       end
 
       module ClassMethods

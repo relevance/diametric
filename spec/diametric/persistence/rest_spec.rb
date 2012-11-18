@@ -13,12 +13,12 @@ describe Diametric::Persistence::REST, :integration do
   let(:connection_options) do
     {
       :uri => db_uri,
-      :alias => storage,
+      :storage => storage,
       :database => dbname
     }
   end
   let(:db_uri) { ENV['DATOMIC_URI'] || 'http://localhost:9000' }
-  let(:storage) { ENV['DATOMIC_STORAGE'] || 'test' }
+  let(:storage) { ENV['DATOMIC_STORAGE'] || 'free' }
   let(:dbname) { ENV['DATOMIC_NAME'] || "test-#{Time.now.to_i}" }
 
   it "can connect to a Datomic database" do

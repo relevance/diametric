@@ -1,11 +1,16 @@
 # encoding: utf-8
 require "diametric"
 require "diametric/config"
+
 require "rails"
+
+require 'diametric/generators/active_model'
 
 module Rails
   module Diametric
     class Railtie < Rails::Railtie
+
+      config.app_generators.orm :diametric
 
       # Initialize Diametric. This will look for a diametric.yml in the config
       # directory and configure diametric appropriately.

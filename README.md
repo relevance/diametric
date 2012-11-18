@@ -160,7 +160,7 @@ require 'diametric/persistence/rest'
 
 # database url, database alias, database name
 # will create database if it does not already exist
-Diametric::Persistence::REST.connect('http://localhost:9000', 'test', 'animals')
+Diametric::Persistence::REST.connect('http://localhost:9000', 'free', 'animals')
 ```
 
 ### Using persisted models

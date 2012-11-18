@@ -28,7 +28,7 @@ module Diametric
       module ClassMethods
         def connect(options = {})
           @uri = options[:uri]
-          @dbalias = options[:alias]
+          @dbalias = options[:storage]
           @database = options[:database]
 
           @connection = Datomic::Client.new(@uri, @dbalias)
