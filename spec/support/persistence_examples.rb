@@ -22,6 +22,27 @@ shared_examples "persistence API" do
       model.save.should be_false
     end
 
+    describe '#update_attributes' do
+      it "saves and updates values" do
+        model = model_class.new(:name => "Stu").tap(&:save)
+        new_values = { :name => "Stuart" }
+        model.should_receive(:assign_attributes).with(new_values)
+        model.save.should be_true
+        model.name.should == "Stuart"
+      end
+    end
+
+    describe "#assign_attributes" do
+      it "updates attribute values" do
+        model.assign_attributes(:name => "Stuart")
+        model.name.should == "Stuart"
+      end
+
+      it "raises when trying to update unknown attributes" do
+        expect { model.assign_attributes(:foo => :bar) }.to raise_error
+      end
+    end
+
     context "that is saved in Datomic" do
       before(:each) do
         model.name = "Wilbur"

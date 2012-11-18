@@ -10,9 +10,9 @@ module Diametric
     #   Diametric::Persistence.establish_base_connection({:uri => "datomic:free://localhost:4334/my-db"})
     #
     # @example Connecting in REST-mode
-    #   Diametric::Persistence.establish_base_connection({:uri => "http://localhost:9000/",
+    #   Diametric::Persistence.establish_base_connection({:uri      => "http://localhost:9000/",
     #                                                     :database => "my-db",
-    #                                                     :alias => "my-dbalias"})
+    #                                                     :storage  => "my-dbalias"})
     def self.establish_base_connection(options)
       @_persistence_class = persistence_class(options[:uri])
       @_persistence_class.connect(options)
