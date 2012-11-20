@@ -36,6 +36,10 @@ module Rails
         end
       end
 
+      rake_tasks do
+        require "#{File.join(File.dirname(__FILE__), "..", "tasks", "create_schema.rb")}"
+      end
+
       # Rails runs all initializers first before getting into any generator
       # code, so we have no way in the initializer to know if we are
       # generating a diametric.yml. So instead of failing, we catch all the
