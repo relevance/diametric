@@ -17,6 +17,60 @@ describe Diametric::Query do
     end
   end
 
+  describe "#each" do
+    it "collapses cardinality/many attribute results" do
+      model = gen_entity_class :person do
+        attribute :name, String
+        attribute :likes, String, :cardinality => :many
+      end
+      model.stub(:q => [[1, "Stu", "chocolate"], [1, "Stu", "vanilla"]])
+
+      model.should_receive(:from_query).with([1, "Stu", ["chocolate", "vanilla"]])
+      Diametric::Query.new(model).each {|x| x}
+    end
+  end
+
+  describe "#collapse_results" do
+    let (:model) do
+      gen_entity_class do
+        attribute :name, String
+        attribute :likes, String, :cardinality => :many
+      end
+    end
+    let(:query) { Diametric::Query.new(model) }
+
+    context "with multiple results per entity" do
+      it "collapses cardinality/many attributes into lists" do
+        results = [[1, "Stu", "chocolate"], [1, "Stu", "vanilla"], [1, "Stu", "raspberry"]]
+        collapsed = query.send(:collapse_results, results).first
+        collapsed.should == [1, "Stu", ["chocolate", "vanilla", "raspberry"]]
+      end
+    end
+
+    context "with single result per entity" do
+      it "collapses cardinality/many attributes into lists" do
+        results = [[1, "Stu", "chocolate"]]
+        collapsed = query.send(:collapse_results, results).first
+        collapsed.should == [1, "Stu", ["chocolate"]]
+      end
+    end
+  end
+
+  describe "#all" do
+    it "returns set for values of cardinality/many" do
+      model = gen_entity_class :person do
+        attribute :name, String
+        attribute :likes, String, :cardinality => :many
+      end
+      model.stub(:q => [[1, "Stu", "chocolate"], [1, "Stu", "vanilla"]])
+      Diametric::Query.new(model).all.each do |e|
+        e.name.should == "Stu"
+        e.likes.class.should == Set
+        e.likes.should include "chocolate"
+        e.likes.should include "vanilla"
+      end
+    end
+  end
 
   describe "#data" do
     it "should generate a query given no conditions or filters" do
