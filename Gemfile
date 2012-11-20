@@ -8,6 +8,12 @@ gem 'rake'
 gem 'rspec'
 gem 'pry'
 
+gem 'guard'
+gem 'guard-rspec'
+gem 'rb-inotify', :require => false
+gem 'rb-fsevent', :require => false
+gem 'rb-fchange', :require => false
+
 platform :mri do
   gem 'yard', :group => :development
   gem 'redcarpet', :group => :development
