@@ -1,6 +1,6 @@
 require 'rake'
 namespace :diametric do
-  desc "create schema on datomic"
+  desc "Create schema on datomic"
   task :create_schema => :environment do
     puts "Creating all schemas ..."
     Dir.glob(File.join(Rails.root, "app", "models", "*.rb")).each {|model| load model}
