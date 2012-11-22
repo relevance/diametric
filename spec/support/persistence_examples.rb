@@ -1,5 +1,5 @@
 shared_examples "persistence API" do
-  describe "an instance" do
+  describe "entity instance" do
     let(:model) { model_class.new }
 
     it "can save" do
@@ -25,9 +25,10 @@ shared_examples "persistence API" do
     describe '#update_attributes' do
       it "saves and updates values" do
         model = model_class.new(:name => "Stu").tap(&:save)
-        new_values = { :name => "Stuart" }
-        model.should_receive(:assign_attributes).with(new_values)
-        model.save.should be_true
+        new_values = { "name" => "Stuart" }
+        model.update_attributes(new_values)
+
+        model.should_not be_changed
         model.name.should == "Stuart"
       end
     end
@@ -38,9 +39,7 @@ shared_examples "persistence API" do
         model.name.should == "Stuart"
       end
 
-      it "raises when trying to update unknown attributes" do
-        expect { model.assign_attributes(:foo => :bar) }.to raise_error
-      end
+      pending "it should do _something_ when attribute doesn't exist"
     end
 
     context "that is saved in Datomic" do

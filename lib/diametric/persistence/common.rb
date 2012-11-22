@@ -13,7 +13,12 @@ module Diametric
         end
 
         def assign_attributes(new_attributes)
-
+          valid_keys = attribute_names + [:id]
+          new_attributes.each do |key, value|
+            if valid_keys.include? key.to_sym
+              self.send("#{key}=", value)
+            end
+          end
         end
       end
 

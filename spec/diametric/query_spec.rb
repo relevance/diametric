@@ -9,7 +9,7 @@ describe Diametric::Query do
       query.conditions.should be_empty
     end
 
-    it "raises when non-searchable conditions are passed"
+    it "raises when non-searchable conditions (id?) are passed"
   end
 
   describe "#filter" do
