@@ -56,6 +56,22 @@ describe Diametric::Query do
     end
   end
 
+  describe "#all" do
+    it "returns set for values of cardinality/many" do
+      model = gen_entity_class :person do
+        attribute :name, String
+        attribute :likes, String, :cardinality => :many
+      end
+      model.stub(:q => [[1, "Stu", "chocolate"], [1, "Stu", "vanilla"]])
+      Diametric::Query.new(model).all.each do |e|
+        e.name.should == "Stu"
+        e.likes.class.should == Set
+        e.likes.should include "chocolate"
+        e.likes.should include "vanilla"
+      end
+    end
+  end
+
   describe "#data" do
     it "should generate a query given no conditions or filters" do
       query.data.should == [

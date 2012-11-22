@@ -201,7 +201,7 @@ module Diametric
       # @return [Entity]
       def from_query(query_results)
         dbid = query_results.shift
-        widget = self.new(Hash[*(attribute_names.zip(query_results).flatten)])
+        widget = self.new(Hash[attribute_names.zip query_results])
         widget.dbid = dbid
         widget
       end
