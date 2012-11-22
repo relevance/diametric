@@ -6,7 +6,7 @@ script/vendor-datomic-free
 pushd `ls -d -1 vendor/datomic/* | tail -n 1` > /dev/null
 
 echo "Starting local Datomic REST client"
-bin/rest 9000 test datomic:mem:// 2>&1 &
+bin/rest 9000 free datomic:mem:// 2>&1 &
 child_pid=$!
 
 popd
