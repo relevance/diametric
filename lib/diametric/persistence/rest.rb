@@ -74,6 +74,8 @@ module Diametric
         return false unless valid?
         return true unless changed?
 
+        self.dbid = self.dbid.to_i if self.dbid.class == String
+
         res = self.class.transact(tx_data)
         if dbid.nil?
           self.dbid = res.data[:tempids].values.first
@@ -83,6 +85,10 @@ module Diametric
         @changed_attributes.clear
 
         res
+      end
+
+      def retract_entity(dbid)
+
       end
     end
   end
