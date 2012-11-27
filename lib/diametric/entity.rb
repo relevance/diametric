@@ -418,5 +418,20 @@ module Diametric
     def errors
       @errors ||= ActiveModel::Errors.new(self)
     end
+
+    # Update method updates attribute values and saves new values in datomic.
+    # The method receives hash as an argument.
+    def update(attrs)
+      attrs.each do |k, v|
+        self.send(k.to_s+"=", v)
+        self.changed_attributes[k]=v
+      end
+      self.save if self.respond_to? :save
+      true
+    end
+
+    def destroy
+
+    end
   end
 end

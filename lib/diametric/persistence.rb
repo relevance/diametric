@@ -1,6 +1,7 @@
 module Diametric
   # Persistence is the main entry point for adding persistence to your diametric entities.
   module Persistence
+    class << self; attr_reader :conn_type; end
     autoload :REST, 'diametric/persistence/rest'
 
     # Establish a base connection for your application that is used unless specified otherwise. This method can
@@ -24,13 +25,23 @@ module Diametric
       base.send(:include, @_persistence_class) if @_persistence_class
     end
 
+    def self.peer?
+      @conn_type == :peer
+    end
+
+    def self.rest?
+      @conn_type == :rest
+    end
+
     private
 
     def self.persistence_class(uri)
       if uri =~ /^datomic:/
         require 'diametric/persistence/peer'
+        @conn_type = :peer
         Peer
       else
+        @conn_type = :rest
         REST
       end
     end

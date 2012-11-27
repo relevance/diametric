@@ -47,11 +47,13 @@ describe Diametric::Persistence do
     it "returns REST for REST-like options" do
       klass = Diametric::Persistence.persistence_class("http://localhost:9000")
       klass.should be Diametric::Persistence::REST
+      Diametric::Persistence.rest?.should == true
     end
 
     it "returns Peer for Peer-like options", :jruby do
       klass = Diametric::Persistence.persistence_class("datomic:free://localhost:9000/sample")
       klass.should be Diametric::Persistence::Peer
+      Diametric::Persistence.peer?.should == true
     end
   end
 end

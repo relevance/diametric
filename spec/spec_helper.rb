@@ -54,3 +54,21 @@ class Goat
   attribute :name, String
   attribute :birthday, DateTime
 end
+
+require 'diametric/persistence/rest'
+class Robin
+  include Diametric::Entity
+  include Diametric::Persistence::REST
+
+  attribute :name, String
+  attribute :age, Integer
+end
+
+require 'diametric/persistence/peer'
+class Penguin
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :name, String
+  attribute :age, Integer
+end

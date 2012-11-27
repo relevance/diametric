@@ -62,16 +62,12 @@ module Diametric
         end
 
         def get(dbid)
-          entity_map = connection.db.entity(dbid)
-          attrs = entity_map.key_set.map { |attr_keyword|
-            attr = attr_keyword.to_s.gsub(%r"^:\w+/", '')
-            value = entity_map.get(attr_keyword)
-            [attr, value]
-          }
-
-          entity = self.new(Hash[*attrs.flatten])
-          entity.dbid = dbid
-
+          entity = self.new
+          self.all.each do |e|
+            next unless e.dbid == dbid.to_i
+            e.attribute_names.each {|n| entity.send((n.to_s+"=").to_sym, e.send(n))}
+          end
+          entity.dbid = dbid.to_i
           entity
         end
 

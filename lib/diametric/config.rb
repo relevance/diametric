@@ -34,6 +34,7 @@ module Diametric
       settings = Environment.load_yaml(path, environment)
       @configuration = settings.with_indifferent_access
       connect!(configuration)
+      peer_setup if Diametric::Persistence.peer?
       configuration
     end
 
@@ -42,6 +43,12 @@ module Diametric
     # @param [ Hash ] configuration The configuration of the database to connect to. See {Persistence.establish_base_connection} for valid options.
     def connect!(configuration)
       ::Diametric::Persistence.establish_base_connection(configuration)
+    end
+
+    private
+    def peer_setup
+      load File.join(File.dirname(__FILE__), '..', 'tasks', 'create_schema.rb')
+      Rake::Task["diametric:create_schema_for_peer"].invoke
     end
   end
 end

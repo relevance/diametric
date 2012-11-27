@@ -25,7 +25,8 @@ module Diametric
       end
 
       def update_attributes(params=nil)
-        "#{name}.update_attributes(#{params})"
+        #"#{name}.update_attributes(#{params})"
+        "#{name}.update(#{params})"
       end
 
       def errors
