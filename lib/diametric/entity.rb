@@ -431,7 +431,7 @@ module Diametric
     end
 
     def destroy
-
+      self.retract_entity(dbid)
     end
   end
 end

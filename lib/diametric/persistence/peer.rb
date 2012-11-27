@@ -103,6 +103,11 @@ module Diametric
       def to_edn
         self.dbid
       end
+
+      def retract_entity(dbid)
+        query = [Java::Datomic::Util.list(":db.fn/retractEntity", dbid)]
+        self.class.connection.transact(query).get
+      end
     end
   end
 end
