@@ -64,4 +64,32 @@ describe Diametric::Entity, :integration => true do
     end
   end
 
+  describe "with persistence module" do
+    before(:all) do
+      Robin.create_schema
+    end
+
+    let(:query) { Diametric::Query.new(Robin) }
+    it "can update entity" do
+      robin = Robin.new(:name => "Mary", :age => 2)
+      robin.save
+      robin.update(:age => 3)
+      robin.name.should == "Mary"
+      robin.age.should == 3
+    end
+    it "should search upadated attributes" do
+      robin = query.where(:name => "Mary").first
+      robin.name.should == "Mary"
+      robin.age.should == 3
+    end
+    it "can destroy entity" do
+      robin = Robin.new(:name => "Mary", :age => 2)
+      robin.save
+      number_of_robins = Robin.all.size
+      number_of_robins.should >= 1
+      robin.destroy
+      Robin.all.size.should == (number_of_robins -1)
+    end
+  end
+
 end

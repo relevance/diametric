@@ -64,11 +64,13 @@ class Robin
   attribute :age, Integer
 end
 
-require 'diametric/persistence/peer'
-class Penguin
-  include Diametric::Entity
-  include Diametric::Persistence::Peer
+if RUBY_ENGINE == "jruby"
+  require 'diametric/persistence/peer'
+  class Penguin
+    include Diametric::Entity
+    include Diametric::Persistence::Peer
 
-  attribute :name, String
-  attribute :age, Integer
+    attribute :name, String
+    attribute :age, Integer
+  end
 end
