@@ -14,6 +14,13 @@ recommend them for help with your corporate projects.
 
 Special thanks to Mongoid for writing some solid ORM code that was liberally borrowed from to add Rails support to Diametric.
 
+## Documents
+
+Other than highlights below, there are documents on Wiki.
+
+- [https://github.com/relevance/diametric/wiki/Getting-Started](Getting Started)
+- [https://github.com/relevance/diametric/wiki/Rails-Integration-(Experimental)] Rails Integration
+
 ## Entity API
 
 The `Entity` module is interesting, in that it is primarily made of
@@ -133,34 +140,43 @@ query.data
 
 ## Persistence API
 
-The persistence API comes in two flavors: REST- and peer-based. For the most part, they have the same API.
+The persistence API comes in two flavors: REST- and peer-based.
+For the most part, they have the same API.
+
+The suitable persistent module will be selected based on URI to connect datomic.
+You don't need to care which module should be included.
+However, if you like to inlcude REST or Peer module explicitely, you can write it.
+
 
 ### Peer
 
-With `Diametric::Persistence::Peer`, you can create objects that know how to store themselves to Datomic through a Datomic peer.
+With Peer connection, you can create objects that know how to store themselves to Datomic through a Datomic peer.
 
-To use `Diametric::Persistence::Peer`, you will need to use JRuby and require `diametric/persistence/peer`. When you install the `diametric` gem with JRuby, all `.jar` files needed to run Datomic will be downloaded. 
+Peer connection as well as "require `diametric/persistence/peer`" are only available on JRuby.
+When you install the `diametric` gem with JRuby, all `.jar` files needed to run Datomic will be downloaded.
 
 ```ruby
 require 'diametric'
-require 'diametric/persistence/peer'
+require 'diametric/persistence'
 
 # database URI
 # will create database if it does not already exist
-Diametric::Persistence::Peer.connect('datomic:mem://animals')
+Diametric::Persistence.establish_base_connection({:uri=>'datomic:mem://sample'})
 ```
 
 ### REST
 
-With `Diametric::Persistence::REST`, you can create objects that know how to store themselves to Datomic through the Datomic REST API. This is your only option unless you are using JRuby.
+With REST connection, you can create objects that know how to store themselves to Datomic through the Datomic REST API.
+REST connection is available both on CRuby and JRuby.
+You need to download Datomic by yourself and start the server before you run the code.
 
 ```ruby
 require 'diametric'
-require 'diametric/persistence/rest'
+require 'diametric/persistence'
 
 # database url, database alias, database name
 # will create database if it does not already exist
-Diametric::Persistence::REST.connect('http://localhost:9000', 'free', 'animals')
+Diametric::Persistence.establish_base_connection({:uri => 'http://localhost:9000', :storage => 'free', :database => 'sample'})
 ```
 
 ### Using persisted models
@@ -168,8 +184,7 @@ Diametric::Persistence::REST.connect('http://localhost:9000', 'free', 'animals')
 ```ruby
 class Goat
   include Diametric::Entity
-  include Diametric::Persistence::REST # if using REST API
-  include Diametric::Persistence::Peer # if using JRuby and not using REST
+  include Diametric::Persistence
   
   attribute :name, String, :index => true
   attribute :age, Integer

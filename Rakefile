@@ -28,4 +28,6 @@ task :install_lockjar do
 end
 
 desc "Run all RSpec tests"
+require 'rspec'
+require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec)
