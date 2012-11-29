@@ -19,8 +19,7 @@ Special thanks to Mongoid for writing some solid ORM code that was liberally bor
 Other than highlights below, there are documents on Wiki.
 
 - [Getting Started](https://github.com/relevance/diametric/wiki/Getting-Started)
-- [Rails Integration](https://github.com/relevance/diametric/wiki/Rails-Integration-(Experimental))
-
+- [Rails Integration](https://github.com/relevance/diametric/wiki/Rails-Integration-%28Experimental%29)
 ## Entity API
 
 The `Entity` module is interesting, in that it is primarily made of
