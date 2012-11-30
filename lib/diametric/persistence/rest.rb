@@ -87,6 +87,10 @@ module Diametric
         res
       end
 
+      def to_edn
+        self.dbid
+      end
+
       def retract_entity(dbid)
         query = [[:"db.fn/retractEntity", dbid.to_i]]
         self.class.transact(query)
