@@ -1,0 +1,5 @@
+---
+development:
+  uri: http://localhost:9000
+  storage: free
+  database: sample
