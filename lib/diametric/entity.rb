@@ -340,6 +340,13 @@ module Diametric
       txes << [:"db/add", (dbid || tempid) , namespaced_attribute, protractions.to_a] unless protractions.empty?
       txes
     end
+    
+    # Returns hash of all attributes for this object
+    #
+    # @return [Hash<Symbol, object>] Hash of atrributes
+    def attributes
+      Hash[self.class.attribute_names.map {|attribute_name| [attribute_name, self.send(attribute_name)] }]
+    end
 
     # @return [Array<Symbol>] Names of the entity's attributes.
     def attribute_names
