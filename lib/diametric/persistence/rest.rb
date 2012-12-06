@@ -70,6 +70,12 @@ module Diametric
 
       extend ClassMethods
 
+      # Save the entity
+      #
+      # @example Save the entity.
+      #   entity.save
+      #
+      # @return [ true, false ] True is success, false if not.
       def save
         return false unless valid?
         return true unless changed?

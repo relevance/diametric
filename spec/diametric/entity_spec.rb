@@ -98,6 +98,10 @@ describe Diametric::Entity do
       attributes.keys.should eql(subject.attribute_names)
       attributes[:middle_name].should eql("Danger")
     end
+    
+    it "should raise a validation error" do
+      expect { Robin.new.save! }.to raise_error(Diametric::Errors::ValidationError)
+    end
 
   end
 

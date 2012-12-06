@@ -239,6 +239,16 @@ module Diametric
       def namespace(ns, attribute)
         [ns.to_s, attribute.to_s].join("/").to_sym
       end
+      
+      # Raise an error if validation failed.
+      #
+      # @example Raise the validation error.
+      #   Person.fail_validate!(person)
+      #
+      # @param [ Entity ] entity The entity to fail.
+      def fail_validate!(entity)
+        raise Errors::ValidationError.new(entity)
+      end
 
       private
 
