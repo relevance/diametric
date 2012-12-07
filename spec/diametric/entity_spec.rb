@@ -86,6 +86,22 @@ describe Diametric::Entity do
       subject.name = "Clinton"
       subject.name.should == "Clinton"
     end
+    
+    it "should return attribute names" do
+      subject.attribute_names.should eql(Person.attribute_names)
+    end
+    
+    it "should return a hash of attributes" do
+      attributes = subject.attributes
+      
+      attributes.should be_a Hash
+      attributes.keys.should eql(subject.attribute_names)
+      attributes[:middle_name].should eql("Danger")
+    end
+    
+    it "should raise a validation error" do
+      expect { Robin.new.save! }.to raise_error(Diametric::Errors::ValidationError)
+    end
 
   end
 

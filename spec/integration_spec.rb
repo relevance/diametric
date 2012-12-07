@@ -70,6 +70,16 @@ describe Diametric::Entity, :integration => true do
     end
 
     let(:query) { Diametric::Query.new(Robin) }
+    it "can create entity" do
+      robin = Robin.new
+      
+      expect { robin.save! }.to raise_error(Diametric::Errors::ValidationError)
+      robin.save.should be_false
+      robin.name = "Mary"
+      robin.age = 3
+      expect { robin.save! }.to_not raise_error(Diametric::Errors::ValidationError)
+      robin.persisted?.should be_true
+    end
     it "can update entity" do
       robin = Robin.new(:name => "Mary", :age => 2)
       robin.save
