@@ -239,6 +239,16 @@ module Diametric
       def namespace(ns, attribute)
         [ns.to_s, attribute.to_s].join("/").to_sym
       end
+      
+      # Raise an error if validation failed.
+      #
+      # @example Raise the validation error.
+      #   Person.fail_validate!(person)
+      #
+      # @param [ Entity ] entity The entity to fail.
+      def fail_validate!(entity)
+        raise Errors::ValidationError.new(entity)
+      end
 
       private
 
@@ -339,6 +349,13 @@ module Diametric
       txes << [:"db/retract", (dbid || tempid), namespaced_attribute, retractions.to_a] unless retractions.empty?
       txes << [:"db/add", (dbid || tempid) , namespaced_attribute, protractions.to_a] unless protractions.empty?
       txes
+    end
+    
+    # Returns hash of all attributes for this object
+    #
+    # @return [Hash<Symbol, object>] Hash of atrributes
+    def attributes
+      Hash[self.class.attribute_names.map {|attribute_name| [attribute_name, self.send(attribute_name)] }]
     end
 
     # @return [Array<Symbol>] Names of the entity's attributes.

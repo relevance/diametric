@@ -61,6 +61,7 @@ class Robin
   include Diametric::Persistence::REST
 
   attribute :name, String
+  validates_presence_of :name
   attribute :age, Integer
 end
 

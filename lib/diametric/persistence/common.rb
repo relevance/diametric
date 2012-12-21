@@ -20,6 +20,19 @@ module Diametric
             end
           end
         end
+        
+        # Save the entity. If a validation error occurs an error will get raised.
+        #
+        # @example Save the entitiy.
+        #   entity.save!
+        #
+        # @return [ true, false ] True if validation passed.
+        def save!
+          unless save
+            self.class.fail_validate!(self) unless errors.empty?
+          end
+          return true
+        end
       end
 
       module ClassMethods
