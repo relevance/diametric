@@ -3,16 +3,20 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in diametric.gemspec
 gemspec
 
-# Development-only dependencies
 gem 'rake'
-gem 'rspec'
-gem 'pry'
 
-gem 'guard'
-gem 'guard-rspec'
-gem 'rb-inotify', :require => false
-gem 'rb-fsevent', :require => false
-gem 'rb-fchange', :require => false
+group :development, :test do
+  gem 'rspec'
+  gem 'pry'
+end
+
+group :development do
+  gem 'guard'
+  gem 'guard-rspec'
+  gem 'rb-inotify', :require => false
+  gem 'rb-fsevent', :require => false
+  gem 'rb-fchange', :require => false
+end
 
 platform :mri do
   gem 'yard', :group => :development
@@ -20,6 +24,6 @@ platform :mri do
 end
 
 platform :jruby do
-  gem 'jruby-openssl'
   gem 'lock_jar'
+  gem 'jruby-openssl'
 end

@@ -7,7 +7,6 @@
 .rspec
 .rvmrc
 .yardoc
-Gemfile.lock
 InstalledFiles
 _yardoc
 bin/

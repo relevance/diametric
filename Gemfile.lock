@@ -1,0 +1,104 @@
+PATH
+  remote: .
+  specs:
+    diametric (0.0.4)
+      activemodel (>= 3.0.0)
+      activesupport (>= 3.0.0)
+      datomic-client (~> 0.4.1)
+      edn (~> 1.0)
+      rspec (~> 2.12.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    activemodel (3.2.12)
+      activesupport (= 3.2.12)
+      builder (~> 3.0.0)
+    activesupport (3.2.12)
+      i18n (~> 0.6)
+      multi_json (~> 1.0)
+    blankslate (2.1.2.4)
+    bouncy-castle-java (1.5.0146.1)
+    builder (3.0.4)
+    coderay (1.0.8)
+    datomic-client (0.4.1)
+      edn (~> 1.0.0)
+      rest-client (~> 1.6.7)
+    diff-lcs (1.1.3)
+    edn (1.0.0)
+      parslet (~> 1.4.0)
+    ffi (1.3.1)
+    ffi (1.3.1-java)
+    guard (1.6.2)
+      listen (>= 0.6.0)
+      lumberjack (>= 1.0.2)
+      pry (>= 0.9.10)
+      terminal-table (>= 1.4.3)
+      thor (>= 0.14.6)
+    guard-rspec (2.4.0)
+      guard (>= 1.1)
+      rspec (~> 2.11)
+    i18n (0.6.1)
+    jruby-openssl (0.8.2)
+      bouncy-castle-java (>= 1.5.0146.1)
+    listen (0.7.2)
+    lock_jar (0.7.2)
+      naether (~> 0.10.0)
+      thor (~> 0.14.6)
+    lumberjack (1.0.2)
+    method_source (0.8.1)
+    mime-types (1.21)
+    multi_json (1.6.1)
+    naether (0.10.1-java)
+    parslet (1.4.0)
+      blankslate (~> 2.0)
+    pry (0.9.12)
+      coderay (~> 1.0.5)
+      method_source (~> 0.8)
+      slop (~> 3.4)
+    pry (0.9.12-java)
+      coderay (~> 1.0.5)
+      method_source (~> 0.8)
+      slop (~> 3.4)
+      spoon (~> 0.0)
+    rake (10.0.3)
+    rb-fchange (0.0.6)
+      ffi
+    rb-fsevent (0.9.3)
+    rb-inotify (0.9.0)
+      ffi (>= 0.5.0)
+    redcarpet (2.2.2)
+    rest-client (1.6.7)
+      mime-types (>= 1.16)
+    rspec (2.12.0)
+      rspec-core (~> 2.12.0)
+      rspec-expectations (~> 2.12.0)
+      rspec-mocks (~> 2.12.0)
+    rspec-core (2.12.2)
+    rspec-expectations (2.12.1)
+      diff-lcs (~> 1.1.3)
+    rspec-mocks (2.12.2)
+    slop (3.4.3)
+    spoon (0.0.1)
+    terminal-table (1.4.5)
+    thor (0.14.6)
+    yard (0.8.4.1)
+
+PLATFORMS
+  java
+  ruby
+
+DEPENDENCIES
+  diametric!
+  guard
+  guard-rspec
+  jruby-openssl
+  lock_jar
+  pry
+  rake
+  rb-fchange
+  rb-fsevent
+  rb-inotify
+  redcarpet
+  rspec
+  yard
