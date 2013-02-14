@@ -2,7 +2,7 @@
 
 set -e
 
-DEFAULT_DATOMIC_VERSION="0.8.3599"
+DEFAULT_DATOMIC_VERSION="0.8.3814"
 VERSION=${1:-$DEFAULT_DATOMIC_VERSION}
 
 if [ ! -d "vendor/datomic/datomic-free-$VERSION" ]; then
