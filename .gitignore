@@ -16,6 +16,7 @@ lib/bundler/man
 pkg
 rdoc
 samples/*/.bundle
+samples/*/*.lock
 samples/*/log/*.log
 samples/*/tmp
 spec/reports
