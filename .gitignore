@@ -8,6 +8,7 @@
 .rvmrc
 .yardoc
 InstalledFiles
+Gemfile.lock
 _yardoc
 bin/
 coverage

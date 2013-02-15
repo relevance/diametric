@@ -27,6 +27,16 @@ EOF
   gem.add_dependency 'datomic-client', '~> 0.4.1'
   gem.add_dependency 'rspec', '~> 2.12.0'
   gem.add_dependency 'lock_jar', '= 0.7.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
+  gem.add_dependency 'jruby-openssl', '~> 0.8.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
+
+  gem.add_development_dependency 'pry', '~> 0.9.12'
+  gem.add_development_dependency 'guard', '~> 1.6.2'
+  gem.add_development_dependency 'guard-rspec', '~> 2.4.0'
+  gem.add_development_dependency 'rb-inotify', '~> 0.9.0'
+  gem.add_development_dependency 'rb-fsevent', '~> 0.9.3'
+  gem.add_development_dependency 'rb-fchange', '~> 0.0.6'
+  gem.add_development_dependency 'yard', '~> 0.8.4.1' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
+  gem.add_development_dependency 'redcarpet', '~> 2.2.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
 
   gem.extensions = ['Rakefile']
 end
