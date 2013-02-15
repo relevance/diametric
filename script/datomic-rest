@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+# Find Datomic home
+parent_dir = File.join(File.dirname(__FILE__), "../vendor/datomic")
+datomic_home = ""
+Dir.entries(parent_dir).each {|d| datomic_home =  parent_dir + "/" + d if d =~ /datomic/}
+
+# Find jar archives
+JARS = Dir["#{datomic_home}/lib/*.jar"]
+JARS += Dir["#{datomic_home}/*transactor*.jar"]
+
+# Setup CLASSPATH
+CLASSPATH = JARS.join(":") 
+files = ["samples/clj", "bin", "resources"]
+CLASSPATH += ":" + files.collect {|f| datomic_home + "/" + f}.join(":")
+
+# Command
+command = ["java -server -Xmx1g", "-cp", CLASSPATH, "clojure.main", "-i", "#{datomic_home}/bin/bridge.clj", "--main datomic.rest", ARGV].flatten.join(" ")
+puts "#{command}"
+
+# Startup REST server
+`#{command}`
