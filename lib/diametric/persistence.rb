@@ -37,7 +37,6 @@ module Diametric
 
     def self.persistence_class(uri)
       if uri =~ /^datomic:/
-        require 'diametric/persistence/peer'
         @conn_type = :peer
         Peer
       else
