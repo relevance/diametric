@@ -12,7 +12,7 @@ if defined?(RUBY_ENGINE) && RUBY_ENGINE = "jruby"
   LockJar.load(lockfile)
 
   require 'diametric_service.jar'
-  reuqire 'diametric/diametric'
+  require 'diametric/diametric'
 end
 
 if defined?(Rails)

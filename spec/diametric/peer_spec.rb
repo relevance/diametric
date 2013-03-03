@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'diametric-peer'
 
 describe Diametric::Persistence::Peer do
   it 'should create database' do

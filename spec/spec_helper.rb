@@ -68,7 +68,7 @@ end
 if RUBY_ENGINE == "jruby"
   require 'lock_jar'
   LockJar.load
-  require 'diametric/persistence/peer'
+
   class Penguin
     include Diametric::Entity
     include Diametric::Persistence::Peer
