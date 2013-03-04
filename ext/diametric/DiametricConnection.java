@@ -76,10 +76,16 @@ public class DiametricConnection extends RubyObject {
             */
             java_tx_data.add(Collections.unmodifiableMap(keyvals));
         }
-        ListenableFuture<java.util.Map> future = conn.transact(java_tx_data);
-        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
-        DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
-        diametric_listenable.init(future);
-        return diametric_listenable;
+        ListenableFuture<java.util.Map> future;
+        try {
+            future = conn.transact(java_tx_data);
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
+            DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
+            diametric_listenable.init(future);
+            return diametric_listenable;
+        } catch (Exception e) {
+            context.getRuntime().newRuntimeError(e.getMessage());
+        }
+        return context.getRuntime().getNil();
     }
 }

@@ -195,6 +195,38 @@ module Diametric
         end
       end
 
+      # Generates a Datomic schema for a model's attributes.
+      #
+      # @return [Array] A Datomic schema, as Ruby data that can be
+      #   converted to EDN.
+      def peer_schema
+        defaults = {
+          ":db/cardinality" => ":db.cardinality/one",
+          ":db.install/_attribute" => ":db.part/db"
+        }
+
+        @attributes.reduce([]) do |schema, (attribute, opts)|
+          opts = opts.dup
+          value_type = opts.delete(:value_type)
+
+          unless opts.empty?
+            opts[:cardinality] = peer_namespace("db.cardinality", opts[:cardinality])
+            opts[:unique] = peer_namespace("db.unique", opts[:unique]) if opts[:unique]
+            opts = opts.map { |k, v|
+              k = peer_namespace("db", k)
+              [k, v]
+            }
+            opts = Hash[*opts.flatten]
+          end
+
+          schema << defaults.merge({
+                                     ":db/id" => Diametric::Persistence::Peer.tempid(":db.part/db"),
+                                     ":db/ident" => peer_namespace(prefix, attribute),
+                                     ":db/valueType" => peer_value_type(value_type),
+                                   }).merge(opts)
+        end
+      end
+
       # Given a set of Ruby data returned from a Datomic query, this
       # can re-hydrate that data into a model instance.
       #
@@ -239,6 +271,10 @@ module Diametric
       def namespace(ns, attribute)
         [ns.to_s, attribute.to_s].join("/").to_sym
       end
+
+      def peer_namespace(ns, attribute)
+        ":" + [ns.to_s, attribute.to_s].join("/")
+      end
       
       # Raise an error if validation failed.
       #
@@ -258,6 +294,14 @@ module Diametric
         end
         namespace("db.type", vt)
       end
+
+      def peer_value_type(vt)
+        if vt.is_a?(Class)
+          vt = VALUE_TYPES[vt]
+        end
+        peer_namespace("db.type", vt)
+      end
+
 
       def establish_defaults(name, value_type, opts = {})
         default = opts.delete(:default)

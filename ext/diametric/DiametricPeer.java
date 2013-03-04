@@ -2,6 +2,7 @@ package diametric;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,10 +11,14 @@ import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
+import org.jruby.RubyHash;
 import org.jruby.RubyModule;
+import org.jruby.RubyNil;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -31,20 +36,42 @@ public class DiametricPeer extends RubyModule {
     
     @JRubyMethod(meta=true)
     public static IRubyObject connect(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
-        String uriOrMap = DiametricUtils.rubyStringToJava(arg);
-        if (uriOrMap == null) return context.getRuntime().getNil();
-        // what value will be returned when connect fails? API doc doesn't tell anything.
-        Connection connection = Peer.connect(uriOrMap);
+        String uriOrMap = null;
+        if (arg instanceof RubyString) {
+            uriOrMap = DiametricUtils.rubyStringToJava(arg);
+        } else if (arg instanceof RubyHash) {
+            RubySymbol key = RubySymbol.newSymbol(context.getRuntime(), "uri");
+            RubyString value = (RubyString)((RubyHash)arg).op_aref(context, key);
+            uriOrMap = DiametricUtils.rubyStringToJava(value);
+        } else {
+            throw context.getRuntime().newArgumentError("Argument should be a String or Hash");
+        }
+        if (uriOrMap == null )
+            throw context.getRuntime().newArgumentError("Argument should be a String or Hash with :uri key");
+        
         RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Connection");
         DiametricConnection rubyConnection = (DiametricConnection)clazz.allocate();
-        rubyConnection.init(connection);
-        return rubyConnection;
+        try {
+            // what value will be returned when connect fails? API doc doesn't tell anything.
+            Connection connection = Peer.connect(uriOrMap);
+            rubyConnection.init(connection);
+            return rubyConnection;
+        } catch (Exception e) {
+            // Diametric doesn't require creating database before connect.
+            if (e.getMessage().contains(":peer/db-not-found") && Peer.createDatabase(uriOrMap)) {
+                Connection connection = Peer.connect(uriOrMap);
+                rubyConnection.init(connection);
+                return rubyConnection;
+            }
+        }
+        throw context.getRuntime().newRuntimeError("Failed to create connection");
     }
     
     @JRubyMethod(meta=true)
     public static IRubyObject create_database(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
         String uriOrMap = DiametricUtils.rubyStringToJava(arg);
-        if (uriOrMap == null) return context.getRuntime().getNil();
+        if (uriOrMap == null)
+            throw context.getRuntime().newArgumentError("Argument should be a String");
         boolean status = Peer.createDatabase(uriOrMap);
         return RubyBoolean.newBoolean(context.getRuntime(), status);
     }
@@ -172,5 +199,31 @@ public class DiametricPeer extends RubyModule {
             ruby_results.append(ruby_elements);
         }
         return ruby_results;
+    }
+    
+    private static List<RubyModule> bases = new ArrayList<RubyModule>();
+    
+    @JRubyMethod(meta=true)
+    public static IRubyObject included(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        if (arg instanceof RubyModule) {
+            bases.add((RubyModule)arg);
+            System.out.println("INLCUDED BY: " + ((RubyModule)arg).getName());
+        }
+        return context.getRuntime().getNil();
+    }
+    
+    @JRubyMethod(meta=true)
+    public static IRubyObject create_schemas(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        if (!(arg instanceof DiametricConnection))
+            throw context.getRuntime().newArgumentError("Argument should be Connection.");
+        IRubyObject result = context.getRuntime().getNil();
+        for (RubyModule base : bases) {
+            if (base.respondsTo("peer_schema")) {
+                IRubyObject schema = base.send(context, RubySymbol.newSymbol(context.getRuntime(), "peer_schema"), Block.NULL_BLOCK);
+                System.out.println("SCHEMA: " + schema);
+                result = ((DiametricConnection)arg).transact(context, schema);
+            }
+        }
+        return result;
     }
 }
