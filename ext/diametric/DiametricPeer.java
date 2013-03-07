@@ -14,10 +14,12 @@ import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.RubyNil;
+import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
+import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -33,6 +35,8 @@ public class DiametricPeer extends RubyModule {
     protected DiametricPeer(Ruby runtime) {
         super(runtime);
     }
+    
+    private static DiametricConnection saved_connection = null;
     
     @JRubyMethod(meta=true)
     public static IRubyObject connect(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
@@ -55,6 +59,7 @@ public class DiametricPeer extends RubyModule {
             // what value will be returned when connect fails? API doc doesn't tell anything.
             Connection connection = Peer.connect(uriOrMap);
             rubyConnection.init(connection);
+            saved_connection = rubyConnection;
             return rubyConnection;
         } catch (Exception e) {
             // Diametric doesn't require creating database before connect.
@@ -206,20 +211,31 @@ public class DiametricPeer extends RubyModule {
     @JRubyMethod(meta=true)
     public static IRubyObject included(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
         if (arg instanceof RubyModule) {
-            bases.add((RubyModule)arg);
+            RubyModule base = (RubyModule)arg;
+            bases.add(base);
+            base.instance_variable_set(RubyString.newString(context.getRuntime(), "@peer"), context.getRuntime().getTrue());
             System.out.println("INLCUDED BY: " + ((RubyModule)arg).getName());
         }
         return context.getRuntime().getNil();
     }
     
     @JRubyMethod(meta=true)
+    public static IRubyObject connect(ThreadContext context, IRubyObject klazz) {
+        if (saved_connection == null) return context.getRuntime().getNil();
+        return saved_connection;
+    }
+    
+    @JRubyMethod(meta=true)
     public static IRubyObject create_schemas(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        System.out.println("KLAZZ: " + klazz);
+        System.out.println("FRAMESELF:" + context.getFrameSelf());
+        System.out.println("FRAMEKLAZZ: " + context.getFrameKlazz());
         if (!(arg instanceof DiametricConnection))
             throw context.getRuntime().newArgumentError("Argument should be Connection.");
         IRubyObject result = context.getRuntime().getNil();
         for (RubyModule base : bases) {
-            if (base.respondsTo("peer_schema")) {
-                IRubyObject schema = base.send(context, RubySymbol.newSymbol(context.getRuntime(), "peer_schema"), Block.NULL_BLOCK);
+            if (base.respondsTo("schema")) {
+                IRubyObject schema = base.send(context, RubySymbol.newSymbol(context.getRuntime(), "schema"), Block.NULL_BLOCK);
                 System.out.println("SCHEMA: " + schema);
                 result = ((DiametricConnection)arg).transact(context, schema);
             }

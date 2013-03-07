@@ -13,6 +13,7 @@ if defined?(RUBY_ENGINE) && RUBY_ENGINE = "jruby"
 
   require 'diametric_service.jar'
   require 'diametric/diametric'
+  require 'diametric/persistence/peer'
 end
 
 if defined?(Rails)
