@@ -66,6 +66,7 @@ public class DiametricPeer extends RubyModule {
             if (e.getMessage().contains(":peer/db-not-found") && Peer.createDatabase(uriOrMap)) {
                 Connection connection = Peer.connect(uriOrMap);
                 rubyConnection.init(connection);
+                saved_connection = rubyConnection;
                 return rubyConnection;
             }
         }
@@ -227,16 +228,12 @@ public class DiametricPeer extends RubyModule {
     
     @JRubyMethod(meta=true)
     public static IRubyObject create_schemas(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
-        System.out.println("KLAZZ: " + klazz);
-        System.out.println("FRAMESELF:" + context.getFrameSelf());
-        System.out.println("FRAMEKLAZZ: " + context.getFrameKlazz());
         if (!(arg instanceof DiametricConnection))
             throw context.getRuntime().newArgumentError("Argument should be Connection.");
         IRubyObject result = context.getRuntime().getNil();
         for (RubyModule base : bases) {
             if (base.respondsTo("schema")) {
                 IRubyObject schema = base.send(context, RubySymbol.newSymbol(context.getRuntime(), "schema"), Block.NULL_BLOCK);
-                System.out.println("SCHEMA: " + schema);
                 result = ((DiametricConnection)arg).transact(context, schema);
             }
         }

@@ -3,15 +3,12 @@ module Diametric
     module Peer
 
       def save
-        puts "#{self} called save"
-        puts "tx_data: #{self.tx_data}"
-
         return false unless valid?
         return true unless changed?
-        map = self.class.connect.transact(tx_data)
-        if dbid.nil?
-          self.dbid = self.class.resolve_tempid(map, tempid)
-        end
+        map = Diametric::Persistence::Peer.connect.transact(tx_data).get
+
+        @dbid = Diametric::Persistence::Peer.resolve_tempid(map, @dbid)
+
         @previously_changed = changes
         @changed_attributes.clear
         map

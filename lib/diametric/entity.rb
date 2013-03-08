@@ -381,7 +381,8 @@ module Diametric
 
       if entity_tx.present?
         if self.class.instance_variable_get("@peer")
-          txes << entity_tx.merge({":db/id" => dbid || tempid})
+          @dbid = tempid
+          txes << entity_tx.merge({":db/id" => dbid})
         else
           txes << entity_tx.merge({:"db/id" => dbid || tempid})
         end

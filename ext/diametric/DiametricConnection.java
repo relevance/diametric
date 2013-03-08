@@ -52,6 +52,7 @@ public class DiametricConnection extends RubyObject {
     @JRubyMethod
     public IRubyObject transact(ThreadContext context, IRubyObject arg) {
         if (!(arg instanceof RubyArray)) return context.getRuntime().getNil();
+        System.out.println("TX_DATA: " + arg.toString());
         RubyArray ruby_tx_data = (RubyArray)arg;
         List java_tx_data = new ArrayList();
         for (int i=0; i<ruby_tx_data.getLength(); i++) {
