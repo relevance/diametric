@@ -2,6 +2,7 @@ require "diametric/version"
 require "diametric/entity"
 require "diametric/query"
 require "diametric/persistence"
+require 'diametric/persistence/common'
 require "diametric/errors"
 
 require 'diametric/config'

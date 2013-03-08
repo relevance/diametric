@@ -35,6 +35,10 @@ public class DiametricConnection extends RubyObject {
         this.conn = conn;
     }
     
+    Connection toJava() {
+        return conn;
+    }
+
     @JRubyMethod
     public IRubyObject to_java(ThreadContext context) {
         return JavaUtil.convertJavaToUsableRubyObject(context.getRuntime(), conn);

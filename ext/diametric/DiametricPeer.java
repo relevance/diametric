@@ -2,7 +2,6 @@ package diametric;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,19 +12,17 @@ import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyModule;
-import org.jruby.RubyNil;
-import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
-import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import datomic.Connection;
 import datomic.Database;
+import datomic.Entity;
 import datomic.Peer;
 
 @JRubyModule(name="Diametric::Persistence::Peer")
@@ -211,13 +208,18 @@ public class DiametricPeer extends RubyModule {
     
     @JRubyMethod(meta=true)
     public static IRubyObject included(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        Ruby runtime = context.getRuntime();
         if (arg instanceof RubyModule) {
             RubyModule base = (RubyModule)arg;
             bases.add(base);
-            base.instance_variable_set(RubyString.newString(context.getRuntime(), "@peer"), context.getRuntime().getTrue());
+            base.instance_variable_set(RubyString.newString(context.getRuntime(), "@peer"), runtime.getTrue());
+            IRubyObject common = runtime.getClassFromPath("Diametric::Persistence::Common");
+            base.send(context, RubySymbol.newSymbol(runtime, "include"), common, Block.NULL_BLOCK);
+            IRubyObject classmethods = runtime.getClassFromPath("Diametric::Persistence::Peer::ClassMethods");
+            base.send(context, RubySymbol.newSymbol(runtime, "extend"), classmethods, Block.NULL_BLOCK);
             System.out.println("INLCUDED BY: " + ((RubyModule)arg).getName());
         }
-        return context.getRuntime().getNil();
+        return runtime.getNil();
     }
     
     @JRubyMethod(meta=true)
@@ -238,5 +240,22 @@ public class DiametricPeer extends RubyModule {
             }
         }
         return result;
+    }
+
+    @JRubyMethod(meta=true)
+    public static IRubyObject get(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        Ruby runtime = context.getRuntime();
+        Object dbid = null;
+        if ((arg instanceof DiametricObject) && (((DiametricObject)arg).to_java(context) instanceof RubyFixnum)) {
+            dbid = ((DiametricObject)arg).toJava();
+        } else {
+            throw runtime.newArgumentError("Argument should be dbid");
+        }
+        if (saved_connection == null) throw runtime.newRuntimeError("Connection is not established");
+        Entity entity = saved_connection.toJava().db().entity(dbid);
+        RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
+        DiametricEntity ruby_entity = (DiametricEntity)clazz.allocate();
+        ruby_entity.init(entity);
+        return ruby_entity;
     }
 }
