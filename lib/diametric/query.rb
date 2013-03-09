@@ -113,6 +113,8 @@ module Diametric
     #   is the Datomic query composed of Ruby data. The second element is
     #   the arguments that used with the query.
     def data
+      return peer_data if self.model.instance_variable_get("@peer")
+
       vars = model.attribute_names.map { |attribute| ~"?#{attribute}" }
 
       from = conditions.map { |k, _| ~"?#{k}" }
@@ -129,6 +131,23 @@ module Diametric
         :in, ~"\$", *from,
         :where, *clauses
       ]
+
+      [query, args]
+    end
+
+    def peer_data
+      vars = model.attribute_names.inject("") {|memo, attribute| memo + "?#{attribute} " }
+
+      from = conditions.inject("[") {|memo, kv| memo + "?#{kv.shift} "} +"]"
+
+      clauses = model.attribute_names.inject("") do |memo, attribute|
+        memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
+      end
+      #clauses + filters
+
+      args = conditions.map { |_, v| v }
+
+      query = "[:find ?e #{vars} :in $ #{from} :where #{clauses}]"
 
       [query, args]
     end

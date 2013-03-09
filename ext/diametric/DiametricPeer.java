@@ -179,19 +179,39 @@ public class DiametricPeer extends RubyModule {
     
     @JRubyMethod(meta=true, required=2, rest=true)
     public static IRubyObject q(ThreadContext context, IRubyObject klazz, IRubyObject[] args) {
-        if (!(args[0] instanceof RubyString)) return context.getRuntime().getNil();
-        String query = (String)args[0].toJava(String.class);
-        Collection<List<Object>> results = null;
-        if (args.length == 2 && (args[1] instanceof DiametricDatabase)) {
-            results = Peer.q(query, ((DiametricDatabase)args[1]).toJava());
-        } else {
-            List list = new ArrayList();
-            for (int i=1; i<args.length; i++) {
-                list.add(DiametricUtils.convertRubyToJava(context, args[i]));
-            }
-            Object[] inputs = list.toArray(new Object[list.size()]);
-            results = Peer.q(query, inputs);
+        Ruby runtime = context.getRuntime();
+        if (!(args[0] instanceof RubyString)) {
+            throw runtime.newArgumentError("The first arg should be a query string");
         }
+        if (!(args[1] instanceof DiametricDatabase)) {
+            throw runtime.newArgumentError("The second arg should be a database.");
+        }
+        String query = (String)args[0].toJava(String.class);
+        System.out.println("QUERY: " + query);
+        Database database = ((DiametricDatabase)args[1]).toJava();
+
+        Collection<List<Object>> results = null;
+        if (args.length == 2) {
+            results = Peer.q(query, database);
+        } else if ((args.length == 3) && (args[2] instanceof RubyArray)) {
+            RubyArray ruby_inputs = (RubyArray)args[2];
+            if (ruby_inputs.getLength() == 0) {
+                results = Peer.q(query, database);
+            } else {
+                Object[] inputs = new Object[ruby_inputs.getLength()];
+                for (int i=0; i<inputs.length; i++) {
+                    inputs[i] = DiametricUtils.convertRubyToJava(context, ruby_inputs.shift(context));
+                }
+                results = Peer.q(query, database, inputs);
+            }
+        } else {
+            Object[] inputs = new Object[args.length-2];
+            for (int i=0; i<inputs.length; i++) {
+                inputs[i] = DiametricUtils.convertRubyToJava(context, args[i+2]);
+            }
+            results = Peer.q(query, database, inputs);
+        }
+
         if (results == null) return context.getRuntime().getNil();
         RubyArray ruby_results = RubyArray.newArray(context.getRuntime());
         for (List list : results) {

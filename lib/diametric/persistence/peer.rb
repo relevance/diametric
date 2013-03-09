@@ -7,7 +7,9 @@ module Diametric
         return true unless changed?
         map = Diametric::Persistence::Peer.connect.transact(tx_data).get
 
-        @dbid = Diametric::Persistence::Peer.resolve_tempid(map, @dbid)
+        if @dbid.nil? || @dbid.to_s =~ /-\d+/
+          @dbid = Diametric::Persistence::Peer.resolve_tempid(map, @dbid)
+        end
 
         @previously_changed = changes
         @changed_attributes.clear
@@ -23,6 +25,11 @@ module Diametric
           end
           entity.dbid = dbid
           entity
+        end
+
+        def q(query, args)
+          db = Diametric::Persistence::Peer.connect.db
+          Diametric::Persistence::Peer.q(query, db, args)
         end
       end
     end
