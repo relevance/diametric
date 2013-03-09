@@ -69,6 +69,7 @@ module Diametric
     #   that will be converted into a Datalog query.
     # @return [Query]
     def filter(*filter)
+      return peer_filter(filter) if self.model.instance_variable_get("@peer")
       query = self.dup
 
       if filter.first.is_a?(EDN::Type::List)
@@ -81,6 +82,21 @@ module Diametric
       query.filters += [[filter]]
       query
     end
+
+    def peer_filter(*filter)
+      query = self.dup
+
+      if filter.first.is_a?(Array)
+        filter = filter.first
+      end
+      filter[1] = "?#{filter[1].to_s}"
+      filter = filter.tap {|e| e.to_s }.join(" ")
+      filter = "[(#{filter})]"
+
+      query.filters << filter
+      query
+    end
+
 
     # Loop through the query results. In order to use +each+, your model *must*
     # include a persistence API. At a minimum, it must have a +.q+ method that
@@ -138,16 +154,18 @@ module Diametric
     def peer_data
       vars = model.attribute_names.inject("") {|memo, attribute| memo + "?#{attribute} " }
 
-      from = conditions.inject("[") {|memo, kv| memo + "?#{kv.shift} "} +"]"
+      form = ""
+      if conditions.size > 0
+        from = conditions.inject("[") {|memo, kv| memo + "?#{kv.shift} "} +"]"
+      end
 
       clauses = model.attribute_names.inject("") do |memo, attribute|
         memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
       end
-      #clauses + filters
 
       args = conditions.map { |_, v| v }
 
-      query = "[:find ?e #{vars} :in $ #{from} :where #{clauses}]"
+      query = "[:find ?e #{vars} :in $ #{from} :where #{clauses} #{filters.join}]"
 
       [query, args]
     end
