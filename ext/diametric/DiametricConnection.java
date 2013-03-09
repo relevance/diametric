@@ -56,7 +56,6 @@ public class DiametricConnection extends RubyObject {
     @JRubyMethod
     public IRubyObject transact(ThreadContext context, IRubyObject arg) {
         if (!(arg instanceof RubyArray)) return context.getRuntime().getNil();
-        System.out.println("TX_DATA: " + arg.toString());
         RubyArray ruby_tx_data = (RubyArray)arg;
         List java_tx_data = new ArrayList();
         for (int i=0; i<ruby_tx_data.getLength(); i++) {
@@ -71,14 +70,6 @@ public class DiametricConnection extends RubyObject {
                 Object value = DiametricUtils.convertRubyToJava(context, ((RubyArray)pair).shift(context));
                 keyvals.put(key, value);
             }
-            /*
-            // debugging
-            System.out.print("KEYVALS: ");
-            Set ks = keyvals.keySet();
-            for (Object k : ks) {
-                System.out.print(k +": " + keyvals.get(k) + ", ");
-            }
-            */
             java_tx_data.add(Collections.unmodifiableMap(keyvals));
         }
         ListenableFuture<java.util.Map> future;

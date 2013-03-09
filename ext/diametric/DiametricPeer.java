@@ -187,7 +187,6 @@ public class DiametricPeer extends RubyModule {
             throw runtime.newArgumentError("The second arg should be a database.");
         }
         String query = (String)args[0].toJava(String.class);
-        System.out.println("QUERY: " + query);
         Database database = ((DiametricDatabase)args[1]).toJava();
 
         Collection<List<Object>> results = null;
@@ -241,7 +240,6 @@ public class DiametricPeer extends RubyModule {
             base.send(context, RubySymbol.newSymbol(runtime, "include"), common, Block.NULL_BLOCK);
             IRubyObject classmethods = runtime.getClassFromPath("Diametric::Persistence::Peer::ClassMethods");
             base.send(context, RubySymbol.newSymbol(runtime, "extend"), classmethods, Block.NULL_BLOCK);
-            System.out.println("INLCUDED BY: " + ((RubyModule)arg).getName());
         }
         return runtime.getNil();
     }
