@@ -31,11 +31,34 @@ public class DiametricObject extends RubyObject {
         return java_object;
     }
     
+    @JRubyMethod(name="new", meta=true)
+    public static IRubyObject rbNew(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
+        DiametricObject diametric_object = (DiametricObject)clazz.allocate();
+        diametric_object.update(DiametricUtils.convertRubyToJava(context, arg));
+        return diametric_object;
+    }
+
     @JRubyMethod
     public IRubyObject to_java(ThreadContext context) {
         return JavaUtil.convertJavaToUsableRubyObject(context.getRuntime(), java_object);
     }
     
+    @JRubyMethod(name="==", required=1)
+    public IRubyObject op_equal(ThreadContext context, IRubyObject arg) {
+        Ruby runtime = context.getRuntime();
+        if (arg instanceof DiametricObject) {
+            DiametricObject other = (DiametricObject)arg;
+            if (java_object.toString().equals(other.toJava().toString())) {
+                return runtime.getTrue();
+            } else {
+                return runtime.getFalse();
+            }
+        } else {
+            return runtime.getFalse();
+        }
+    }
+
     @JRubyMethod
     public IRubyObject to_s(ThreadContext context) {
         return context.getRuntime().newString(java_object.toString());

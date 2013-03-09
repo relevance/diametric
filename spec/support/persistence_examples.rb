@@ -67,7 +67,7 @@ shared_examples "persistence API" do
       it "can find it by attribute" do
         model2 = model_class.first(:name => "Wilbur")
         model2.should_not be_nil
-        model2.dbid.to_s.should == model.dbid.to_s
+        model2.dbid.should == model.dbid
         model2.should == model
       end
 

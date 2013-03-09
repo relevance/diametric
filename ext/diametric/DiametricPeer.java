@@ -191,25 +191,29 @@ public class DiametricPeer extends RubyModule {
         Database database = ((DiametricDatabase)args[1]).toJava();
 
         Collection<List<Object>> results = null;
-        if (args.length == 2) {
-            results = Peer.q(query, database);
-        } else if ((args.length == 3) && (args[2] instanceof RubyArray)) {
-            RubyArray ruby_inputs = (RubyArray)args[2];
-            if (ruby_inputs.getLength() == 0) {
+        try {
+            if (args.length == 2) {
                 results = Peer.q(query, database);
+            } else if ((args.length == 3) && (args[2] instanceof RubyArray)) {
+                RubyArray ruby_inputs = (RubyArray)args[2];
+                if (ruby_inputs.getLength() == 0) {
+                    results = Peer.q(query, database);
+                } else {
+                    Object[] inputs = new Object[ruby_inputs.getLength()];
+                    for (int i=0; i<inputs.length; i++) {
+                        inputs[i] = DiametricUtils.convertRubyToJava(context, ruby_inputs.shift(context));
+                    }
+                    results = Peer.q(query, database, inputs);
+                }
             } else {
-                Object[] inputs = new Object[ruby_inputs.getLength()];
+                Object[] inputs = new Object[args.length-2];
                 for (int i=0; i<inputs.length; i++) {
-                    inputs[i] = DiametricUtils.convertRubyToJava(context, ruby_inputs.shift(context));
+                    inputs[i] = DiametricUtils.convertRubyToJava(context, args[i+2]);
                 }
                 results = Peer.q(query, database, inputs);
             }
-        } else {
-            Object[] inputs = new Object[args.length-2];
-            for (int i=0; i<inputs.length; i++) {
-                inputs[i] = DiametricUtils.convertRubyToJava(context, args[i+2]);
-            }
-            results = Peer.q(query, database, inputs);
+        } catch (Exception e) {
+            throw runtime.newRuntimeError("Datomic Exception: " + e.getMessage());
         }
 
         if (results == null) return context.getRuntime().getNil();
