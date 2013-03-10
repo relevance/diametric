@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+if defined?(RUBY_ENGINE) && RUBY_ENGINE == 'jruby'
+
 describe Diametric::Persistence::Peer do
   it 'should create database' do
     subject.create_database("datomic:mem://sample").should be_true
@@ -122,4 +124,6 @@ describe Diametric::Persistence::Peer do
       #puts value
     end
   end
+end
+
 end

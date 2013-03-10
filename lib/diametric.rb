@@ -7,7 +7,7 @@ require "diametric/errors"
 
 require 'diametric/config'
 
-if defined?(RUBY_ENGINE) && RUBY_ENGINE = "jruby"
+if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
   require 'lock_jar'
   lockfile = File.join(File.dirname(__FILE__), "..", "Jarfile.lock")
   LockJar.load(lockfile)
