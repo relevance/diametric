@@ -35,7 +35,7 @@ RSpec::Core::RakeTask.new(:spec)
 
 
 # setting for rake compiler
-if defined?(RUBY_ENGINE) && RUBY_ENGINE = "jruby"                               
+if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
   require 'lock_jar'
   LockJar.lock
   locked_jars = LockJar.load
