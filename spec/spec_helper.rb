@@ -7,7 +7,7 @@ RSpec.configure do |c|
 #  c.fail_fast = true
 
   c.filter_run_excluding :integration => true unless ENV['INTEGRATION']
-  c.filter_run_excluding :jruby => true unless RUBY_ENGINE == "jruby"
+  c.filter_run_excluding :jruby => (not is_jruby?)
 
   c.filter_run_including :focused => true
   c.alias_example_to :fit, :focused => true
@@ -65,7 +65,7 @@ class Robin
   attribute :age, Integer
 end
 
-if RUBY_ENGINE == "jruby"
+if is_jruby?
   require 'lock_jar'
   LockJar.load
 
