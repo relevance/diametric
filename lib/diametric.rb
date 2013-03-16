@@ -6,6 +6,7 @@ require 'diametric/persistence/common'
 require "diametric/errors"
 
 require 'diametric/config'
+require 'diametric/rest_service'
 
 def is_jruby?
   if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"

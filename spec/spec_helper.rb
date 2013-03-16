@@ -1,5 +1,5 @@
 require 'rspec'
-require 'pry'
+#require 'pry'
 require 'diametric'
 Dir["./spec/support/**/*.rb"].each {|f| require f}
 
@@ -8,6 +8,7 @@ RSpec.configure do |c|
 
   c.filter_run_excluding :integration => true unless ENV['INTEGRATION']
   c.filter_run_excluding :jruby => (not is_jruby?)
+  c.filter_run_excluding :service => true unless ENV['RESTSERVICE']
 
   c.filter_run_including :focused => true
   c.alias_example_to :fit, :focused => true

@@ -10,13 +10,14 @@ JARS = Dir["#{datomic_home}/lib/*.jar"]
 JARS += Dir["#{datomic_home}/*transactor*.jar"]
 
 # Setup CLASSPATH
-CLASSPATH = JARS.join(":") 
+CLASSPATH = JARS.join(File::PATH_SEPARATOR) 
 files = ["samples/clj", "bin", "resources"]
-CLASSPATH += ":" + files.collect {|f| datomic_home + "/" + f}.join(":")
+CLASSPATH += File::PATH_SEPARATOR + files.collect {|f| datomic_home + "/" + f}.join(File::PATH_SEPARATOR)
 
 # Command
 command = ["java -server -Xmx1g", "-cp", CLASSPATH, "clojure.main", "-i", "#{datomic_home}/bin/bridge.clj", "--main datomic.rest", ARGV].flatten.join(" ")
-puts "#{command}"
+#puts "#{command}"
 
 # Startup REST server
-`#{command}`
+@pid = spawn(command)
+puts @pid
