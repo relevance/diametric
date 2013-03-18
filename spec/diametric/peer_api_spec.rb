@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 if is_jruby?
-
 describe Diametric::Persistence::Peer, :jruby => true do
   @db_name = "test-#{Time.now.to_i}"
 
@@ -130,5 +129,4 @@ describe Diametric::Persistence::Peer, :jruby => true do
     end
   end
 end
-
 end
