@@ -45,9 +45,9 @@ describe Diametric::RestService, :service =>true do
     let(:rest) { Diametric::RestService.new("spec/test_version_file.cnf", "tmp/datomic") }
     
     it "should start and stop rest service" do
-      uri = URI("http://localhost:46921")
+      uri = URI("http://localhost:49621")
       expect { Net::HTTP.get_response(uri) }.to raise_error
-      rest.start(:port => 46921, :db_alias => "free", :uri => "datomic:mem://")
+      rest.start(:port => 49621, :db_alias => "free", :uri => "datomic:mem://")
       expect { Net::HTTP.get_response(uri) }.not_to raise_error
       rest.stop
       expect { Net::HTTP.get_response(uri) }.to raise_error

@@ -39,8 +39,7 @@ public class DiametricUtils {
            return (Object)tmvalue.toJava(Date.class);
        }
        if (value instanceof DiametricObject) {
-           Object java_object= ((DiametricObject)value).toJava();
-           return java_object;
+           return ((DiametricObject)value).toJava();
        }
        return (Object)value.toJava(Object.class);
    }

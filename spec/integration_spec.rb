@@ -6,7 +6,7 @@ require 'datomic/client'
 
 describe Diametric::Entity, :integration => true do
   before(:all) do
-    @datomic_uri = ENV['DATOMIC_URI'] || 'http://localhost:9000'
+    @datomic_uri = ENV['DATOMIC_URI'] || 'http://localhost:46291'
     @storage = ENV['DATOMIC_STORAGE'] || 'free'
     @dbname = ENV['DATOMIC_NAME'] || "test-#{Time.now.to_i}"
     @client = Datomic::Client.new @datomic_uri, @storage

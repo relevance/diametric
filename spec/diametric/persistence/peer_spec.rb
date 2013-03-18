@@ -9,6 +9,10 @@ module Diametric
 end
 
 describe Diametric::Persistence::Peer, :jruby do
+  before (:all) do
+      @db_uri = "datomic:mem://hello-#{Time.now.to_i}"
+  end
+
   class Rat
     include Diametric::Entity
     include Diametric::Persistence::Peer
@@ -17,10 +21,8 @@ describe Diametric::Persistence::Peer, :jruby do
     attribute :age, Integer
   end
 
-  let(:db_uri) { 'datomic:mem://hello' }
-
   it "can connect to a Datomic database" do
-    connection = subject.connect(:uri => db_uri)
+    connection = subject.connect(:uri => @db_uri)
     connection.should be_a(Diametric::Persistence::Connection)
   end
 
@@ -28,8 +30,8 @@ describe Diametric::Persistence::Peer, :jruby do
     let(:model_class) { Rat }
 
     before(:all) do
-      connection = subject.connect(:uri => db_uri)
-      Diametric::Persistence::Peer.create_schemas(connection)
+      @connection = Diametric::Persistence::Peer.connect(:uri => @db_uri)
+      Diametric::Persistence::Peer.create_schemas(@connection)
     end
   end
 end

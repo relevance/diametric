@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -265,6 +266,11 @@ public class DiametricPeer extends RubyModule {
     }
 
     @JRubyMethod(meta=true)
+    public static IRubyObject transact(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        return saved_connection.transact(context, arg);
+    }
+
+    @JRubyMethod(meta=true)
     public static IRubyObject get(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
         Ruby runtime = context.getRuntime();
         Object dbid = null;
@@ -279,5 +285,19 @@ public class DiametricPeer extends RubyModule {
         DiametricEntity ruby_entity = (DiametricEntity)clazz.allocate();
         ruby_entity.init(entity);
         return ruby_entity;
+    }
+
+    @JRubyMethod(meta=true)
+    public static IRubyObject retract_entity(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        Object dbid = DiametricUtils.convertRubyToJava(context, arg);
+        List query = datomic.Util.list((datomic.Util.list(":db.fn/retractEntity", dbid)));
+        try {
+            saved_connection.toJava().transact(query).get();
+        } catch (InterruptedException e) {
+            throw context.getRuntime().newRuntimeError("Datomic error: " + e.getMessage());
+        } catch (ExecutionException e) {
+            throw context.getRuntime().newRuntimeError("Datomic error: " + e.getMessage());
+        }
+        return context.getRuntime().getNil();
     }
 }

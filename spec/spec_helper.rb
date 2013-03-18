@@ -15,6 +15,16 @@ RSpec.configure do |c|
 
   c.run_all_when_everything_filtered = true
   c.treat_symbols_as_metadata_keys_with_true_values = true
+
+  c.before(:suite) do
+    @rest = Diametric::RestService.new("spec/test_version_file.cnf", "tmp/datomic")
+    @rest.start(:port => 46291, :db_alias => @storage, :uri => "datomic:mem://")
+    PID = @rest.pid
+  end
+
+  c.after(:suite) do
+    Process.kill("HUP", PID)
+  end
 end
 
 shared_examples "ActiveModel" do |model|

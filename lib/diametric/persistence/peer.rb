@@ -16,6 +16,10 @@ module Diametric
         map
       end
 
+      def retract_entity(dbid)
+        Diametric::Persistence::Peer.retract_entity(dbid)
+      end
+
       module ClassMethods
         def get(dbid)
           entity = self.new

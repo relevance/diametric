@@ -1,15 +1,17 @@
 require 'spec_helper'
 
-if defined?(RUBY_ENGINE) && RUBY_ENGINE == 'jruby'
+if is_jruby?
 
-describe Diametric::Persistence::Peer do
+describe Diametric::Persistence::Peer, :jruby => true do
+  @db_name = "test-#{Time.now.to_i}"
+
   it 'should create database' do
-    subject.create_database("datomic:mem://sample").should be_true
+    subject.create_database("datomic:mem://#{@db_name}").should be_true
   end
 
   context Diametric::Persistence::Peer do
     it 'should connect to the database' do
-      subject.connect("datomic:mem://sample").should be_true
+      subject.connect("datomic:mem://#{@db_name}").should be_true
     end
 
     it 'should get tempid' do
@@ -19,7 +21,8 @@ describe Diametric::Persistence::Peer do
   end
 
   context Diametric::Persistence::Connection do
-    let(:connection) { Diametric::Persistence::Peer.connect("datomic:mem://sample") }
+    @db_name = "test-#{Time.now.to_i}"
+    let(:connection) { Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}") }
     let(:tempid) { Diametric::Persistence::Peer.tempid(":db.part/db") }
     let(:user_part_tempid) { Diametric::Persistence::Peer.tempid(":db.part/user") } 
     let(:tx_data) {
@@ -63,7 +66,6 @@ describe Diametric::Persistence::Peer do
   end
 
   context 'Diametric query' do
-    let(:connection) { Diametric::Persistence::Peer.connect("datomic:mem://sample") }
     before(:all) {
       tx_data =
       [{
@@ -78,12 +80,15 @@ describe Diametric::Persistence::Peer do
       [{":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Alice"},
        {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Bob"},
        {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Chris"}]
-      connection.transact(tx_data).get
-      connection.transact(user_data).get
+      @db_name = "test-#{Time.now.to_i}"
+      @connection = Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}")
+
+      @connection.transact(tx_data).get
+      @connection.transact(user_data).get
     }
 
     it 'should get ids from datomic' do
-      results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]", connection.db)
+      results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]", @connection.db)
       results.class.should == Array
       results.size.should be >= 3
       #puts results.inspect
@@ -91,7 +96,7 @@ describe Diametric::Persistence::Peer do
 
     it 'should get names from datomic' do
       results = Diametric::Persistence::Peer.q("[:find ?c ?name :where [?c :person/name ?name]]\
-  ", connection.db)
+  ", @connection.db)
       results.flatten.should include("Alice")
       results.flatten.should include("Bob")
       results.flatten.should include("Chris")
@@ -100,25 +105,25 @@ describe Diametric::Persistence::Peer do
 
     it 'should get entity by id' do
       results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
- connection.db)
+ @connection.db)
       id = results[0][0]
-      connection.db.entity(id).should be_true
+      @connection.db.entity(id).should be_true
     end
 
     it 'should get keys from entity id' do
       results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
- connection.db)
+ @connection.db)
       id = results[0][0]
-      entity = connection.db.entity(id)
+      entity = @connection.db.entity(id)
       entity.keys.should include(":person/name")
       #puts entity.keys
     end
 
     it 'should get value from entity id' do
       results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
- connection.db)
+ @connection.db)
       id = results[0][0]
-      entity = connection.db.entity(id)
+      entity = @connection.db.entity(id)
       value =  entity.get(entity.keys[0])
       value.should match(/Alice|Bob|Chris/)
       #puts value

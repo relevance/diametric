@@ -60,6 +60,7 @@ module Diametric
     end
 
     attr_accessor :datomic_version, :datomic_version_no, :datomic_home, :pid
+    attr_accessor :host, :port, :db_alias, :uri
 
     def initialize(conf="datomic_version.cnf", dest="vendor/datomic")
       @conf = conf
@@ -75,14 +76,15 @@ module Diametric
       RestService.download(@conf, @dest)
       command = RestService.datomic_command(@datomic_home)
 
-      host = opts[:host] ? opts[:host] : "localhost"
-      port = opts[:port] ? opts[:port] : 9000
-      a_name = opts[:alias] ? opts[:alias] : "free"
-      uri = opts[:uri] ? opts[:uri] : "datomic:mem://"
+      require 'socket'
+      @host = opts[:host] ? opts[:host] : Socket.gethostname
+      @port = opts[:port] ? opts[:port] : 9000
+      @db_alias = opts[:db_alias] ? opts[:db_alias] : "free"
+      @uri = opts[:uri] ? opts[:uri] : "datomic:mem://"
 
-      temp_pid = spawn("#{command} -p #{port} #{a_name} #{uri}")
+      temp_pid = spawn("#{command} -p #{@port} #{@db_alias} #{@uri}")
 
-      uri = URI("http://#{host}:#{port}/")
+      uri = URI("http://#{@host}:#{@port}/")
       while true
         begin
           Net::HTTP.get_response(uri)
@@ -97,6 +99,7 @@ module Diametric
 
     def stop
       Process.kill("HUP", @pid) if @pid
+      @pid = nil
     end
 
   end
