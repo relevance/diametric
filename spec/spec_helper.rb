@@ -1,5 +1,5 @@
 require 'rspec'
-require 'pry'
+#require 'pry'
 require 'diametric'
 Dir["./spec/support/**/*.rb"].each {|f| require f}
 

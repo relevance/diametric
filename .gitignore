@@ -1,9 +1,11 @@
 *.gem
 *.rbc
 .bundle
+.classpath
 .config
 .idea
 .jbundler
+.project
 .rspec
 .rvmrc
 .yardoc
@@ -11,12 +13,14 @@ InstalledFiles
 Gemfile.lock
 _yardoc
 bin/
+build
 coverage
 doc/
 lib/bundler/man
 log
 pkg
 rdoc
+repository
 samples/*/.bundle
 samples/*/*.lock
 samples/*/log/*.log
