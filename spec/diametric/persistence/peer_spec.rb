@@ -1,24 +1,10 @@
 require 'spec_helper'
-
-# Prevent CRuby from blowing up
-module Diametric
-  module Persistence
-    module Peer
-    end
-  end
-end
+require 'diametric/persistence/peer'
+require 'securerandom'
 
 describe Diametric::Persistence::Peer, :jruby do
-  before (:all) do
-      @db_uri = "datomic:mem://hello-#{Time.now.to_i}"
-  end
-
-  class Rat
-    include Diametric::Entity
-    include Diametric::Persistence::Peer
-
-    attribute :name, String, :index => true
-    attribute :age, Integer
+  before do
+    @db_uri = "datomic:mem://hello-#{SecureRandom.uuid}"
   end
 
   it "can connect to a Datomic database" do
@@ -29,7 +15,7 @@ describe Diametric::Persistence::Peer, :jruby do
   it_behaves_like "persistence API" do
     let(:model_class) { Rat }
 
-    before(:all) do
+    before do
       @connection = Diametric::Persistence::Peer.connect(:uri => @db_uri)
       Diametric::Persistence::Peer.create_schemas(@connection)
     end

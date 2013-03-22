@@ -2,11 +2,9 @@ require "diametric/version"
 require "diametric/entity"
 require "diametric/query"
 require "diametric/persistence"
-require 'diametric/persistence/common'
 require "diametric/errors"
 
 require 'diametric/config'
-require 'diametric/rest_service'
 
 def is_jruby?
   if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
@@ -16,7 +14,7 @@ def is_jruby?
   end
 end
 
-if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
+if is_jruby?
   require 'lock_jar'
   lockfile = File.join(File.dirname(__FILE__), "..", "Jarfile.lock")
   LockJar.load(lockfile)

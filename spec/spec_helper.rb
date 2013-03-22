@@ -1,6 +1,16 @@
 require 'rspec'
 #require 'pry'
+
+if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
+  require 'lock_jar'
+  jar_file = File.join(File.dirname(__FILE__), "..", "Jarfile")
+  lock_file = File.join(File.dirname(__FILE__), "..", "Jarfile.lock")
+  LockJar.lock(jar_file)
+  LockJar.install(lock_file)
+  LockJar.load(lock_file)
+end
 require 'diametric'
+require 'diametric/rest_service'
 Dir["./spec/support/**/*.rb"].each {|f| require f}
 
 RSpec.configure do |c|
@@ -41,50 +51,5 @@ shared_examples "ActiveModel" do |model|
     it "#{test_name.sub(/^test_/, '')}" do
       send(test_name)
     end
-  end
-end
-
-class Person
-  include Diametric::Entity
-
-  attribute :name, String, :index => true
-  attribute :email, String, :cardinality => :many
-  attribute :birthday, DateTime
-  attribute :awesome, :boolean, :doc => "Is this person awesome?"
-  attribute :ssn, String, :unique => :value
-  attribute :secret_name, String, :unique => :identity
-  attribute :bio, String, :fulltext => true
-  attribute :middle_name, String, :default => "Danger"
-  attribute :nicknames, String, :cardinality => :many, :default => ["Buddy", "Pal"]
-  attribute :parent, Ref, :cardinality => :many, :doc => "A person's parent"
-end
-
-class Goat
-  include Diametric::Entity
-
-  attribute :name, String
-  attribute :birthday, DateTime
-end
-
-require 'diametric/persistence/rest'
-class Robin
-  include Diametric::Entity
-  include Diametric::Persistence::REST
-
-  attribute :name, String
-  validates_presence_of :name
-  attribute :age, Integer
-end
-
-if is_jruby?
-  require 'lock_jar'
-  LockJar.load
-
-  class Penguin
-    include Diametric::Entity
-    include Diametric::Persistence::Peer
-
-    attribute :name, String
-    attribute :age, Integer
   end
 end

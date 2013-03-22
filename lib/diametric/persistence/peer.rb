@@ -1,3 +1,5 @@
+require 'diametric/persistence/common'
+
 module Diametric
   module Persistence
     module Peer

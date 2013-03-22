@@ -43,7 +43,7 @@ shared_examples "persistence API" do
     end
 
     context "that is saved in Datomic" do
-      before(:each) do
+      before do
         model.name = "Wilbur"
         model.age = 2
         model.save
@@ -65,36 +65,22 @@ shared_examples "persistence API" do
       end
 
       it "can find it by attribute" do
-        pending("Diametric query has too many problems. It needs to be reconsidered.")
         model2 = model_class.first(:name => "Wilbur")
-        ## Problematic
-        ## Occasionally, the model2 array has mutiple entities of the
-        ## same name and age but different dbid.
-        ## The array length veries depending on how many transantions
-        ## happened before this test. 
-        ## 
         model2.should_not be_nil
-        #model2.dbid.should == model.dbid
+        model2.dbid.should == model.dbid
         model2.should == model if model2.is_a? Rat
         model2.should include(mode) if model2.is_a? Array
       end
 
       it "can find all matching conditions" do
         mice = model_class.where(:name => "Wilbur").where(:age => 2).all
-        ## Problematic
-        ## In mice array mutiple entities of the model with different
-        ## dbid are. The array length veries depending on how many transantions
-        ## happened before this test
-        ## 
-        #mice.should == [model]
+        mice.should == [model]
         mice.should include(model)
       end
 
       it "can filter entities" do
         mice = model_class.filter(:<, :age, 3).all
-        ## For the same reason as the previous test,
-        ## array length varies.
-        #mice.should == [model]
+        mice.should == [model]
         mice.should include(model)
 
         mice = model_class.filter(:>, :age, 3).all
@@ -105,11 +91,7 @@ shared_examples "persistence API" do
         model_class.new(:name => "Smith", :age => 5).save
         mice = model_class.all
         mice.should_not be_nil
-        pending("Diametric query has too many problems. It needs to be reconsidered")
-        ## Problematic
-        ## On rspec, mice.size is always 8.
-        ##
-        #mice.size.should == 2
+        mice.size.should == 2
         names = ["Smith", "Wilbur"]
         mice.each do |m|
           names.include?(m.name).should be_true

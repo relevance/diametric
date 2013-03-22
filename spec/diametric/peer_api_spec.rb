@@ -1,8 +1,9 @@
 require 'spec_helper'
+require 'securerandom'
 
 if is_jruby?
 describe Diametric::Persistence::Peer, :jruby => true do
-  @db_name = "test-#{Time.now.to_i}"
+  @db_name = "test-#{SecureRandom.uuid}"
 
   it 'should create database' do
     subject.create_database("datomic:mem://#{@db_name}").should be_true
@@ -20,7 +21,7 @@ describe Diametric::Persistence::Peer, :jruby => true do
   end
 
   context Diametric::Persistence::Connection do
-    @db_name = "test-#{Time.now.to_i}"
+    @db_name = "test-#{SecureRandom.uuid}"
     let(:connection) { Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}") }
     let(:tempid) { Diametric::Persistence::Peer.tempid(":db.part/db") }
     let(:user_part_tempid) { Diametric::Persistence::Peer.tempid(":db.part/user") } 
@@ -65,7 +66,7 @@ describe Diametric::Persistence::Peer, :jruby => true do
   end
 
   context 'Diametric query' do
-    before(:all) {
+    before do
       tx_data =
       [{
          ":db/id" => Diametric::Persistence::Peer.tempid(":db.part/db"),
@@ -79,12 +80,12 @@ describe Diametric::Persistence::Peer, :jruby => true do
       [{":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Alice"},
        {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Bob"},
        {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Chris"}]
-      @db_name = "test-#{Time.now.to_i}"
+      @db_name = "test-#{SecureRandom.uuid}"
       @connection = Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}")
 
       @connection.transact(tx_data).get
       @connection.transact(user_data).get
-    }
+    end
 
     it 'should get ids from datomic' do
       results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]", @connection.db)

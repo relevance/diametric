@@ -4,11 +4,11 @@ require 'net/http'
 describe Diametric::RestService, :service =>true do
   let(:service) { Diametric::RestService }
 
-  before (:all) {
+  before do
     dir = File.join(File.dirname(__FILE__), "../..", "tmp/datomic")
     FileUtils.rm_rf(dir)
     FileUtils.mkdir_p(dir)
-  }
+  end
 
   it "should find a class" do
     service.should be_true

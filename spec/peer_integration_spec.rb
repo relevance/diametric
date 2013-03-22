@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'diametric/entity'
 require 'datomic/client'
 
 # Datomic's `rest` needs to run for these tests to pass:
