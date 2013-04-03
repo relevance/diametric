@@ -1,14 +1,16 @@
 require 'spec_helper'
+require 'diametric/entity'
 require 'datomic/client'
+require 'securerandom'
 
 # Datomic's `rest` needs to run for these tests to pass:
 #   bin/rest 9000 test datomic:mem://
 
 describe Diametric::Entity, :integration => true do
   before(:all) do
-    @datomic_uri = ENV['DATOMIC_URI'] || 'http://localhost:9000'
+    @datomic_uri = ENV['DATOMIC_URI'] || 'http://localhost:46291'
     @storage = ENV['DATOMIC_STORAGE'] || 'free'
-    @dbname = ENV['DATOMIC_NAME'] || "test-#{Time.now.to_i}"
+    @dbname = ENV['DATOMIC_NAME'] || "test-#{SecureRandom.uuid}"
     @client = Datomic::Client.new @datomic_uri, @storage
     @client.create_database(@dbname)
     sleep 0.5

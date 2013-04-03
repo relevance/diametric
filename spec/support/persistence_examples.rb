@@ -43,7 +43,7 @@ shared_examples "persistence API" do
     end
 
     context "that is saved in Datomic" do
-      before(:each) do
+      before do
         model.name = "Wilbur"
         model.age = 2
         model.save
@@ -68,17 +68,20 @@ shared_examples "persistence API" do
         model2 = model_class.first(:name => "Wilbur")
         model2.should_not be_nil
         model2.dbid.should == model.dbid
-        model2.should == model
+        model2.should == model if model2.is_a? Rat
+        model2.should include(mode) if model2.is_a? Array
       end
 
       it "can find all matching conditions" do
         mice = model_class.where(:name => "Wilbur").where(:age => 2).all
         mice.should == [model]
+        mice.should include(model)
       end
 
       it "can filter entities" do
         mice = model_class.filter(:<, :age, 3).all
         mice.should == [model]
+        mice.should include(model)
 
         mice = model_class.filter(:>, :age, 3).all
         mice.should == []
@@ -87,6 +90,7 @@ shared_examples "persistence API" do
       it "can find all" do
         model_class.new(:name => "Smith", :age => 5).save
         mice = model_class.all
+        mice.should_not be_nil
         mice.size.should == 2
         names = ["Smith", "Wilbur"]
         mice.each do |m|

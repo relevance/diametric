@@ -69,6 +69,7 @@ module Diametric
     #   that will be converted into a Datalog query.
     # @return [Query]
     def filter(*filter)
+      return peer_filter(filter) if self.model.instance_variable_get("@peer")
       query = self.dup
 
       if filter.first.is_a?(EDN::Type::List)
@@ -81,6 +82,21 @@ module Diametric
       query.filters += [[filter]]
       query
     end
+
+    def peer_filter(*filter)
+      query = self.dup
+
+      if filter.first.is_a?(Array)
+        filter = filter.first
+      end
+      filter[1] = "?#{filter[1].to_s}"
+      filter = filter.tap {|e| e.to_s }.join(" ")
+      filter = "[(#{filter})]"
+
+      query.filters << filter
+      query
+    end
+
 
     # Loop through the query results. In order to use +each+, your model *must*
     # include a persistence API. At a minimum, it must have a +.q+ method that
@@ -113,6 +129,8 @@ module Diametric
     #   is the Datomic query composed of Ruby data. The second element is
     #   the arguments that used with the query.
     def data
+      return peer_data if self.model.instance_variable_get("@peer")
+
       vars = model.attribute_names.map { |attribute| ~"?#{attribute}" }
 
       from = conditions.map { |k, _| ~"?#{k}" }
@@ -129,6 +147,25 @@ module Diametric
         :in, ~"\$", *from,
         :where, *clauses
       ]
+
+      [query, args]
+    end
+
+    def peer_data
+      vars = model.attribute_names.inject("") {|memo, attribute| memo + "?#{attribute} " }
+
+      form = ""
+      if conditions.size > 0
+        from = conditions.inject("[") {|memo, kv| memo + "?#{kv.shift} "} +"]"
+      end
+
+      clauses = model.attribute_names.inject("") do |memo, attribute|
+        memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
+      end
+
+      args = conditions.map { |_, v| v }
+
+      query = "[:find ?e #{vars} :in $ #{from} :where #{clauses} #{filters.join}]"
 
       [query, args]
     end

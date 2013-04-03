@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'diametric/entity'
 
 describe Diametric::Entity do
   describe "in a class" do

@@ -168,6 +168,11 @@ module Diametric
       # @return [Array] A Datomic schema, as Ruby data that can be
       #   converted to EDN.
       def schema
+        return peer_schema if self.instance_variable_get("@peer")
+        rest_schema
+      end
+
+      def rest_schema
         defaults = {
           :"db/id" => tempid(:"db.part/db"),
           :"db/cardinality" => :"db.cardinality/one",
@@ -191,6 +196,38 @@ module Diametric
           schema << defaults.merge({
                                      :"db/ident" => namespace(prefix, attribute),
                                      :"db/valueType" => value_type(value_type),
+                                   }).merge(opts)
+        end
+      end
+
+      # Generates a Datomic schema for a model's attributes.
+      #
+      # @return [Array] A Datomic schema, as Ruby data that can be
+      #   converted to EDN.
+      def peer_schema
+        defaults = {
+          ":db/cardinality" => ":db.cardinality/one",
+          ":db.install/_attribute" => ":db.part/db"
+        }
+
+        @attributes.reduce([]) do |schema, (attribute, opts)|
+          opts = opts.dup
+          value_type = opts.delete(:value_type)
+
+          unless opts.empty?
+            opts[:cardinality] = namespace("db.cardinality", opts[:cardinality])
+            opts[:unique] = namespace("db.unique", opts[:unique]) if opts[:unique]
+            opts = opts.map { |k, v|
+              k = namespace("db", k)
+              [k, v]
+            }
+            opts = Hash[*opts.flatten]
+          end
+
+          schema << defaults.merge({
+                                     ":db/id" => Diametric::Persistence::Peer.tempid(":db.part/db"),
+                                     ":db/ident" => namespace(prefix, attribute),
+                                     ":db/valueType" => value_type(value_type),
                                    }).merge(opts)
         end
       end
@@ -227,7 +264,15 @@ module Diametric
       #
       # @return [EDN::Type::Unknown] Temporary id placeholder.
       def tempid(*e)
-        EDN.tagged_element('db/id', e)
+        if self.instance_variable_get("@peer")
+          if e[0].to_s.include?("user")
+            return Diametric::Persistence::Peer.tempid(":db.part/user")
+          else
+            return Diametric::Persistence::Peer.tempid(":db.part/db")
+          end
+        else
+          EDN.tagged_element('db/id', e)
+        end
       end
 
       # Namespace a attribute for Datomic.
@@ -237,9 +282,13 @@ module Diametric
       #
       # @return [Symbol] Namespaced attribute.
       def namespace(ns, attribute)
-        [ns.to_s, attribute.to_s].join("/").to_sym
+        if self.instance_variable_get("@peer")
+          ":" + [ns.to_s, attribute.to_s].join("/")
+        else
+          [ns.to_s, attribute.to_s].join("/").to_sym
+        end
       end
-      
+
       # Raise an error if validation failed.
       #
       # @example Raise the validation error.
@@ -331,7 +380,12 @@ module Diametric
       end
 
       if entity_tx.present?
-        txes << entity_tx.merge({:"db/id" => dbid || tempid})
+        if self.class.instance_variable_get("@peer")
+          @dbid ||= tempid
+          txes << entity_tx.merge({":db/id" => dbid})
+        else
+          txes << entity_tx.merge({:"db/id" => dbid || tempid})
+        end
       end
 
       txes

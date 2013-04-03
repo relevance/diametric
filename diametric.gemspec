@@ -16,25 +16,28 @@ as entities into a Datomic database.
 EOF
   gem.homepage      = "https://github.com/relevance/diametric"
 
-  gem.files         = %w(Gemfile Jarfile Jarfile.lock LICENSE.txt README.md Rakefile diametric.gemspec) + Dir.glob('lib/**/*')
+  gem.files         = %w(Gemfile Jarfile Jarfile.lock LICENSE.txt README.md Rakefile datomic_version.cnf diametric.gemspec) + Dir.glob('lib/**/*') + Dir.glob('ext/**/*') + Dir.glob('spec/**/*')
   gem.executables   = []
   gem.test_files    = Dir.glob("spec/**/*.rb")
   gem.require_paths = ["lib"]
+  gem.executables = ["datomic-rest", "download-datomic"]
 
   gem.add_dependency 'edn', '~> 1.0'
   gem.add_dependency 'activesupport', '>= 3.0.0'
   gem.add_dependency 'activemodel', '>= 3.0.0'
   gem.add_dependency 'datomic-client', '~> 0.4.1'
-  gem.add_dependency 'rspec', '~> 2.12.0'
-  gem.add_dependency 'lock_jar', '= 0.7.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
-  gem.add_dependency 'jruby-openssl', '~> 0.8.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
+  gem.add_dependency 'rubyzip', '~> 0.9.9'
+  gem.add_dependency 'rspec', '~> 2.13.0'
+  gem.add_dependency 'lock_jar', '= 0.7.3' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
+  gem.add_dependency 'jruby-openssl', '~> 0.8.7' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
+  gem.add_dependency 'rake-compiler', '~> 0.8.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
 
   gem.add_development_dependency 'pry', '~> 0.9.12'
-  gem.add_development_dependency 'guard', '~> 1.6.2'
-  gem.add_development_dependency 'guard-rspec', '~> 2.4.0'
-  gem.add_development_dependency 'rb-inotify', '~> 0.9.0'
-  gem.add_development_dependency 'rb-fsevent', '~> 0.9.3'
-  gem.add_development_dependency 'rb-fchange', '~> 0.0.6'
+  gem.add_development_dependency 'guard', '~> 1.6.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
+  gem.add_development_dependency 'guard-rspec', '~> 2.4.0' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
+  gem.add_development_dependency 'rb-inotify', '~> 0.9.0' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
+  gem.add_development_dependency 'rb-fsevent', '~> 0.9.3' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
+  gem.add_development_dependency 'rb-fchange', '~> 0.0.6' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
   gem.add_development_dependency 'yard', '~> 0.8.4.1' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
   gem.add_development_dependency 'redcarpet', '~> 2.2.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
 
