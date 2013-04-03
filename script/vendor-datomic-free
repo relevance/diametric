@@ -1,21 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-set -e
+DATOMIC_NAME = File.read(File.join(File.dirname(__FILE__), "..", "datomic_version.cnf"))
 
-DEFAULT_DATOMIC_VERSION="0.8.3814"
-VERSION=${1:-$DEFAULT_DATOMIC_VERSION}
+require 'diametric/rest_service'
 
-if [ ! -d "vendor/datomic/datomic-free-$VERSION" ]; then
-  echo "Downloading Datomic Free $VERSION"
-
-  mkdir -p vendor/datomic
-  curl --progress-bar -o datomic-free.zip "http://downloads.datomic.com/$VERSION/datomic-free-$VERSION.zip"
-  unzip -d vendor/datomic datomic-free.zip > /dev/null
-  rm datomic-free.zip
-
-  echo "Done. Datomic Free $VERSION now available in vendor/datomic/datomic-free-$VERSION"
-
+if Diametric::RestService.downloaded?
+    puts "Datomic #{DATOMIC_NAME} is already present in vendor/datomic"
 else
-  echo "Datomic Free $VERSION already present in vendor/datomic/datomic-free-$VERSION"
-fi
-
+    puts "Now, downloading..."
+    Diametric::RestService.download
+    puts "Done. Datomic #{DATOMIC_NAME} has been downloaded in vendor/datomic"
+end

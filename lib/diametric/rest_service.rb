@@ -1,3 +1,5 @@
+require 'net/http'
+
 module Diametric
   class RestService
     class << self
@@ -82,24 +84,41 @@ module Diametric
       @db_alias = opts[:db_alias] ? opts[:db_alias] : "free"
       @uri = opts[:uri] ? opts[:uri] : "datomic:mem://"
 
+      uri = URI("http://#{@host}:#{@port}/")
+
+      unless port_available?(uri)
+        puts "Somebody is using #{@port}. Choose other."
+        return
+      end
+
       temp_pid = spawn("#{command} -p #{@port} #{@db_alias} #{@uri}")
 
-      uri = URI("http://#{@host}:#{@port}/")
-      while true
-        begin
-          Net::HTTP.get_response(uri)
-          break
-        rescue
-          sleep 1
-          redo
-        end
-      end
-      @pid = temp_pid
+      @pid = temp_pid if ready?(uri)
     end
 
     def stop
       Process.kill("HUP", @pid) if @pid
       @pid = nil
+    end
+
+    def port_available?(uri)
+      response = Net::HTTP.get_response(uri)
+      false
+    rescue Errno::ECONNREFUSED
+      true
+    end
+
+    def ready?(uri)
+      while true
+        begin
+          response = Net::HTTP.get_response(uri)
+          return true
+        rescue
+          sleep 1
+          redo
+        end
+      end
+      true
     end
 
   end

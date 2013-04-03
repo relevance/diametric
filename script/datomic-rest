@@ -1,23 +1,32 @@
 #!/usr/bin/env ruby
 
-# Find Datomic home
-parent_dir = File.join(File.dirname(__FILE__), "../vendor/datomic")
-datomic_home = ""
-Dir.entries(parent_dir).each {|d| datomic_home =  parent_dir + "/" + d if d =~ /datomic/}
+options = {}
 
-# Find jar archives
-JARS = Dir["#{datomic_home}/lib/*.jar"]
-JARS += Dir["#{datomic_home}/*transactor*.jar"]
+opts = OptionParser.new do |opts|
+  opts.define_head "Usage: datomic-rest -p port -a db_alias -u uri"
+  opts.separator ""
+  opts.separator "Example:"
+  opts.separator "  datomc-rest -p 9000 -a free -u datomic:mem://"
 
-# Setup CLASSPATH
-CLASSPATH = JARS.join(File::PATH_SEPARATOR) 
-files = ["samples/clj", "bin", "resources"]
-CLASSPATH += File::PATH_SEPARATOR + files.collect {|f| datomic_home + "/" + f}.join(File::PATH_SEPARATOR)
+  opts.on("-p", "--port [port]", Integer, "Port number") do |v|
+    options[:port] = v
+  end
 
-# Command
-command = ["java -server -Xmx1g", "-cp", CLASSPATH, "clojure.main", "-i", "#{datomic_home}/bin/bridge.clj", "--main datomic.rest", ARGV].flatten.join(" ")
-#puts "#{command}"
+  opts.on("-a", "--alias [alias]", String,  "Alias name") do |v|
+    options[:db_alias] = v
+  end
 
-# Startup REST server
-@pid = spawn(command)
-puts @pid
+  opts.on("-u", "--uri [uri]", String, "URI") do |v|
+    options[:uri] = v
+  end
+end
+opts.parse!
+
+DATOMIC_NAME = File.read(File.join(File.dirname(__FILE__), "..", "datomic_version.cnf"))
+
+require 'diametric/rest_service'
+
+service = Diametric::RestService.new
+PID = service.start(options)
+
+puts "Datomic REST service is running (PID = #{PID})" unless PID.nil?
