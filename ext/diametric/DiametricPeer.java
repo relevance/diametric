@@ -99,6 +99,20 @@ public class DiametricPeer extends RubyModule {
         return RubyBoolean.newBoolean(context.getRuntime(), status);
     }
     
+    @JRubyMethod(meta=true)
+    public static IRubyObject shutdown(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        if (!(arg instanceof RubyBoolean)) {
+            throw context.getRuntime().newArgumentError("Wrong argument type.");
+        }
+        Boolean shutdownClojure = (Boolean) arg.toJava(Boolean.class);
+        try {
+            Peer.shutdown(shutdownClojure);
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
+        }
+        return context.getRuntime().getNil();
+    }
+
     /**
      * Constructs a semi-sequential UUID useful for creating UUIDs that don't fragment indexes
      * 
@@ -125,7 +139,9 @@ public class DiametricPeer extends RubyModule {
      */
     @JRubyMethod(meta=true)
     public static IRubyObject squuid_time_millis(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
-        if (!(arg instanceof diametric.DiametricUUID)) return context.getRuntime().getNil();
+        if (!(arg instanceof diametric.DiametricUUID)) {
+            throw context.getRuntime().newArgumentError("Wrong argument type.");
+        }
         java.util.UUID squuid = ((diametric.DiametricUUID)arg).getUUID();
         if (squuid == null) return context.getRuntime().getNil();
         long value = Peer.squuidTimeMillis(squuid);

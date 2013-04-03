@@ -2,6 +2,7 @@ package diametric;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,9 +13,11 @@ import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyNil;
 import org.jruby.RubyObject;
+import org.jruby.RubyTime;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -82,6 +85,27 @@ public class DiametricConnection extends RubyObject {
         } catch (Exception e) {
             context.getRuntime().newRuntimeError(e.getMessage());
         }
+        return context.getRuntime().getNil();
+    }
+
+    @JRubyMethod
+    public IRubyObject gc_storage(ThreadContext context, IRubyObject arg) {
+        if (!(arg.respondsTo("to_time"))) {
+            throw context.getRuntime().newArgumentError("Wrong argument type");
+        }
+        RubyTime rubyTime = (RubyTime) RuntimeHelpers.invoke(context, arg, "to_time");
+        Date olderThan = rubyTime.getJavaDate();
+        try {
+            conn.gcStorage(olderThan);
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError("Datomic error: " + e.getMessage());
+        }
+        return context.getRuntime().getNil();
+    }
+
+    @JRubyMethod
+    public IRubyObject release(ThreadContext context) {
+        conn.release();
         return context.getRuntime().getNil();
     }
 }
