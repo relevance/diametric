@@ -19,5 +19,10 @@ describe Diametric::Persistence::Peer, :jruby do
       @connection = Diametric::Persistence::Peer.connect(:uri => @db_uri)
       Diametric::Persistence::Peer.create_schemas(@connection)
     end
+
+    after do
+      @connection.release
+      Diametric::Persistence::Peer.shutdown(true)
+    end
   end
 end
