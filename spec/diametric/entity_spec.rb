@@ -211,4 +211,73 @@ describe Diametric::Entity do
     end
 
   end
+
+  context "seattle sample" do
+    subject { Community }
+
+    it { should respond_to(:attribute) }
+    it { should respond_to(:enum) }
+    it { should respond_to(:schema) }
+
+    it "should generate a schema" do
+      expected = [
+        { :"db/id" => subject.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"community/name",
+          :"db/valueType" => :"db.type/string",
+          :"db/cardinality" => :"db.cardinality/one",
+          :"db/fulltext" => true,
+          :"db/doc" => "A community's name",
+          :"db.install/_attribute" => :"db.part/db" },
+        { :"db/id" => subject.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"community/url",
+          :"db/valueType" => :"db.type/string",
+          :"db/cardinality" => :"db.cardinality/one",
+          :"db/doc" => "A community's url",
+          :"db.install/_attribute" => :"db.part/db" },
+        { :"db/id" => subject.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"community/neighborhood",
+          :"db/valueType" => :"db.type/ref",
+          :"db/cardinality" => :"db.cardinality/one",
+          :"db/doc" => "A community's neighborhood",
+          :"db.install/_attribute" => :"db.part/db" },
+        { :"db/id" => subject.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"community/category",
+          :"db/valueType" => :"db.type/string",
+          :"db/cardinality" => :"db.cardinality/many",
+          :"db/fulltext" => true,
+          :"db/doc" => "All community categories",
+          :"db.install/_attribute" => :"db.part/db" },
+        { :"db/id" => subject.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"community/orgtype",
+          :"db/valueType" => :"db.type/ref",
+          :"db/cardinality" => :"db.cardinality/one",
+          :"db/doc" => "A community orgtype enum value",
+          :"db.install/_attribute" => :"db.part/db" },
+        { :"db/id" => subject.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"community/type",
+          :"db/valueType" => :"db.type/ref",
+          :"db/cardinality" => :"db.cardinality/one",
+          :"db/doc" => "A community type enum value",
+          :"db.install/_attribute" => :"db.part/db" },
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.orgtype/community" },
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.orgtype/commercial" },
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.orgtype/nonprofit"},
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.orgtype/personal"},
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/email-list"},
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/twitter"},
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/facebook-page" },
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/blog" },
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/website" },
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/wiki" },
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/myspace" },
+        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/ning"}
+      ]
+
+      @created_schema = Community.schema
+      expected.each do |e|
+        @created_schema.shift.should == e
+      end
+    end
+  end
+
 end

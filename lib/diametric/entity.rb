@@ -3,6 +3,8 @@ require "edn"
 require 'active_support/core_ext'
 require 'active_support/inflector'
 require 'active_model'
+require 'set'
+require 'value_enums'
 
 module Diametric
 
@@ -56,6 +58,7 @@ module Diametric
       base.class_eval do
         @attributes = {}
         @defaults = {}
+        @enums = {}
         @namespace_prefix = nil
         @partition = :"db.part/user"
       end
@@ -163,6 +166,35 @@ module Diametric
         @attributes.keys
       end
 
+      # Add an enum to a {Diametric::Entity}.
+      #
+      # enum is used when attribute type is Ref and refers
+      # a set of values.
+      # name should be the same as corresponding attribute name.
+      #
+      # @example Add an enum of colors
+      #   class Palette
+      #     attribute :color, Ref
+      #     enum :color, [:blue, :green, :yellow, :orange]
+      #   end
+      #   p = Pallet.new
+      #   p.color = Pallet::Color::Green
+      #
+      # @param name [Symbol] The enum's name.
+      # @param values [Array] The enum values.
+      #
+      # @return void
+      def enum(name, values)
+        enum_values = nil
+        enum_values = values.to_set if values.is_a?(Array)
+        enum_values = values if values.is_a?(Set)
+        raise RuntimeError "values should be Array or Set" if enum_values.nil?
+        enum_name = name.to_s.capitalize
+        syms = values.collect(&:to_s).collect(&:upcase).collect(&:to_sym)
+        @enums[enum_name] = syms
+        class_eval("module #{enum_name};enum #{syms};end")
+      end
+
       # Generates a Datomic schema for a model's attributes.
       #
       # @return [Array] A Datomic schema, as Ruby data that can be
@@ -179,7 +211,7 @@ module Diametric
           :"db.install/_attribute" => :"db.part/db"
         }
 
-        @attributes.reduce([]) do |schema, (attribute, opts)|
+        schema_array = @attributes.reduce([]) do |schema, (attribute, opts)|
           opts = opts.dup
           value_type = opts.delete(:value_type)
 
@@ -198,6 +230,20 @@ module Diametric
                                      :"db/valueType" => value_type(value_type),
                                    }).merge(opts)
         end
+
+        enum_schema = {
+          :"db/add" => tempid(:"db.part/user"),
+        }
+        prefix = self.name.downcase
+        @enums.each do |key, values|
+          values.each do |value|
+            ident_value = :"#{prefix}.#{key.downcase}/#{value.to_s.sub(/_/, "-").downcase}"
+            es = enum_schema.dup
+            es[:"db/ident"] = ident_value
+            schema_array << es
+          end
+        end
+        schema_array
       end
 
       # Generates a Datomic schema for a model's attributes.
@@ -210,7 +256,7 @@ module Diametric
           ":db.install/_attribute" => ":db.part/db"
         }
 
-        @attributes.reduce([]) do |schema, (attribute, opts)|
+        schema_array = @attributes.reduce([]) do |schema, (attribute, opts)|
           opts = opts.dup
           value_type = opts.delete(:value_type)
 
@@ -230,6 +276,18 @@ module Diametric
                                      ":db/valueType" => value_type(value_type),
                                    }).merge(opts)
         end
+
+        prefix = self.name.downcase
+        @enums.each do |key, values|
+          values.each do |value|
+            ident_value = ":#{prefix}.#{key.downcase}/#{value.to_s.sub(/_/, "-").downcase}"
+            es = {}
+            es[":db/add"] = Diametric::Persistence::Peer.tempid(":db.part/user")
+            es[":db/ident"] = ident_value
+            schema_array << es
+          end
+        end
+        schema_array
       end
 
       # Given a set of Ruby data returned from a Datomic query, this
