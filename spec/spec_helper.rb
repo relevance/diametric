@@ -33,7 +33,7 @@ RSpec.configure do |c|
   end
 
   c.after(:suite) do
-    Diametric::Persistence::Peer.shutdown(true)
+    Diametric::Persistence::Peer.shutdown(true) if is_jruby?
     Process.kill("HUP", PID)
   end
 end
