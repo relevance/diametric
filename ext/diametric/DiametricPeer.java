@@ -206,6 +206,8 @@ public class DiametricPeer extends RubyModule {
         String query = (String)args[0].toJava(String.class);
         Database database = ((DiametricDatabase)args[1]).toJava();
 
+        //System.out.println("OH QUERY IS: " + query);
+
         Collection<List<Object>> results = null;
         try {
             if (args.length == 2) {
@@ -219,6 +221,10 @@ public class DiametricPeer extends RubyModule {
                     for (int i=0; i<inputs.length; i++) {
                         inputs[i] = DiametricUtils.convertRubyToJava(context, ruby_inputs.shift(context));
                     }
+                    //System.out.println("OH INPUTS ARE: ");
+                    //for (int i=0; i<inputs.length; i++) {
+                    //    System.out.println("OH: " + inputs[i]);
+                    //}
                     results = Peer.q(query, database, inputs);
                 }
             } else {
@@ -237,6 +243,7 @@ public class DiametricPeer extends RubyModule {
         for (List list : results) {
             RubyArray ruby_elements = RubyArray.newArray(context.getRuntime());
             for (Object element : list) {
+                //System.out.println("OH ELEMENT IS: " + element + " [" + element.getClass().getCanonicalName() +"]");
                 ruby_elements.append(DiametricUtils.convertJavaToRuby(context, element));
             }
             ruby_results.append(ruby_elements);

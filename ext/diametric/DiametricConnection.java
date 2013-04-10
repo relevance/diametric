@@ -60,20 +60,33 @@ public class DiametricConnection extends RubyObject {
     public IRubyObject transact(ThreadContext context, IRubyObject arg) {
         if (!(arg instanceof RubyArray)) return context.getRuntime().getNil();
         RubyArray ruby_tx_data = (RubyArray)arg;
-        List java_tx_data = new ArrayList();
+        List<Object> java_tx_data = new ArrayList<Object>();
         for (int i=0; i<ruby_tx_data.getLength(); i++) {
             IRubyObject element = (IRubyObject) ruby_tx_data.get(i);
-            if (!(element instanceof RubyHash)) continue;
-            RubyHash ruby_hash = (RubyHash)element;
-            Map keyvals = new HashMap();
-            while(true) {
-                IRubyObject pair = ruby_hash.shift(context);
-                if (pair instanceof RubyNil) break;
-                Object key = DiametricUtils.convertRubyToJava(context, ((RubyArray)pair).shift(context));
-                Object value = DiametricUtils.convertRubyToJava(context, ((RubyArray)pair).shift(context));
-                keyvals.put(key, value);
+            if (element instanceof RubyHash) {
+                RubyHash ruby_hash = (RubyHash) element;
+                Map<Object, Object> keyvals = new HashMap<Object, Object>();
+                while (true) {
+                    IRubyObject pair = ruby_hash.shift(context);
+                    if (pair instanceof RubyNil) break;
+                    Object key = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
+                    Object value = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
+                    keyvals.put(key, value);
+                }
+                java_tx_data.add(Collections.unmodifiableMap(keyvals));
+            } else if (element instanceof RubyArray) {
+                RubyArray ruby_array = (RubyArray) element;
+                List<Object> keyvals = new ArrayList<Object>();
+                while (true) {
+                    IRubyObject ruby_element = ruby_array.shift(context);
+                    if (ruby_element instanceof RubyNil) break;
+                    Object key_or_value = DiametricUtils.convertRubyToJava(context, ruby_element);
+                    keyvals.add(key_or_value);
+                }
+                java_tx_data.add(Collections.unmodifiableList(keyvals));
+            } else {
+                continue;
             }
-            java_tx_data.add(Collections.unmodifiableMap(keyvals));
         }
         ListenableFuture<java.util.Map> future;
         try {

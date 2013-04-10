@@ -153,6 +153,7 @@ module Diametric
 
     def peer_data
       vars = model.attribute_names.inject("") {|memo, attribute| memo + "?#{attribute} " }
+      vars = model.enum_names.inject(vars) {|memo, enum| memo + "?#{enum}_value " }
 
       form = ""
       if conditions.size > 0
@@ -161,6 +162,10 @@ module Diametric
 
       clauses = model.attribute_names.inject("") do |memo, attribute|
         memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
+      end
+
+      clauses = model.enum_names.inject(clauses) do |memo, enum|
+        memo + "[?#{enum} :db/ident ?#{enum}_value ] "
       end
 
       args = conditions.map { |_, v| v }
@@ -202,16 +207,21 @@ module Diametric
         # Group values from all results into one result set
         # [["b", 123], ["c", 123]] #=> [["b", "c"], [123, 123]]
         grouped_values = results.transpose
+        attr_grouped_values = grouped_values[0...model.attributes.size]
+        enum_grouped_values = grouped_values[model.attributes.size..-1]
 
         # Attach attribute names to each collection of values
         # => [[:letters, ["b", "c"]], [:number, [123, 123]]]
-        attr_to_values = model.attributes.keys.zip(grouped_values)
+        attr_to_values = model.attributes.keys.zip(attr_grouped_values)
 
         # Retain cardinality/many attributes as a collection,
         # but pick only one value for cardinality/one attributes
         collapsed_values = attr_to_values.map do |attr, values|
           if model.attributes[attr][:cardinality] == :many
             values
+          elsif model.attributes[attr][:value_type] == "ref" &&
+              model.enum_names.include?(attr)
+            enum_grouped_values.shift.first
           else
             values.first
           end

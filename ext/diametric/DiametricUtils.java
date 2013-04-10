@@ -1,8 +1,12 @@
 package diametric;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.jruby.Ruby;
+import org.jruby.RubyArray;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
@@ -11,6 +15,7 @@ import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 import org.jruby.RubyTime;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -38,6 +43,18 @@ public class DiametricUtils {
            RubyTime tmvalue = (RubyTime)value;
            return (Object)tmvalue.toJava(Date.class);
        }
+       //System.out.println("NOT YET CONVERTED");
+       //System.out.println("RESPONDSTO? TO_A:" + value.respondsTo("to_a"));
+       if (value.respondsTo("to_a")) { // might be Set for cardinality many type
+           RubyArray ruby_array = (RubyArray)RuntimeHelpers.invoke(context, value, "to_a");
+           List<Object> list = new ArrayList<Object>();
+           while (true) {
+               IRubyObject element = ruby_array.shift(context);
+               if (element.isNil()) break;
+               list.add(DiametricUtils.convertRubyToJava(context, element));
+           }
+           return Collections.unmodifiableList(list);
+       }
        if (value instanceof DiametricObject) {
            return ((DiametricObject)value).toJava();
        }
@@ -49,6 +66,9 @@ public class DiametricUtils {
        if (value instanceof String) return RubyString.newString(runtime, (String)value);
        if (value instanceof Boolean) return RubyBoolean.newBoolean(runtime, (Boolean)value);
        if (value instanceof Long) return RubyFixnum.newFixnum(runtime, (Long)value);
+       if (value instanceof clojure.lang.Keyword) {
+           return RubyString.newString(runtime, ((clojure.lang.Keyword)value).toString());
+       }
        if (value instanceof java.math.BigInteger) return RubyBignum.newBignum(runtime, ((java.math.BigInteger)value).longValue());
        if (value instanceof Double) return RubyFloat.newFloat(runtime, (Double)value);
        if (value instanceof Date) return RubyTime.newTime(runtime, ((Date)value).getTime());

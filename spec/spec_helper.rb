@@ -33,6 +33,7 @@ RSpec.configure do |c|
   end
 
   c.after(:suite) do
+    Diametric::Persistence::Peer.shutdown(true)
     Process.kill("HUP", PID)
   end
 end

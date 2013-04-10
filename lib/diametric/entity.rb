@@ -166,6 +166,11 @@ module Diametric
         @attributes.keys
       end
 
+      # @return [Array<Symbol>] Names of the entity's enums.
+      def enum_names
+        @enums.keys
+      end
+
       # Add an enum to a {Diametric::Entity}.
       #
       # enum is used when attribute type is Ref and refers
@@ -191,8 +196,8 @@ module Diametric
         raise RuntimeError "values should be Array or Set" if enum_values.nil?
         enum_name = name.to_s.capitalize
         syms = values.collect(&:to_s).collect(&:upcase).collect(&:to_sym)
-        @enums[enum_name] = syms
         class_eval("module #{enum_name};enum #{syms};end")
+        @enums[name] = syms
       end
 
       # Generates a Datomic schema for a model's attributes.
@@ -231,15 +236,14 @@ module Diametric
                                    }).merge(opts)
         end
 
-        enum_schema = {
-          :"db/add" => tempid(:"db.part/user"),
-        }
+        enum_schema = [
+          :"db/add", tempid(:"db.part/user"), :"db/ident"
+        ]
         prefix = self.name.downcase
         @enums.each do |key, values|
           values.each do |value|
             ident_value = :"#{prefix}.#{key.downcase}/#{value.to_s.sub(/_/, "-").downcase}"
-            es = enum_schema.dup
-            es[:"db/ident"] = ident_value
+            es = [:"db/add", tempid(:"db.part/user"), :"db/ident", ident_value]
             schema_array << es
           end
         end
@@ -281,9 +285,7 @@ module Diametric
         @enums.each do |key, values|
           values.each do |value|
             ident_value = ":#{prefix}.#{key.downcase}/#{value.to_s.sub(/_/, "-").downcase}"
-            es = {}
-            es[":db/add"] = Diametric::Persistence::Peer.tempid(":db.part/user")
-            es[":db/ident"] = ident_value
+            es = [":db/add", Diametric::Persistence::Peer.tempid(":db.part/user"), ":db/ident", ident_value]
             schema_array << es
           end
         end
@@ -430,7 +432,7 @@ module Diametric
       attribute_names.each do |attribute_name|
         cardinality = self.class.attributes[attribute_name.to_sym][:cardinality]
 
-        if cardinality == :many
+        if cardinality == :many && self.class.instance_variable_get("@peer").nil?
           txes += cardinality_many_tx_data(attribute_name)
         else
           entity_tx[self.class.namespace(self.class.prefix, attribute_name)] = self.send(attribute_name)
@@ -456,8 +458,8 @@ module Diametric
       protractions = curr - prev
       retractions = prev - curr
 
-      txes = []
       namespaced_attribute = self.class.namespace(self.class.prefix, attribute_name)
+      txes = []
       txes << [:"db/retract", (dbid || tempid), namespaced_attribute, retractions.to_a] unless retractions.empty?
       txes << [:"db/add", (dbid || tempid) , namespaced_attribute, protractions.to_a] unless protractions.empty?
       txes

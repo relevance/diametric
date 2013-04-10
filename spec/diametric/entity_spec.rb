@@ -1,6 +1,31 @@
 require 'spec_helper'
 require 'diametric/entity'
 
+require 'rspec/expectations'
+
+RSpec::Matchers.define :be_an_equivalent_hash do |expected|
+  match do |actual|
+    status = true
+    expected.each do |k, v|
+      next if k == ":db/id"
+      status = false if actual[k].nil?
+      status = false unless actual[k] == v
+    end
+    status
+  end
+end
+
+RSpec::Matchers.define :be_an_equivalent_array do |expected|
+  match do |actual|
+    status = true
+    expected.each_with_index do |e, index|
+      next if e == "#db/id[:db.part/user]"
+      status = false unless actual[index] == e
+    end
+    status
+  end
+end
+
 describe Diametric::Entity do
   describe "in a class" do
     subject { Person }
@@ -212,7 +237,7 @@ describe Diametric::Entity do
 
   end
 
-  context "seattle sample" do
+  context "community sample" do
     subject { Community }
 
     it { should respond_to(:attribute) }
@@ -259,23 +284,64 @@ describe Diametric::Entity do
           :"db/cardinality" => :"db.cardinality/one",
           :"db/doc" => "A community type enum value",
           :"db.install/_attribute" => :"db.part/db" },
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.orgtype/community" },
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.orgtype/commercial" },
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.orgtype/nonprofit"},
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.orgtype/personal"},
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/email-list"},
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/twitter"},
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/facebook-page" },
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/blog" },
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/website" },
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/wiki" },
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/myspace" },
-        { :"db/add" => subject.send(:tempid, :"db.part/user"), :"db/ident" => :"community.type/ning"}
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.orgtype/community" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.orgtype/commercial" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.orgtype/nonprofit"],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.orgtype/personal"],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/email-list"],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/twitter"],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/facebook-page" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/blog" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/website" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/wiki" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/myspace" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/ning"]
       ]
 
       @created_schema = Community.schema
       expected.each do |e|
         @created_schema.shift.should == e
+      end
+    end
+  end
+
+
+  context "seattle sample", :jruby do
+    describe Diametric::Entity do
+      subject { District }
+
+      it "should create peer schema" do
+        expected = [
+        { ":db/id" => subject.send(:tempid, ":db.part/db"),
+          ":db/ident" => ":district/name",
+          ":db/valueType" => ":db.type/string",
+          ":db/cardinality" => ":db.cardinality/one",
+          ":db/unique" => ":db.unique/identity",
+          ":db/doc" => "A unique district name (upsertable)",
+          ":db.install/_attribute" => ":db.part/db" },
+        { ":db/id" => subject.send(:tempid, ":db.part/db"),
+          ":db/ident" => ":district/region",
+          ":db/valueType" => ":db.type/ref",
+          ":db/cardinality" => ":db.cardinality/one",
+          ":db/doc" => "A district region enum value",
+          ":db.install/_attribute" => ":db.part/db" },
+        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/n"],
+        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/ne"],
+        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/e"],
+        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/se"],
+        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/s"],
+        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/sw"],
+        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/w"],
+        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/nw"]
+      ]
+        @created_schema = District.schema
+        expected.each do |e|
+          if e.is_a? Hash
+            @created_schema.shift.should be_an_equivalent_hash(e)
+          else
+            @created_schema.shift.should be_an_equivalent_array(e)
+          end
+        end
       end
     end
   end

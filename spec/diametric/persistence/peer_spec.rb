@@ -22,7 +22,6 @@ describe Diametric::Persistence::Peer, :jruby do
 
     after do
       @connection.release
-      Diametric::Persistence::Peer.shutdown(true)
     end
   end
 end
