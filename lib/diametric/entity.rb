@@ -296,11 +296,35 @@ module Diametric
       # can re-hydrate that data into a model instance.
       #
       # @return [Entity]
-      def from_query(query_results)
+      def from_query(query_results, connection=nil)
         dbid = query_results.shift
         widget = self.new(Hash[attribute_names.zip query_results])
         widget.dbid = dbid
+        widget.class.attribute_names.each do |e|
+          if widget.class.attributes[e][:value_type] == "ref"
+            ref = widget.instance_variable_get("@#{e.to_s}")
+            if ref.is_a? Fixnum
+              instance = from_dbid(ref, connection)
+              widget.instance_variable_set("@#{e.to_s}", instance)
+            end
+          end
+        end
         widget
+      end
+
+      def from_dbid(dbid, connection)
+        return dbid unless connection
+        entity = connection.db.entity(dbid)
+        first_key = entity.keys.first
+        match_data = /:([a-z]+)\/([a-z]+)/.match(first_key)
+        entity_name = match_data[1].capitalize
+        instance = eval("#{entity_name}.new")
+        instance.send("#{match_data[2]}=", entity[first_key])
+        entity.keys[1..-1].each do |key|
+          match_data = /:([a-z]+)\/([a-z]+)/.match(key)
+          instance.send("#{match_data[2]}=", entity[key])
+        end
+        instance
       end
 
       # Returns the prefix for this model used in Datomic. Can be

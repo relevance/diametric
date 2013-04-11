@@ -36,9 +36,10 @@ module Diametric
       end
 
       module ClassMethods
-        def create_schema
+        def create_schema(connection=nil)
           if self.instance_variable_get("@peer")
-            Diametric::Persistence::Peer.transact(schema)
+            connection ||= Diametric::Persistence::Peer.connect
+            connection.transact(schema)
           else
             transact(schema)
           end

@@ -61,7 +61,7 @@ module Diametric
           entity
         end
 
-        def q(query, args)
+        def q(query, args, unused=nil)
           args.unshift(connection.db_alias(database))
           res = connection.query(query, args)
           res.data

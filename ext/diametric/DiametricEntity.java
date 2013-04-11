@@ -47,8 +47,8 @@ public class DiametricEntity extends RubyObject {
         return diametric_database;
     }
     
-    @JRubyMethod
-    public IRubyObject get(ThreadContext context, IRubyObject arg) {
+    @JRubyMethod(name={"[]","get"}, required=1)
+    public IRubyObject op_aref(ThreadContext context, IRubyObject arg) {
         String key = (String) arg.toJava(String.class);
         Object value = entity.get(key);
         return DiametricUtils.convertJavaToRuby(context, value);
