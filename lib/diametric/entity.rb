@@ -296,24 +296,39 @@ module Diametric
       # can re-hydrate that data into a model instance.
       #
       # @return [Entity]
-      def from_query(query_results, connection=nil)
+      def from_query(query_results, connection=nil, resolve=false)
         dbid = query_results.shift
         widget = self.new(Hash[attribute_names.zip query_results])
         widget.dbid = dbid
-        widget.class.attribute_names.each do |e|
-          if widget.class.attributes[e][:value_type] == "ref"
-            ref = widget.instance_variable_get("@#{e.to_s}")
-            if ref.is_a? Fixnum
-              instance = from_dbid(ref, connection)
-              widget.instance_variable_set("@#{e.to_s}", instance)
-            end
-          end
+
+        if resolve
+          widget = resolve_ref_dbid(widget, connection)
         end
         widget
       end
 
-      def from_dbid(dbid, connection)
-        return dbid unless connection
+      def resolve_ref_dbid(parent, connection)
+        parent.class.attribute_names.each do |e|
+          if parent.class.attributes[e][:value_type] == "ref"
+            ref = parent.instance_variable_get("@#{e.to_s}")
+            if ref.is_a?(Fixnum) || ref.is_a?(Java::DatomicQuery::EntityMap)
+              child = from_dbid_or_entity(ref, connection)
+              child = resolve_ref_dbid(child, connection)
+              parent.instance_variable_set("@#{e.to_s}", child)
+            end
+          end
+        end
+        parent
+      end
+
+      def from_dbid_or_entity(thing, connection)
+        return thing unless connection
+
+        if thing.is_a? Fixnum
+          dbid = thing
+        else
+          dbid = thing.eid
+        end
         entity = connection.db.entity(dbid)
         first_key = entity.keys.first
         match_data = /:([a-z]+)\/([a-z]+)/.match(first_key)
@@ -324,6 +339,7 @@ module Diametric
           match_data = /:([a-z]+)\/([a-z]+)/.match(key)
           instance.send("#{match_data[2]}=", entity[key])
         end
+        instance.send("dbid=", dbid)
         instance
       end
 

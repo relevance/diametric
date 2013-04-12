@@ -9,7 +9,10 @@ module Diametric
         return true unless changed?
         connection ||= Diametric::Persistence::Peer.connect
 
-        map = connection.transact(re_tx_data).get
+        parsed_data = []
+        parse_tx_data(tx_data, parsed_data)
+        map = connection.transact(parsed_data).get
+        self.instance_variable_set("@tx_map", map)
 
         if @dbid.nil? || @dbid.to_s =~ /-\d+/
           @dbid = Diametric::Persistence::Peer.resolve_tempid(map, @dbid)
@@ -20,22 +23,22 @@ module Diametric
         map
       end
 
-      def re_tx_data
-        ary = []
-        tx_data.each do |e|
+      def parse_tx_data(data, result)
+        queue = []
+        data.each do |c_hash|
           hash = {}
-          e.each do |k,v|
-            if v.respond_to?(:tx_data)
-              v.dbid = v.tempid
-              hash[k]=v.dbid
-              ary << v.tx_data.first
+          c_hash.each do |c_key, c_value|
+            if c_value.respond_to?(:tx_data)
+              c_value.dbid = c_value.tempid
+              hash[c_key] = c_value.dbid
+              queue << c_value.tx_data.first
             else
-              hash[k]=v
+              hash[c_key] = c_value
             end
           end
-          ary << hash
+          result << hash
         end
-        ary
+        parse_tx_data(queue, result) unless queue.empty?
       end
 
       def retract_entity(dbid)
@@ -56,6 +59,7 @@ module Diametric
         def q(query, args, connection=nil)
           connection ||= Diametric::Persistence::Peer.connect
           db = connection.db
+
           results = Diametric::Persistence::Peer.q(query, db, args)
           # Diametric query expects the first element of each array in
           # results is dbid. Wraps dbid here by

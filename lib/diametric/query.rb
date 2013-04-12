@@ -15,17 +15,18 @@ module Diametric
   class Query
     include Enumerable
 
-    attr_reader :conditions, :filters, :model, :connection
+    attr_reader :conditions, :filters, :model, :connection, :resolve
 
     # Create a new Datomic query.
     #
     # @param model [Entity] This model must include +Datomic::Entity+. Including
     #   a persistence module is optional.
-    def initialize(model, connection=nil)
+    def initialize(model, connection=nil, resolve=false)
       @model = model
       @conditions = {}
       @filters = []
       @connection = connection
+      @resolve = resolve
     end
 
     # Add conditions to your Datomic query. Conditions check for equality
@@ -112,7 +113,7 @@ module Diametric
       collapse_results(res).each do |entity|
         # The map is for compatibility with Java peer persistence.
         # TODO remove if possible
-        yield model.from_query(entity.map { |x| x }, @connection)
+        yield model.from_query(entity.map { |x| x }, @connection, @resolve)
       end
     end
 

@@ -16,7 +16,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import datomic.Database;
 import datomic.Entity;
 
-@JRubyClass(name = "Diametric::Persistence::UUID")
+@JRubyClass(name = "Diametric::Persistence::Entity")
 public class DiametricEntity extends RubyObject {
     private static final long serialVersionUID = 3906852174830144427L;
     private Entity entity = null;

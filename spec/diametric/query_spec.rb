@@ -26,7 +26,7 @@ describe Diametric::Query do
         attribute :likes, String, :cardinality => :many
       end
       model.stub(:q => [[1, "Stu", "chocolate"], [1, "Stu", "vanilla"]])
-      model.should_receive(:from_query).with([1, "Stu", ["chocolate", "vanilla"]], nil)
+      model.should_receive(:from_query).with([1, "Stu", ["chocolate", "vanilla"]], nil, false)
       Diametric::Query.new(model).each {|x| x}
     end
   end
