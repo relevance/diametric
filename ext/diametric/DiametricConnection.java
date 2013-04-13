@@ -58,7 +58,34 @@ public class DiametricConnection extends RubyObject {
     
     @JRubyMethod
     public IRubyObject transact(ThreadContext context, IRubyObject arg) {
-        if (!(arg instanceof RubyArray)) return context.getRuntime().getNil();
+        List<Object> tx_data = null;
+        if (arg instanceof RubyArray) {
+            tx_data = fromRubyArray(context, arg);
+        } else {
+            Object obj = arg.toJava(Object.class);
+            if (obj instanceof clojure.lang.PersistentVector) {
+                tx_data = (clojure.lang.PersistentVector)obj;
+            }
+        }
+
+        if (tx_data == null) {
+            throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
+        }
+
+        ListenableFuture<java.util.Map> future;
+        try {
+            future = conn.transact(tx_data);
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
+            DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
+            diametric_listenable.init(future);
+            return diametric_listenable;
+        } catch (Exception e) {
+            context.getRuntime().newRuntimeError(e.getMessage());
+        }
+        return context.getRuntime().getNil();
+    }
+
+    private List<Object> fromRubyArray(ThreadContext context, IRubyObject arg) {
         RubyArray ruby_tx_data = (RubyArray)arg;
         List<Object> java_tx_data = new ArrayList<Object>();
         for (int i=0; i<ruby_tx_data.getLength(); i++) {
@@ -88,17 +115,7 @@ public class DiametricConnection extends RubyObject {
                 continue;
             }
         }
-        ListenableFuture<java.util.Map> future;
-        try {
-            future = conn.transact(java_tx_data);
-            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
-            DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
-            diametric_listenable.init(future);
-            return diametric_listenable;
-        } catch (Exception e) {
-            context.getRuntime().newRuntimeError(e.getMessage());
-        }
-        return context.getRuntime().getNil();
+        return java_tx_data;
     }
 
     @JRubyMethod
