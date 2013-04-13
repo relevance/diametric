@@ -11,16 +11,19 @@ module Diametric
 
         parsed_data = []
         parse_tx_data(tx_data, parsed_data)
+
         map = connection.transact(parsed_data).get
-        self.instance_variable_set("@tx_map", map)
 
-        if @dbid.nil? || @dbid.to_s =~ /-\d+/
-          @dbid = Diametric::Persistence::Peer.resolve_tempid(map, @dbid)
-        end
+        resolve_changes([self], map)
 
-        @previously_changed = changes
-        @changed_attributes.clear
         map
+      end
+
+      def resolve_tempid(map, id)
+        if id.to_s =~ /-\d+/
+          return Diametric::Persistence::Peer.resolve_tempid(map, id)
+        end
+        return id
       end
 
       def parse_tx_data(data, result)
@@ -29,9 +32,13 @@ module Diametric
           hash = {}
           c_hash.each do |c_key, c_value|
             if c_value.respond_to?(:tx_data)
-              c_value.dbid = c_value.tempid
-              hash[c_key] = c_value.dbid
-              queue << c_value.tx_data.first
+              if c_value.tx_data.empty?
+                hash[c_key] = c_value.dbid
+              else
+                c_value.dbid = c_value.tempid
+                hash[c_key] = c_value.dbid
+                queue << c_value.tx_data.first
+              end
             else
               hash[c_key] = c_value
             end
@@ -39,6 +46,22 @@ module Diametric
           result << hash
         end
         parse_tx_data(queue, result) unless queue.empty?
+      end
+
+      def resolve_changes(parents, map)
+        queue = []
+        parents.each do |child|
+          child.attributes.each do |a_key, a_val|
+            if a_val.respond_to?(:tx_data)
+              queue << a_val
+            end
+          end
+          child.instance_variable_set("@previously_changed", child.changes)
+          child.changed_attributes.clear
+          child.dbid = resolve_tempid(map, child.dbid)
+          child.instance_variable_set("@tx_map", map)
+        end
+        resolve_changes(queue, map) unless queue.empty?
       end
 
       def retract_entity(dbid)
