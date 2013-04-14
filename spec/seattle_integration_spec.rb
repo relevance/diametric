@@ -47,7 +47,9 @@ describe "Seattle Sample", :integration => true, :jruby => true do
     end
 
     it "should get all community names" do
-      
+      query = Diametric::Query.new(Seattle, @s_conn1)
+      results = query.all
+      results.size.should == 362
     end
   end
 end

@@ -10,6 +10,8 @@ module Diametric
   module Persistence
     module Peer
     end
+    module Utils
+    end
   end
 end
 
