@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+DATOMIC_NAME = File.read(File.join(File.dirname(__FILE__), "..", "datomic_version.cnf"))
+
+require 'diametric/rest_service'
+
+if Diametric::RestService.downloaded?
+    puts "Datomic #{DATOMIC_NAME} is already present in vendor/datomic"
+else
+    puts "Now, downloading..."
+    Diametric::RestService.download
+    puts "Done. #{DATOMIC_NAME} has been downloaded in vendor/datomic"
+end

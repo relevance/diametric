@@ -12,7 +12,6 @@
 InstalledFiles
 Gemfile.lock
 _yardoc
-bin/
 build
 coverage
 doc/

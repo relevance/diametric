@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+options = {}
+
+opts = OptionParser.new do |opts|
+  opts.define_head "Usage: datomic-rest -p port -a db_alias -u uri"
+  opts.separator ""
+  opts.separator "Example:"
+  opts.separator "  datomc-rest -p 9000 -a free -u datomic:mem://"
+
+  opts.on("-p", "--port [port]", Integer, "Port number") do |v|
+    options[:port] = v
+  end
+
+  opts.on("-a", "--alias [alias]", String,  "Alias name") do |v|
+    options[:db_alias] = v
+  end
+
+  opts.on("-u", "--uri [uri]", String, "URI") do |v|
+    options[:uri] = v
+  end
+end
+opts.parse!
+
+DATOMIC_NAME = File.read(File.join(File.dirname(__FILE__), "..", "datomic_version.cnf"))
+
+require 'diametric/rest_service'
+
+service = Diametric::RestService.new
+PID = service.start(options)
+
+puts "Datomic REST service is running (PID = #{PID})" unless PID.nil?
