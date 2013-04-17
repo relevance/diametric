@@ -299,6 +299,8 @@ public class DiametricPeer extends RubyModule {
         Object dbid = null;
         if ((arg instanceof DiametricObject) && (((DiametricObject)arg).to_java(context) instanceof RubyFixnum)) {
             dbid = ((DiametricObject)arg).toJava();
+        } else if (arg instanceof RubyFixnum) {
+            dbid = ((RubyFixnum)arg).toJava(Long.class);
         } else {
             throw runtime.newArgumentError("Argument should be dbid");
         }

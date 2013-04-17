@@ -343,6 +343,13 @@ module Diametric
         instance
       end
 
+      def find(id)
+        if self.instance_variable_get("@peer")
+          connection ||= Diametric::Persistence::Peer.connect
+        end
+        from_dbid_or_entity(id, connection)
+      end
+
       # Returns the prefix for this model used in Datomic. Can be
       # overriden by declaring {#namespace_prefix}
       #

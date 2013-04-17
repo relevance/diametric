@@ -40,11 +40,15 @@ public class DiametricDatabase extends RubyObject {
     public IRubyObject entity(ThreadContext context, IRubyObject arg) {
         if (!(arg instanceof RubyFixnum)) return context.getRuntime().getNil();
         Long entityId = (Long) arg.toJava(Long.class);
-        Entity entity = database.entity(entityId);
-        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
-        DiametricEntity diametric_entity = (DiametricEntity)clazz.allocate();
-        diametric_entity.init(entity);
-        return diametric_entity;
+        try {
+            Entity entity = database.entity(entityId);
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
+            DiametricEntity diametric_entity = (DiametricEntity)clazz.allocate();
+            diametric_entity.init(entity);
+            return diametric_entity;
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
+        }
     }
     
     @JRubyMethod
