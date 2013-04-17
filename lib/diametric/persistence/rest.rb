@@ -48,7 +48,7 @@ module Diametric
         end
 
         def get(dbid)
-          res = connection.entity(database, dbid)
+          res = connection.entity(database, dbid.to_i)
 
           # TODO tighten regex to only allow fields with the model name
           attrs = res.data.map { |attr_symbol, value|
