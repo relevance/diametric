@@ -1,8 +1,12 @@
 package diametric;
 
+import java.util.List;
+import java.util.Map;
+
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
+import org.jruby.RubyHash;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
@@ -51,6 +55,48 @@ public class DiametricDatabase extends RubyObject {
         }
     }
     
+    @JRubyMethod
+    public IRubyObject with(ThreadContext context, IRubyObject arg) {
+        List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg);
+        if (tx_data == null) {
+            throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
+        }
+        try {
+            Map map = database.with(tx_data);
+            return RubyHash.newHash(context.getRuntime(), map, null);
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
+        }
+    }
+
+    @JRubyMethod
+    public IRubyObject as_of(ThreadContext context, IRubyObject arg) {
+        Object t_value = DiametricUtils.convertRubyToJava(context, arg);
+        try {
+            Database db_asof_t = database.asOf(t_value);
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
+            DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
+            diametric_database.init(db_asof_t);
+            return diametric_database;
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
+        }
+    }
+
+    @JRubyMethod
+    public IRubyObject since(ThreadContext context, IRubyObject arg) {
+        Object t_value = DiametricUtils.convertRubyToJava(context, arg);
+        try {
+            Database db_asof_t = database.since(t_value);
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
+            DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
+            diametric_database.init(db_asof_t);
+            return diametric_database;
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
+        }
+    }
+
     @JRubyMethod
     public IRubyObject id(ThreadContext context) {
         return RubyString.newString(context.getRuntime(), database.id());

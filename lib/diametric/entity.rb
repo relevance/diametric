@@ -326,10 +326,15 @@ module Diametric
 
         if thing.is_a? Fixnum
           dbid = thing
+          entity = connection.db.entity(dbid)
         else
           dbid = thing.eid
+          if entity.respond_to?(:keys)
+            entity = thing
+          else
+            entity = connection.db.entity(dbid)
+          end
         end
-        entity = connection.db.entity(dbid)
         first_key = entity.keys.first
         match_data = /:([a-z]+)\/([a-z]+)/.match(first_key)
         entity_name = match_data[1].capitalize

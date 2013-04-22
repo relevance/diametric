@@ -21,6 +21,8 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import clojure.lang.PersistentVector;
+
 import datomic.Connection;
 import datomic.Database;
 import datomic.Entity;
@@ -324,5 +326,44 @@ public class DiametricPeer extends RubyModule {
             throw context.getRuntime().newRuntimeError("Datomic error: " + e.getMessage());
         }
         return context.getRuntime().getNil();
+    }
+
+    /**
+     * 
+     * @param context
+     * @param klazz
+     * @param args database, dbid, query
+     * @return
+     */
+    @JRubyMethod(meta=true, required=3, rest=true)
+    public static IRubyObject reverse_q(ThreadContext context, IRubyObject klazz, IRubyObject[] args) {
+        Ruby runtime = context.getRuntime();
+        if (args[0] instanceof DiametricDatabase &&
+                (args[1] instanceof DiametricObject || args[1] instanceof RubyFixnum) &&
+                args[2] instanceof RubyString) {
+            Database database = ((DiametricDatabase)args[0]).toJava();
+            Long dbid = (Long)DiametricUtils.convertRubyToJava(context, args[1]);
+            String query_string = (String)args[2].toJava(String.class);
+            try {
+                Entity entity = database.entity(dbid);
+                clojure.lang.PersistentVector vector = (PersistentVector) entity.get(query_string);
+
+                if (vector == null) return RubyArray.newEmptyArray(runtime);
+
+                RubyArray array = RubyArray.newArray(runtime, vector.count());
+                for (int i=0; i < vector.count(); i++) {
+                    Entity e = (Entity) vector.get(i);
+                    RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
+                    DiametricEntity ruby_entity = (DiametricEntity)clazz.allocate();
+                    ruby_entity.init(e);
+                    array.append(ruby_entity);
+                }
+                return array;
+            } catch (Exception e) {
+                throw runtime.newRuntimeError("Datomic Error: " + e.getMessage());
+            }
+        } else {
+            throw runtime.newArgumentError("Arguments should be 'database, dbid, query_string'");
+        }
     }
 }

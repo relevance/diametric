@@ -51,5 +51,18 @@ describe "Seattle Sample", :integration => true, :jruby => true do
       results = query.all
       results.size.should == 362
     end
+
+    it "should get reverse reference" do
+      query = Diametric::Query.new(Neighborhood, @s_conn1).where(:name => "Capitol Hill")
+      seattles = query.first.seattle_from_this_neighborhood(@s_conn1)
+      seattles.size.should == 6
+      seattles.collect(&:name).should =~
+        ["15th Ave Community",
+         "Capitol Hill Community Council",
+         "Capitol Hill Housing",
+         "Capitol Hill Triangle",
+         "CHS Capitol Hill Seattle Blog",
+         "KOMO Communities - Captol Hill"]
+    end
   end
 end

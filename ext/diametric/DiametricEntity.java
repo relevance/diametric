@@ -5,6 +5,7 @@ import java.util.Set;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
+import org.jruby.RubyFixnum;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
@@ -70,5 +71,14 @@ public class DiametricEntity extends RubyObject {
         Entity touched_entity = entity.touch();
         entity = touched_entity;
         return this;
+    }
+
+    @JRubyMethod
+    public IRubyObject eid(ThreadContext context) {
+        if (entity instanceof datomic.query.EntityMap) {
+            Long eid = (Long) ((datomic.query.EntityMap)entity).eid;
+            return RubyFixnum.newFixnum(context.getRuntime(), eid);
+        }
+        return context.getRuntime().getNil();
     }
 }

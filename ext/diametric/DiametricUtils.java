@@ -7,7 +7,9 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -16,6 +18,8 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
+import org.jruby.RubyHash;
+import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubyTime;
 import org.jruby.anno.JRubyMethod;
@@ -77,7 +81,12 @@ public class DiametricUtils {
         if (value instanceof RubyFloat) return (Object)((RubyFloat)value).toJava(Double.class);
         if (value instanceof RubyTime) {
             RubyTime tmvalue = (RubyTime)value;
-            return (Object)tmvalue.toJava(Date.class);
+            return (Object)tmvalue.getJavaDate();
+        }
+        if (value.respondsTo("to_time")) {
+            // DateTime or Date
+            RubyTime tmvalue = (RubyTime)RuntimeHelpers.invoke(context, value, "to_time");
+            return (Object)tmvalue.getJavaDate();
         }
         //System.out.println("NOT YET CONVERTED");
         //System.out.println("RESPONDSTO? TO_A:" + value.respondsTo("to_a"));
@@ -115,5 +124,51 @@ public class DiametricUtils {
             return diametric_uuid;
         }
         return JavaUtil.convertJavaToUsableRubyObject(runtime, value);
+    }
+
+    static List<Object> convertRubyTxDataToJava(ThreadContext context, IRubyObject arg) {
+        List<Object> tx_data = null;
+        if (arg instanceof RubyArray) {
+            tx_data = fromRubyArray(context, arg);
+        } else {
+            Object obj = arg.toJava(Object.class);
+            if (obj instanceof clojure.lang.PersistentVector) {
+                tx_data = (clojure.lang.PersistentVector)obj;
+            }
+        }
+        return tx_data;
+    }
+
+    private static List<Object> fromRubyArray(ThreadContext context, IRubyObject arg) {
+        RubyArray ruby_tx_data = (RubyArray)arg;
+        List<Object> java_tx_data = new ArrayList<Object>();
+        for (int i=0; i<ruby_tx_data.getLength(); i++) {
+            IRubyObject element = (IRubyObject) ruby_tx_data.get(i);
+            if (element instanceof RubyHash) {
+                RubyHash ruby_hash = (RubyHash) element;
+                Map<Object, Object> keyvals = new HashMap<Object, Object>();
+                while (true) {
+                    IRubyObject pair = ruby_hash.shift(context);
+                    if (pair instanceof RubyNil) break;
+                    Object key = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
+                    Object value = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
+                    keyvals.put(key, value);
+                }
+                java_tx_data.add(Collections.unmodifiableMap(keyvals));
+            } else if (element instanceof RubyArray) {
+                RubyArray ruby_array = (RubyArray) element;
+                List<Object> keyvals = new ArrayList<Object>();
+                while (true) {
+                    IRubyObject ruby_element = ruby_array.shift(context);
+                    if (ruby_element instanceof RubyNil) break;
+                    Object key_or_value = DiametricUtils.convertRubyToJava(context, ruby_element);
+                    keyvals.add(key_or_value);
+                }
+                java_tx_data.add(Collections.unmodifiableList(keyvals));
+            } else {
+                continue;
+            }
+        }
+        return java_tx_data;
     }
 }

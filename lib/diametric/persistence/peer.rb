@@ -68,6 +68,17 @@ module Diametric
         Diametric::Persistence::Peer.retract_entity(dbid)
       end
 
+      def method_missing(method_name, *args, &block)
+        result = /(.+)_from_this_(.+)/.match(method_name)
+        if result
+          query_string = ":#{result[1]}/_#{result[2]}"
+          entities = Diametric::Persistence::Peer.reverse_q(args[0].db, self.dbid, query_string)
+          entities.collect {|e| self.class.from_dbid_or_entity(e, args[0])}
+        else
+          super
+        end
+      end
+
       module ClassMethods
         def get(dbid)
           entity = self.new

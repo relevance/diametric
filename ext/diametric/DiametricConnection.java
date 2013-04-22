@@ -58,16 +58,7 @@ public class DiametricConnection extends RubyObject {
     
     @JRubyMethod
     public IRubyObject transact(ThreadContext context, IRubyObject arg) {
-        List<Object> tx_data = null;
-        if (arg instanceof RubyArray) {
-            tx_data = fromRubyArray(context, arg);
-        } else {
-            Object obj = arg.toJava(Object.class);
-            if (obj instanceof clojure.lang.PersistentVector) {
-                tx_data = (clojure.lang.PersistentVector)obj;
-            }
-        }
-
+        List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg);
         if (tx_data == null) {
             throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
         }
@@ -83,39 +74,6 @@ public class DiametricConnection extends RubyObject {
             context.getRuntime().newRuntimeError(e.getMessage());
         }
         return context.getRuntime().getNil();
-    }
-
-    private List<Object> fromRubyArray(ThreadContext context, IRubyObject arg) {
-        RubyArray ruby_tx_data = (RubyArray)arg;
-        List<Object> java_tx_data = new ArrayList<Object>();
-        for (int i=0; i<ruby_tx_data.getLength(); i++) {
-            IRubyObject element = (IRubyObject) ruby_tx_data.get(i);
-            if (element instanceof RubyHash) {
-                RubyHash ruby_hash = (RubyHash) element;
-                Map<Object, Object> keyvals = new HashMap<Object, Object>();
-                while (true) {
-                    IRubyObject pair = ruby_hash.shift(context);
-                    if (pair instanceof RubyNil) break;
-                    Object key = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
-                    Object value = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
-                    keyvals.put(key, value);
-                }
-                java_tx_data.add(Collections.unmodifiableMap(keyvals));
-            } else if (element instanceof RubyArray) {
-                RubyArray ruby_array = (RubyArray) element;
-                List<Object> keyvals = new ArrayList<Object>();
-                while (true) {
-                    IRubyObject ruby_element = ruby_array.shift(context);
-                    if (ruby_element instanceof RubyNil) break;
-                    Object key_or_value = DiametricUtils.convertRubyToJava(context, ruby_element);
-                    keyvals.add(key_or_value);
-                }
-                java_tx_data.add(Collections.unmodifiableList(keyvals));
-            } else {
-                continue;
-            }
-        }
-        return java_tx_data;
     }
 
     @JRubyMethod
