@@ -91,9 +91,13 @@ module Diametric
           entity
         end
 
-        def q(query, args, connection=nil)
-          connection ||= Diametric::Persistence::Peer.connect
-          db = connection.db
+        def q(query, args, conn_or_db=nil)
+          conn_or_db ||= Diametric::Persistence::Peer.connect
+          if conn_or_db.is_a?(Diametric::Persistence::Connection)
+            db = conn_or_db.db
+          else
+            db = conn_or_db
+          end
 
           results = Diametric::Persistence::Peer.q(query, db, args)
           # Diametric query expects the first element of each array in

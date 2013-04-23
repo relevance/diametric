@@ -65,4 +65,42 @@ describe "Seattle Sample", :integration => true, :jruby => true do
          "KOMO Communities - Captol Hill"]
     end
   end
+
+  context Seattle do
+    before(:all) do
+      datomic_uri = "datomic:mem://seattle-#{SecureRandom.uuid}"
+      @s_conn2 = Diametric::Persistence::Peer.connect(datomic_uri)
+      Neighborhood.create_schema(@s_conn2).get
+      District.create_schema(@s_conn2).get
+      Seattle.create_schema(@s_conn2).get
+      filename0 = File.join(File.dirname(__FILE__), "data", "seattle-data0.dtm")
+      list = Diametric::Persistence::Utils.read_all(filename0)
+      map0 = @s_conn2.transact(list.first).get
+    end
+
+    after(:all) do
+      @s_conn2.release
+    end
+
+    it "should add another set of data" do
+      query = Diametric::Query.new(Seattle, @s_conn2)
+      results = query.all
+      results.size.should == 362
+
+      past = Time.now
+
+      filename1 = File.join(File.dirname(__FILE__), "data", "seattle-data1.dtm")
+      list = Diametric::Persistence::Utils.read_all(filename1)
+
+      map2 = @s_conn2.transact(list.first).get
+      query = Diametric::Query.new(Seattle, @s_conn2)
+      results = query.all
+      results.size.should == 571
+
+      past_db = @s_conn2.db.as_of(past)
+      query = Diametric::Query.new(Seattle, past_db)
+      results = query.all
+      results.size.should == 362
+    end
+  end
 end

@@ -21,11 +21,11 @@ module Diametric
     #
     # @param model [Entity] This model must include +Datomic::Entity+. Including
     #   a persistence module is optional.
-    def initialize(model, connection=nil, resolve=false)
+    def initialize(model, connection_or_database=nil, resolve=false)
       @model = model
       @conditions = {}
       @filters = []
-      @connection = connection
+      @conn_or_db = connection_or_database
       @resolve = resolve
     end
 
@@ -108,12 +108,12 @@ module Diametric
     def each
       # TODO check to see if the model has a `.q` method and give
       # an appropriate error if not.
-      res = model.q(*data, @connection)
+      res = model.q(*data, @conn_or_db)
 
       collapse_results(res).each do |entity|
         # The map is for compatibility with Java peer persistence.
         # TODO remove if possible
-        yield model.from_query(entity.map { |x| x }, @connection, @resolve)
+        yield model.from_query(entity.map { |x| x }, @conn_or_db, @resolve)
       end
     end
 

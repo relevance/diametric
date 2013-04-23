@@ -87,10 +87,10 @@ public class DiametricDatabase extends RubyObject {
     public IRubyObject since(ThreadContext context, IRubyObject arg) {
         Object t_value = DiametricUtils.convertRubyToJava(context, arg);
         try {
-            Database db_asof_t = database.since(t_value);
+            Database db_since_t = database.since(t_value);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
             DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
-            diametric_database.init(db_asof_t);
+            diametric_database.init(db_since_t);
             return diametric_database;
         } catch (Exception e) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
