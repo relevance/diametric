@@ -46,11 +46,12 @@ class Person
   attribute :email, String, :cardinality => :many
   attribute :birthday, DateTime
   attribute :iq, Integer
-  attribute :website, URI
 end
 
+# To see what schema data will be produced:
 Person.schema
-# Datomic transaction:
+
+# The schema will be mapped to Datomic transaction data below:
 # [{:db/id #db/id[:db.part/db]
 #   :db/ident :person/name
 #   :db/valueType :db.type/string
@@ -71,29 +72,31 @@ Person.schema
 #   :db/ident :person/iq
 #   :db/valueType :db.type/long
 #   :db/cardinality :db.cardinality/one
-#   :db.install/_attribute :db.part/db}
-#  {:db/id #db/id[:db.part/db]
-#   :db/ident :person/website
-#   :db/valueType :db.type/uri
-#   :db/cardinality :db.cardinality/one
 #   :db.install/_attribute :db.part/db}]
 
-Person.attributes
-# [:dbid, :name, :email, :birthday, :iq, :website]
+# To check what attributes are in Person model:
+Person.attributes.keys
+# [:dbid, :name, :email, :birthday, :iq]
 
+# To create an instance from a query result
 person = Person.new(Hash[*(Person.attributes.zip(results_from_query).flatten)])
 # or
 person = Person.from_query(results_from_query)
 
+# To update/set values of a model:
 person.iq = 180
+
+# Below will help to understand what transaction data will be produced:
 person.tx_data(:iq)
-# Datomic transaction:
+
+# It will be mapped to the Datomic transaction data:
 # [{:db/id person.dbid
 #   :person/iq 180}]
 
+# To create new model instance:
 person = Person.new(:name => "Peanut")
 person.tx_data
-# Datomic transaction:
+# Datomic transaction data will be:
 # [{:db/id #db/id[:db.part/user]
 #   :person/name "Peanut"}]
 ```
