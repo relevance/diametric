@@ -20,6 +20,7 @@ Other than highlights below, there are documents on Wiki.
 
 - [Getting Started](https://github.com/relevance/diametric/wiki/Getting-Started)
 - [Rails Integration](https://github.com/relevance/diametric/wiki/Rails-Integration-%28Experimental%29)
+- [Seattle Example](https://github.com/relevance/diametric/wiki/Seattle-Example)
 
 
 ## Entity API
@@ -101,6 +102,9 @@ person.tx_data
 #   :person/name "Peanut"}]
 ```
 
+In addition to `attribute`, Diametric supports `enum` type. This is often used on Datomic.
+For details, see [Seattle Example](https://github.com/relevance/diametric/wiki/Seattle-Example)
+
 ## Query API
 
 The query API is used for generating Datomic queries, whether to send via an external client or via the persistence API. The two methods used to generate a query are `.where` and `.filter`, both of which are chainable. 
@@ -144,8 +148,9 @@ query.data
 
 ## Persistence API
 
-The persistence API comes in two flavors: REST- and peer-based.
-For the most part, they have the same API.
+The persistence API comes in two flavors: REST- and Peer-based.
+Although REST-bases API supports CRUD operations like a legacy RDBMS,
+it is a subset of Peer-based API.
 
 The suitable persistent module will be selected based on URI to connect datomic.
 You don't need to care which module should be included.
@@ -154,7 +159,7 @@ However, if you like to inlcude REST or Peer module explicitely, you can write i
 
 ### Peer
 
-With Peer connection, you can create objects that know how to store themselves to Datomic through a Datomic peer.
+With Peer connection, you can create objects that know how to store themselves to Datomic through a Datomic Peer.
 
 Peer connection as well as "require `diametric/persistence/peer`" are only available on JRuby.
 When you install the `diametric` gem with JRuby, all `.jar` files needed to run Datomic will be downloaded.
