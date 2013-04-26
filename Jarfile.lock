@@ -31,29 +31,29 @@ groups:
     artifacts:
     - jar:com.datomic:datomic-free:jar:0.8.3862:
         transitive:
-          org.slf4j:jul-to-slf4j:jar:1.6.4:
-            org.slf4j:slf4j-api:jar:1.6.4: {}
-          com.h2database:h2:jar:1.3.165: {}
-          org.apache.lucene:lucene-core:jar:3.3.0: {}
-          org.slf4j:jcl-over-slf4j:jar:1.6.4: {}
-          org.clojure:tools.cli:jar:0.2.2: {}
-          net.java.dev.jets3t:jets3t:jar:0.8.1:
-            com.jamesmurty.utils:java-xmlbuilder:jar:0.4: {}
-            commons-httpclient:commons-httpclient:jar:3.1: {}
-          org.apache.tomcat:tomcat-jdbc:jar:7.0.27:
-            org.apache.tomcat:tomcat-juli:jar:7.0.27: {}
-          com.google.guava:guava:jar:12.0.1:
-            com.google.code.findbugs:jsr305:jar:1.3.9: {}
           org.slf4j:slf4j-nop:jar:1.6.4: {}
           com.amazonaws:aws-java-sdk:jar:1.3.0:
             commons-codec:commons-codec:jar:1.3: {}
-          org.clojure:clojure:jar:1.4.0: {}
-          io.netty:netty:jar:3.6.0.Final: {}
-          org.slf4j:log4j-over-slf4j:jar:1.6.4: {}
-          org.fressian:fressian:jar:0.6.3: {}
           org.codehaus.janino:commons-compiler-jdk:jar:2.6.1:
             org.codehaus.janino:commons-compiler:jar:2.6.1: {}
+          org.apache.lucene:lucene-core:jar:3.3.0: {}
+          org.slf4j:jcl-over-slf4j:jar:1.6.4: {}
+          org.clojure:clojure:jar:1.4.0: {}
+          io.netty:netty:jar:3.6.0.Final: {}
+          com.h2database:h2:jar:1.3.165: {}
+          com.google.guava:guava:jar:12.0.1:
+            com.google.code.findbugs:jsr305:jar:1.3.9: {}
+          org.slf4j:jul-to-slf4j:jar:1.6.4:
+            org.slf4j:slf4j-api:jar:1.6.4: {}
+          net.java.dev.jets3t:jets3t:jar:0.8.1:
+            com.jamesmurty.utils:java-xmlbuilder:jar:0.4: {}
+            commons-httpclient:commons-httpclient:jar:3.1: {}
           org.hornetq:hornetq-core:jar:2.2.21.Final: {}
+          org.clojure:tools.cli:jar:0.2.2: {}
+          org.slf4j:log4j-over-slf4j:jar:1.6.4: {}
+          org.apache.tomcat:tomcat-jdbc:jar:7.0.27:
+            org.apache.tomcat:tomcat-juli:jar:7.0.27: {}
+          org.fressian:fressian:jar:0.6.3: {}
   runtime:
     dependencies:
     - com.amazonaws:aws-java-sdk:jar:1.3.0
@@ -83,29 +83,29 @@ groups:
     artifacts:
     - jar:com.datomic:datomic-free:jar:0.8.3862:
         transitive:
-          org.slf4j:jul-to-slf4j:jar:1.6.4:
-            org.slf4j:slf4j-api:jar:1.6.4: {}
-          com.h2database:h2:jar:1.3.165: {}
-          org.apache.lucene:lucene-core:jar:3.3.0: {}
-          org.slf4j:jcl-over-slf4j:jar:1.6.4: {}
-          org.clojure:tools.cli:jar:0.2.2: {}
-          net.java.dev.jets3t:jets3t:jar:0.8.1:
-            com.jamesmurty.utils:java-xmlbuilder:jar:0.4: {}
-            commons-httpclient:commons-httpclient:jar:3.1: {}
-          org.apache.tomcat:tomcat-jdbc:jar:7.0.27:
-            org.apache.tomcat:tomcat-juli:jar:7.0.27: {}
-          com.google.guava:guava:jar:12.0.1:
-            com.google.code.findbugs:jsr305:jar:1.3.9: {}
           org.slf4j:slf4j-nop:jar:1.6.4: {}
           com.amazonaws:aws-java-sdk:jar:1.3.0:
             commons-codec:commons-codec:jar:1.3: {}
-          org.clojure:clojure:jar:1.4.0: {}
-          io.netty:netty:jar:3.6.0.Final: {}
-          org.slf4j:log4j-over-slf4j:jar:1.6.4: {}
-          org.fressian:fressian:jar:0.6.3: {}
           org.codehaus.janino:commons-compiler-jdk:jar:2.6.1:
             org.codehaus.janino:commons-compiler:jar:2.6.1: {}
+          org.apache.lucene:lucene-core:jar:3.3.0: {}
+          org.slf4j:jcl-over-slf4j:jar:1.6.4: {}
+          org.clojure:clojure:jar:1.4.0: {}
+          io.netty:netty:jar:3.6.0.Final: {}
+          com.h2database:h2:jar:1.3.165: {}
+          com.google.guava:guava:jar:12.0.1:
+            com.google.code.findbugs:jsr305:jar:1.3.9: {}
+          org.slf4j:jul-to-slf4j:jar:1.6.4:
+            org.slf4j:slf4j-api:jar:1.6.4: {}
+          net.java.dev.jets3t:jets3t:jar:0.8.1:
+            com.jamesmurty.utils:java-xmlbuilder:jar:0.4: {}
+            commons-httpclient:commons-httpclient:jar:3.1: {}
           org.hornetq:hornetq-core:jar:2.2.21.Final: {}
+          org.clojure:tools.cli:jar:0.2.2: {}
+          org.slf4j:log4j-over-slf4j:jar:1.6.4: {}
+          org.apache.tomcat:tomcat-jdbc:jar:7.0.27:
+            org.apache.tomcat:tomcat-juli:jar:7.0.27: {}
+          org.fressian:fressian:jar:0.6.3: {}
 remote_repositories:
 - http://clojars.org/repo/
 - https://repository.jboss.org/nexus/content/groups/public/

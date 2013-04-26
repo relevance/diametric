@@ -39,6 +39,19 @@ module Diametric
                 hash[c_key] = c_value.dbid
                 queue << c_value.tx_data.first
               end
+            elsif c_value.is_a? Set
+              set_value = Set.new
+              c_value.each do |s|
+                if s.respond_to?(:tx_data) && s.tx_data.empty?
+                  set_value << s.dbid
+                elsif s.respond_to?(:tx_data)
+                  set_value << s.tx_data[":db/id"]
+                  parsed_tx_data(s, result)
+                else
+                  set_value << s
+                end
+              end
+              hash[c_key] = set_value
             else
               hash[c_key] = c_value
             end
