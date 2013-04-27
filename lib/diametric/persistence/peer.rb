@@ -28,7 +28,17 @@ module Diametric
 
       def parse_tx_data(data, result)
         queue = []
-        data.each do |c_hash|
+        data.each do |c_data|
+          if c_data.is_a? Hash
+            parse_hash_data(c_data, result, queue)
+          elsif c_data.is_a? Array
+            parse_array_data(c_data, result)
+          end
+        end
+        parse_tx_data(queue, result) unless queue.empty?
+      end
+
+      def parse_hash_data(c_hash, result, queue)
           hash = {}
           c_hash.each do |c_key, c_value|
             if c_value.respond_to?(:tx_data)
@@ -57,8 +67,26 @@ module Diametric
             end
           end
           result << hash
+      end
+
+      def parse_array_data(c_array, result)
+        array = []
+        c_array.each do |c_value|
+          if c_value.respond_to?(:to_a)
+            a_values = []
+            c_value.to_a.each do |a_value|
+              if a_value.respond_to?(:tx_data) && a_value.tx_data.empty?
+                a_values << a_value.dbid
+              else
+                a_values << a_value
+              end
+            end
+            array << a_values
+          else
+            array << c_value
+          end
         end
-        parse_tx_data(queue, result) unless queue.empty?
+        result << array
       end
 
       def resolve_changes(parents, map)

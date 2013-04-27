@@ -484,7 +484,8 @@ module Diametric
       attribute_names.each do |attribute_name|
         cardinality = self.class.attributes[attribute_name.to_sym][:cardinality]
 
-        if cardinality == :many && self.class.instance_variable_get("@peer").nil?
+        #if cardinality == :many && self.class.instance_variable_get("@peer").nil?
+        if cardinality == :many
           txes += cardinality_many_tx_data(attribute_name)
         else
           entity_tx[self.class.namespace(self.class.prefix, attribute_name)] = self.send(attribute_name)
@@ -499,7 +500,6 @@ module Diametric
           txes << entity_tx.merge({:"db/id" => dbid || tempid})
         end
       end
-
       txes
     end
 
@@ -512,11 +512,17 @@ module Diametric
 
       namespaced_attribute = self.class.namespace(self.class.prefix, attribute_name)
       txes = []
-      txes << [:"db/retract", (dbid || tempid), namespaced_attribute, retractions.to_a] unless retractions.empty?
-      txes << [:"db/add", (dbid || tempid) , namespaced_attribute, protractions.to_a] unless protractions.empty?
+      if self.class.instance_variable_get("@peer")
+        @dbid ||= tempid
+        txes << [":db/retract", @dbid, namespaced_attribute, retractions.to_a] unless retractions.empty?
+        txes << [":db/add", @dbid, namespaced_attribute, protractions.to_a] unless protractions.empty?
+      else
+        txes << [:"db/retract", (dbid || tempid), namespaced_attribute, retractions.to_a] unless retractions.empty?
+        txes << [:"db/add", (dbid || tempid) , namespaced_attribute, protractions.to_a] unless protractions.empty?
+      end
       txes
     end
-    
+
     # Returns hash of all attributes for this object
     #
     # @return [Hash<Symbol, object>] Hash of atrributes
