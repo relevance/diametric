@@ -11,6 +11,7 @@
 .yardoc
 InstalledFiles
 Gemfile.lock
+Jarfile.lock
 _yardoc
 build
 coverage
