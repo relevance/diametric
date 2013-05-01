@@ -37,11 +37,11 @@ describe "RailsConf 2013", :jruby => true do
       binding.pry
 
       query = Diametric::Query.new(Person).where(:name => "Yoko")
-      result = query.first
+      result = query.all
       binding.pry
 
       query = Diametric::Query.new(Person).filter(:>, :nerd_rate, 70)
-      result = query.first
+      result = query.all
       binding.pry
     end
   end
