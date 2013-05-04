@@ -15,9 +15,7 @@ module Diametric
   end
 end
 
-class Person
-  include Diametric::Entity
-
+class Person < Diametric::Entity
   attribute :name, String, :index => true
   attribute :email, String, :cardinality => :many
   attribute :birthday, DateTime
@@ -30,15 +28,12 @@ class Person
   attribute :parent, Ref, :cardinality => :many, :doc => "A person's parent"
 end
 
-class Goat
-  include Diametric::Entity
-
+class Goat < Diametric::Entity
   attribute :name, String
   attribute :birthday, DateTime
 end
 
-class Robin
-  include Diametric::Entity
+class Robin < Diametric::Entity
   include Diametric::Persistence::REST
 
   attribute :name, String
@@ -46,32 +41,28 @@ class Robin
   attribute :age, Integer
 end
 
-class Penguin
-  include Diametric::Entity
+class Penguin < Diametric::Entity
   include Diametric::Persistence::Peer
 
   attribute :name, String
   attribute :age, Integer
 end
 
-class Rat
-  include Diametric::Entity
+class Rat < Diametric::Entity
   include Diametric::Persistence::Peer
 
   attribute :name, String, :index => true
   attribute :age, Integer
 end
 
-class Mouse
-  include Diametric::Entity
+class Mouse < Diametric::Entity
   include Diametric::Persistence::REST
 
   attribute :name, String, :index => true
   attribute :age, Integer
 end
 
-class Community
-  include Diametric::Entity
+class Community < Diametric::Entity
   include Diametric::Persistence::REST
 
   attribute :name, String, :cardinality => :one, :fulltext => true, :doc => "A community's name"
@@ -84,8 +75,7 @@ class Community
   enum :type, [:email_list, :twitter, :facebook_page, :blog, :website, :wiki, :myspace, :ning]
 end
 
-class Seattle
-  include Diametric::Entity
+class Seattle < Diametric::Entity
   include Diametric::Persistence::Peer
 
   attribute :name, String, :cardinality => :one, :fulltext => true, :doc => "A community's name"
@@ -98,16 +88,14 @@ class Seattle
   enum :type, [:email_list, :twitter, :facebook_page, :blog, :website, :wiki, :myspace, :ning]
 end
 
-class Neighborhood
-  include Diametric::Entity
+class Neighborhood < Diametric::Entity
   include Diametric::Persistence::Peer
 
   attribute :name, String, :cardinality => :one, :unique => :identity, :doc => "A unique neighborhood name (upsertable)"
   attribute :district, Ref, :cardinality => :one, :doc => "A neighborhood's district"
 end
 
-class District
-  include Diametric::Entity
+class District < Diametric::Entity
   include Diametric::Persistence::Peer
 
   attribute :name, String, :cardinality => :one, :unique => :identity, :doc => "A unique district name (upsertable)"

@@ -29,7 +29,7 @@ module Diametric
   # @!attribute dbid
   #   The database id assigned to the entity by Datomic.
   #   @return [Integer]
-  module Entity
+  class Entity
     Ref = "ref"
     # Conversions from Ruby types to Datomic types.
     VALUE_TYPES = {
@@ -48,7 +48,7 @@ module Diametric
 
     @temp_ref = -1000
 
-    def self.included(base)
+    def self.inherited(base)
       base.send(:extend, ClassMethods)
       base.send(:extend, ActiveModel::Naming)
       base.send(:include, ActiveModel::Conversion)
