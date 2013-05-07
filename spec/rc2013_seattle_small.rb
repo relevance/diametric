@@ -9,6 +9,7 @@ describe Diametric::Entity, :jruby => true do
       Neighborhood.create_schema(@conn).get
       District.create_schema(@conn).get
       Seattle.create_schema(@conn).get
+      binding.pry
     end
     after(:all) do
       @conn.release
@@ -18,6 +19,7 @@ describe Diametric::Entity, :jruby => true do
       district = District.new
       district.name = "East"
       district.region = District::Region::E
+      binding.pry
       neighborhood = Neighborhood.new
       neighborhood.name = "Capitol Hill"
       neighborhood.district = district
@@ -31,8 +33,6 @@ describe Diametric::Entity, :jruby => true do
       binding.pry
       res = seattle.save(@conn)
       binding.pry
-
-
 
       query = Diametric::Query.new(Seattle, @conn, true)
       seattle = query.where(:name => "15th Ave Community").first

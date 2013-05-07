@@ -13,6 +13,7 @@ describe "RailsConf 2013", :jruby => true do
     before(:all) do
       datomic_uri = "datomic:mem://person-#{SecureRandom.uuid}"
       @conn = Diametric::Persistence::Peer.connect(datomic_uri)
+      binding.pry
     end
     after(:all) do
       @conn.release
@@ -40,9 +41,30 @@ describe "RailsConf 2013", :jruby => true do
       result = query.all
       binding.pry
 
-      query = Diametric::Query.new(Person).filter(:>, :nerd_rate, 70)
+      past = Time.now
+      binding.pry
+
+      yoko = result.first
+      yoko.nerd_rate = 60
+      yoko.save
+      binding.pry
+
+      query = Diametric::Query.new(Person, @conn.db).where(:name => "Yoko")
       result = query.all
       binding.pry
+
+      past_db = @conn.db.as_of(past)
+      binding.pry
+
+      query = Diametric::Query.new(Person, past_db).where(:name => "Yoko")
+      result = query.all
+      binding.pry
+      
+
+      query = Diametric::Query.new(Person, @conn.db).filter(:>, :nerd_rate, 70)
+      result = query.all
+      binding.pry
+
     end
   end
 end
