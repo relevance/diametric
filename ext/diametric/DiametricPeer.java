@@ -78,8 +78,12 @@ public class DiametricPeer extends RubyModule {
         String uriOrMap = DiametricUtils.rubyStringToJava(arg);
         if (uriOrMap == null)
             throw context.getRuntime().newArgumentError("Argument should be a String");
-        boolean status = Peer.createDatabase(uriOrMap);
-        return RubyBoolean.newBoolean(context.getRuntime(), status);
+        try {
+            boolean status = Peer.createDatabase(uriOrMap);
+            return RubyBoolean.newBoolean(context.getRuntime(), status);
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
+        }
     }
     
     @JRubyMethod(meta=true, required=2, rest=true)
@@ -89,16 +93,24 @@ public class DiametricPeer extends RubyModule {
         if (uriOrMap == null) return context.getRuntime().getNil();
         String newName = DiametricUtils.rubyStringToJava(args[1]);
         if (newName == null) return context.getRuntime().getNil();
-        boolean status = Peer.renameDatabase(uriOrMap, newName);
-        return RubyBoolean.newBoolean(context.getRuntime(), status);
+        try {
+            boolean status = Peer.renameDatabase(uriOrMap, newName);
+            return RubyBoolean.newBoolean(context.getRuntime(), status);
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
+        }
     }
     
     @JRubyMethod(meta=true)
     public static IRubyObject delete_database(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
         String uriOrMap = DiametricUtils.rubyStringToJava(arg);
         if (uriOrMap == null) return context.getRuntime().getNil();
-        boolean status = Peer.deleteDatabase(uriOrMap);
-        return RubyBoolean.newBoolean(context.getRuntime(), status);
+        try {
+            boolean status = Peer.deleteDatabase(uriOrMap);
+            return RubyBoolean.newBoolean(context.getRuntime(), status);
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
+        }
     }
     
     @JRubyMethod(meta=true)
