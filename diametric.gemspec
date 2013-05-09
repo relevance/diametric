@@ -16,7 +16,7 @@ as entities into a Datomic database.
 EOF
   gem.homepage      = "https://github.com/relevance/diametric"
 
-  gem.files         = %w(Gemfile Jarfile Jarfile.lock LICENSE.txt README.md Rakefile datomic_version.cnf diametric.gemspec) + Dir.glob('lib/**/*') + Dir.glob('ext/**/*') + Dir.glob('spec/**/*')
+  gem.files         = %w(Gemfile Jarfile LICENSE.txt README.md Rakefile datomic_version.cnf diametric.gemspec) + Dir.glob('lib/**/*') + Dir.glob('ext/**/*') + Dir.glob('spec/**/*')
   gem.executables   = []
   gem.test_files    = Dir.glob("spec/**/*.rb")
   gem.require_paths = ["lib"]
