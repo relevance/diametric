@@ -1,4 +1,5 @@
 require 'diametric/service_base'
+require 'pathname'
 
 module Diametric
   class Transactor
@@ -18,7 +19,11 @@ module Diametric
       @conf = conf
       @dest = dest
       @datomic_version = Transactor.datomic_version(conf)
-      @datomic_home = File.join(File.dirname(__FILE__), "../..", dest, @datomic_version)
+      if Pathname.new(dest).relative?
+        @datomic_home = File.join(File.dirname(__FILE__), "../..", dest, @datomic_version)
+      else
+        @datomic_home = File.join(dest, @datomic_version)
+      end
       @datomic_version_no = Transactor.datomic_version_no(@datomic_version)
       @hostname = nil
       @port = nil

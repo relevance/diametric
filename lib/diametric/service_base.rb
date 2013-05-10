@@ -1,4 +1,5 @@
 require 'net/http'
+require 'pathname'
 
 module Diametric
   module ServiceBase
@@ -8,7 +9,9 @@ module Diametric
 
     module ClassMethods
       def datomic_conf_file?(file="datomic_version.cnf")
-        file = File.join(File.dirname(__FILE__), "../..", file)
+        if Pathname.new(file).relative?
+          file = File.join(File.dirname(__FILE__), "../..", file)
+        end
         return File.exists?(file)
       end
 
@@ -26,20 +29,25 @@ module Diametric
 
       def downloaded?(conf="datomic_version.cnf", dest="vendor/datomic")
         datomic_home = datomic_version(conf)
-        File.exists?(File.join(File.dirname(__FILE__), "../..", dest, datomic_home))
+        if Pathname.new(dest).relative?
+          dest = File.join(File.dirname(__FILE__), "..", "..", dest)
+        end
+        File.exists?(File.join(dest, datomic_home))
       end
 
       def download(conf="datomic_version.cnf", dest="vendor/datomic")
         return true if downloaded?(conf, dest)
         version = datomic_version(conf)
         url = "http://downloads.datomic.com/#{datomic_version_no(version)}/#{version}.zip"
-        dest_dir = File.join(File.dirname(__FILE__), "../..", dest)
+        if Pathname.new(dest).relative?
+          dest = File.join(File.dirname(__FILE__), "../..", dest)
+        end
         require 'open-uri'
         require 'zip/zipfilesystem'
         open(url) do |zip_file|
           Zip::ZipFile.open(zip_file.path) do |zip_path|
             zip_path.each do |zip_entry|
-              file_path = File.join(dest_dir, zip_entry.to_s)
+              file_path = File.join(dest, zip_entry.to_s)
               FileUtils.mkdir_p(File.dirname(file_path))
               zip_path.extract(zip_entry, file_path) { true }
             end
