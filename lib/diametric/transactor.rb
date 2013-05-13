@@ -1,5 +1,6 @@
 require 'diametric/service_base'
 require 'pathname'
+require 'securerandom'
 
 module Diametric
   class Transactor
