@@ -514,13 +514,20 @@ module Diametric
       txes = []
       if self.class.instance_variable_get("@peer")
         @dbid ||= tempid
-        txes << [":db/retract", @dbid, namespaced_attribute, retractions.to_a] unless retractions.empty?
-        txes << [":db/add", @dbid, namespaced_attribute, protractions.to_a] unless protractions.empty?
+        txes_data(txes, ":db/retract", namespaced_attribute, retractions) unless retractions.empty?
+        txes_data(txes, ":db/add", namespaced_attribute, protractions) unless protractions.empty?
       else
         txes << [:"db/retract", (dbid || tempid), namespaced_attribute, retractions.to_a] unless retractions.empty?
         txes << [:"db/add", (dbid || tempid) , namespaced_attribute, protractions.to_a] unless protractions.empty?
       end
       txes
+    end
+
+    def txes_data(txes, op, namespaced_attribute, set)
+      set.to_a.each do |s|
+        value = s.respond_to?(:dbid) ? s.dbid : s
+        txes << [op, @dbid, namespaced_attribute, value]
+      end
     end
 
     # Returns hash of all attributes for this object

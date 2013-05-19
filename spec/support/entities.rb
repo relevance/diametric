@@ -70,6 +70,23 @@ class Mouse
   attribute :age, Integer
 end
 
+class Author
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :name, String
+  attribute :books, Ref, :cardinality => :many
+end
+
+class Book
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :title, String
+  attribute :authors, Ref, :cardinality => :many
+end
+
+
 class Community
   include Diametric::Entity
   include Diametric::Persistence::REST

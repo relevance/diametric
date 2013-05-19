@@ -72,7 +72,6 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     end
 
     it "should save instance" do
-    #it "should save instance" do
       district = District.new
       district.name = "East"
       district.region = District::Region::E
@@ -84,7 +83,6 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       neighborhood.tx_data.should be_empty
     end
 
-    #it "should not include tx_data of saved entity", :focused=>true do
     it "should not include tx_data of saved entity" do
       district = District.new
       district.name = "Southwest"
@@ -103,7 +101,6 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       neighborhood.tx_data.should be_empty
     end
 
-    #it "should get instance", :focused=>true do
     it "should get instance" do
       query = Diametric::Query.new(Neighborhood, @n_conn2, true)
       neighborhood = query.where(:name => "Capitol Hill").first
@@ -148,7 +145,6 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       @s_conn2.release
     end
 
-    #it "should save instance", :focused=>true do
     it "should save instance" do
       district = District.new
       district.name = "East"
@@ -166,7 +162,6 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       seattle.save(@n_conn2).should_not be_nil
     end
 
-    #it "should get instance", :focused=>true do
     it "should get instance" do
       query = Diametric::Query.new(Seattle, @s_conn2, true)
       seattle = query.where(:name => "15th Ave Community").first
