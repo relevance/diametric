@@ -336,12 +336,12 @@ module Diametric
           end
         end
         first_key = entity.keys.first
-        match_data = /:([a-z]+)\/([a-z]+)/.match(first_key)
+        match_data = /:([a-z0-9]+)\/([a-z0-9]+)/.match(first_key)
         entity_name = match_data[1].capitalize
         instance = eval("#{entity_name}.new")
         instance.send("#{match_data[2]}=", entity[first_key])
         entity.keys[1..-1].each do |key|
-          match_data = /:([a-z]+)\/([a-z]+)/.match(key)
+          match_data = /:([a-z0-9]+)\/([a-z0-9]+)/.match(key)
           instance.send("#{match_data[2]}=", entity[key])
         end
         instance.send("dbid=", dbid)
