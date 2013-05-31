@@ -315,28 +315,39 @@ module Diametric
               child = from_dbid_or_entity(ref, connection)
               child = resolve_ref_dbid(child, connection)
               parent.instance_variable_set("@#{e.to_s}", child)
+            elsif ref.is_a?(Set)
+              children = ref.inject(Set.new) do |memo, entity|
+               child = from_dbid_or_entity(entity, connection)
+                memo.add(child)
+                memo
+              end
+              parent.instance_variable_set("@#{e.to_s}", children)
             end
           end
         end
         parent
       end
 
-      def from_dbid_or_entity(thing, connection)
-        return thing unless connection
+      def from_dbid_or_entity(thing, conn_or_db, resolve=false)
+        return thing unless conn_or_db
+
+        if conn_or_db.respond_to?(:db)
+          conn_or_db = conn_or_db.db
+        end
 
         if thing.is_a? Fixnum
           dbid = thing
-          entity = connection.db.entity(dbid)
+          entity = conn_or_db.entity(dbid)
         elsif thing.respond_to?(:eid)
           dbid = thing.eid
           if entity.respond_to?(:keys)
             entity = thing
           else
-            entity = connection.db.entity(dbid)
+            entity = conn_or_db.entity(dbid)
           end
         elsif thing.respond_to?(:to_java)
           dbid = thing.to_java
-          entity = connection.db.entity(dbid)
+          entity = conn_or_db.entity(dbid)
         else
           return thing
         end
@@ -350,6 +361,11 @@ module Diametric
           instance.send("#{match_data[2]}=", entity[key])
         end
         instance.send("dbid=", Diametric::Persistence::Object.new(dbid))
+
+        if resolve
+          instance = resolve_ref_dbid(instance, conn_or_db)
+        end
+
         instance
       end
 

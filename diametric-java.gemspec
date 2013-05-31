@@ -8,13 +8,14 @@ Gem::Specification.new do |gem|
   gem.version       = Diametric::VERSION
   gem.authors       = ["Clinton N. Dreisbach", "Ryan K. Neufeld", "Yoko Harada"]
   gem.email         = ["crnixon@gmail.com", "ryan@thinkrelevance.com", "yoko@thinkrelevance.com"]
-  gem.summary       = %q{ActiveModel for Datomic}
+  gem.summary       = %q{ActiveModel for Datomic (JRuby)}
   gem.description   = <<EOF
 Diametric is a library for building schemas, queries, and transactions
 for Datomic from Ruby objects. It is also used to map Ruby objects
 as entities into a Datomic database.
 EOF
   gem.homepage      = "https://github.com/relevance/diametric"
+  gem.platform      = 'java'
 
   gem.files         = %w(Gemfile Jarfile LICENSE.txt README.md Rakefile datomic_version.cnf diametric.gemspec diametric-java.gemspec) + Dir.glob('lib/**/*') + Dir.glob('ext/**/*') + Dir.glob('spec/**/*')
   gem.executables   = []

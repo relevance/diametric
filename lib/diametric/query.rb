@@ -114,7 +114,7 @@ module Diametric
 
       collapse_results(res).each do |entity|
         if self.model.instance_variable_get("@peer")
-          yield model.from_dbid_or_entity(entity.first.to_java, @conn_or_db)
+          yield model.from_dbid_or_entity(entity.first.to_java, @conn_or_db, @resolve)
         # The map is for compatibility with Java peer persistence.
         # TODO remove if possible
         else

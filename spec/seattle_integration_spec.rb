@@ -49,7 +49,7 @@ describe "Seattle Sample", :integration => true, :jruby => true do
     it "should get all community names" do
       query = Diametric::Query.new(Seattle, @s_conn1)
       results = query.all
-      results.size.should == 362
+      results.size.should == 150
     end
 
     it "should get reverse reference" do
@@ -85,7 +85,7 @@ describe "Seattle Sample", :integration => true, :jruby => true do
     it "should add another set of data" do
       query = Diametric::Query.new(Seattle, @s_conn2)
       results = query.all
-      results.size.should == 362
+      results.size.should == 150
 
       past = Time.now
 
@@ -95,12 +95,12 @@ describe "Seattle Sample", :integration => true, :jruby => true do
       map2 = @s_conn2.transact(list.first).get
       query = Diametric::Query.new(Seattle, @s_conn2)
       results = query.all
-      results.size.should == 571
+      results.size.should == 258
 
       past_db = @s_conn2.db.as_of(past)
       query = Diametric::Query.new(Seattle, past_db)
       results = query.all
-      results.size.should == 362
+      results.size.should == 150
     end
   end
 end

@@ -102,6 +102,14 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     end
 
     it "should get instance" do
+      district = District.new
+      district.name = "East"
+      district.region = District::Region::E
+      neighborhood = Neighborhood.new
+      neighborhood.name = "Capitol Hill"
+      neighborhood.district = district
+      neighborhood.save(@n_conn2).should_not be_nil
+
       query = Diametric::Query.new(Neighborhood, @n_conn2, true)
       neighborhood = query.where(:name => "Capitol Hill").first
       neighborhood.dbid.should_not be_nil
@@ -113,10 +121,18 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     end
 
     it "should not resolve ref type dbid" do
+      district = District.new
+      district.name = "East"
+      district.region = District::Region::E
+      neighborhood = Neighborhood.new
+      neighborhood.name = "Capitol Hill"
+      neighborhood.district = district
+      neighborhood.save(@n_conn2).should_not be_nil
+
       query = Diametric::Query.new(Neighborhood, @n_conn2)
       neighborhood = query.where(:name => "Capitol Hill").first
       neighborhood.name.should == "Capitol Hill"
-      neighborhood.district.should be_a(Fixnum)
+      neighborhood.district.should be_a(Java::DatomicQuery::EntityMap)
     end
   end
 
