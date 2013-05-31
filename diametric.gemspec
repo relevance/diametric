@@ -28,7 +28,6 @@ EOF
   gem.add_dependency 'datomic-client', '~> 0.4.1'
   gem.add_dependency 'rubyzip', '~> 0.9.9'
   gem.add_dependency 'rspec', '~> 2.13.0'
-  gem.add_dependency 'rake', '~> 10.0.4'
   gem.add_dependency 'lock_jar', '= 0.7.3' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
   gem.add_dependency 'jruby-openssl', '~> 0.8.7' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
   gem.add_dependency 'rake-compiler', '~> 0.8.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
