@@ -3,7 +3,5 @@ language: ruby
 before_script: rake prepare
 rvm:
   - 1.9.3
-    gemfile: diametric.gemspec
   - jruby-19mode
-    gemfile: diametric-java.gemspec
 script: INTEGRATION=true bundle exec rspec spec
