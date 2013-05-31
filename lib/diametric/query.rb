@@ -15,7 +15,7 @@ module Diametric
   class Query
     include Enumerable
 
-    attr_reader :conditions, :filters, :model, :connection, :resolve
+    attr_reader :conditions, :filters, :filter_attrs, :model, :connection, :resolve
 
     # Create a new Datomic query.
     #
@@ -25,6 +25,7 @@ module Diametric
       @model = model
       @conditions = {}
       @filters = []
+      @filter_attrs = []
       @conn_or_db = connection_or_database
       @resolve = resolve
     end
@@ -91,6 +92,7 @@ module Diametric
       if filter.first.is_a?(Array)
         filter = filter.first
       end
+      filter_attrs << filter[1].to_s
       filter[1] = "?#{filter[1].to_s}"
       filter = filter.tap {|e| e.to_s }.join(" ")
       filter = "[(#{filter})]"
@@ -111,9 +113,13 @@ module Diametric
       res = model.q(*data, @conn_or_db)
 
       collapse_results(res).each do |entity|
+        if self.model.instance_variable_get("@peer")
+          yield model.from_dbid_or_entity(entity.first.to_java, @conn_or_db)
         # The map is for compatibility with Java peer persistence.
         # TODO remove if possible
-        yield model.from_query(entity.map { |x| x }, @conn_or_db, @resolve)
+        else
+          yield model.from_query(entity.map { |x| x }, @conn_or_db, @resolve)
+        end
       end
     end
 
@@ -154,25 +160,34 @@ module Diametric
     end
 
     def peer_data
-      vars = model.attribute_names.inject("") {|memo, attribute| memo + "?#{attribute} " }
-      vars = model.enum_names.inject(vars) {|memo, enum| memo + "?#{enum}_value " }
+      if conditions.empty? && filters.empty?
+        args = [model.prefix]
+        query = <<-EOQ
+[:find ?e
+ :in $ [?include-ns ...]
+ :where
+ [?e ?aid ?v]
+ [?aid :db/ident ?a]
+ [(namespace ?a) ?ns]
+ [(= ?ns ?include-ns)]]
+EOQ
+      else
+        unless conditions.empty?
+          clauses = conditions.keys.inject("") do |memo, attribute|
+            memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
+          end
+          from = conditions.inject("[") {|memo, kv| memo + "?#{kv.shift} "} +"]"
+          args = conditions.map { |_, v| v }
+        end
 
-      form = ""
-      if conditions.size > 0
-        from = conditions.inject("[") {|memo, kv| memo + "?#{kv.shift} "} +"]"
+        unless filter_attrs.empty?
+          clauses ||= ""
+          clauses = filter_attrs.inject(clauses) do |memo, attribute|
+            memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
+          end
+        end
+        query = "[:find ?e :in $ #{from} :where #{clauses} #{filters.join}]"
       end
-
-      clauses = model.attribute_names.inject("") do |memo, attribute|
-        memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
-      end
-
-      clauses = model.enum_names.inject(clauses) do |memo, enum|
-        memo + "[?#{enum} :db/ident ?#{enum}_value ] "
-      end
-
-      args = conditions.map { |_, v| v }
-
-      query = "[:find ?e #{vars} :in $ #{from} :where #{clauses} #{filters.join}]"
 
       [query, args]
     end
@@ -206,31 +221,35 @@ module Diametric
         #       result may be a Java::ClojureLang::PersistentVector
         results = results.map {|result| result.to_a.drop(1) }
 
-        # Group values from all results into one result set
-        # [["b", 123], ["c", 123]] #=> [["b", "c"], [123, 123]]
-        grouped_values = results.transpose
-        attr_grouped_values = grouped_values[0...model.attributes.size]
-        enum_grouped_values = grouped_values[model.attributes.size..-1]
+        unless results.flatten.empty?
+          # Group values from all results into one result set
+          # [["b", 123], ["c", 123]] #=> [["b", "c"], [123, 123]]
+          grouped_values = results.transpose
+          attr_grouped_values = grouped_values[0...model.attributes.size]
+          enum_grouped_values = grouped_values[model.attributes.size..-1]
 
-        # Attach attribute names to each collection of values
-        # => [[:letters, ["b", "c"]], [:number, [123, 123]]]
-        attr_to_values = model.attributes.keys.zip(attr_grouped_values)
+          # Attach attribute names to each collection of values
+          # => [[:letters, ["b", "c"]], [:number, [123, 123]]]
+          attr_to_values = model.attributes.keys.zip(attr_grouped_values)
 
-        # Retain cardinality/many attributes as a collection,
-        # but pick only one value for cardinality/one attributes
-        collapsed_values = attr_to_values.map do |attr, values|
-          if model.attributes[attr][:cardinality] == :many
-            values
-          elsif model.attributes[attr][:value_type] == "ref" &&
-              model.enum_names.include?(attr)
-            enum_grouped_values.shift.first
-          else
-            values.first
+          # Retain cardinality/many attributes as a collection,
+          # but pick only one value for cardinality/one attributes
+          collapsed_values = attr_to_values.map do |attr, values|
+            if model.attributes[attr][:cardinality] == :many
+              values
+            elsif model.attributes[attr][:value_type] == "ref" &&
+                model.enum_names.include?(attr)
+              enum_grouped_values.shift.first
+            else
+              values.first
+            end
           end
-        end
 
-        # Returning a singular result for each dbid
-        [dbid, *collapsed_values]
+          # Returning a singular result for each dbid
+          [dbid, *collapsed_values]
+        else
+          [dbid]
+        end
       end
     end
   end

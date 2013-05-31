@@ -327,24 +327,29 @@ module Diametric
         if thing.is_a? Fixnum
           dbid = thing
           entity = connection.db.entity(dbid)
-        else
+        elsif thing.respond_to?(:eid)
           dbid = thing.eid
           if entity.respond_to?(:keys)
             entity = thing
           else
             entity = connection.db.entity(dbid)
           end
+        elsif thing.respond_to?(:to_java)
+          dbid = thing.to_java
+          entity = connection.db.entity(dbid)
+        else
+          return thing
         end
         first_key = entity.keys.first
-        match_data = /:([a-z0-9]+)\/([a-z0-9]+)/.match(first_key)
+        match_data = /:([a-z0-9]+)\/([a-z0-9_]+)/.match(first_key)
         entity_name = match_data[1].capitalize
         instance = eval("#{entity_name}.new")
         instance.send("#{match_data[2]}=", entity[first_key])
         entity.keys[1..-1].each do |key|
-          match_data = /:([a-z0-9]+)\/([a-z0-9]+)/.match(key)
+          match_data = /:([a-z0-9]+)\/([a-z0-9_]+)/.match(key)
           instance.send("#{match_data[2]}=", entity[key])
         end
-        instance.send("dbid=", dbid)
+        instance.send("dbid=", Diametric::Persistence::Object.new(dbid))
         instance
       end
 

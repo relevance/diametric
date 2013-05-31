@@ -8,14 +8,14 @@ require 'datomic/client'
 describe Diametric::Entity, :integration => true, :jruby => true do
   before(:all) do
     @datomic_uri = ENV['DATOMIC_URI'] || 'datomic:mem://animals'
-    Diametric::Persistence.establish_base_connection({:uri => @datomic_uri})
-    Penguin.create_schema
+    @conn = Diametric::Persistence.establish_base_connection({:uri => @datomic_uri})
+    Penguin.create_schema(@conn)
   end
 
-  let(:query) { Diametric::Query.new(Penguin) }
+  let(:query) { Diametric::Query.new(Penguin, @conn) }
   it "should update entity" do
     penguin = Penguin.new(:name => "Mary", :age => 2)
-    penguin.save
+    penguin.save(@conn)
     penguin.update(:age => 3)
     penguin.name.should == "Mary"
     penguin.age.should == 3
@@ -29,7 +29,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
 
   it "should destroy entity" do
     penguin = Penguin.new(:name => "Mary", :age => 2)
-    penguin.save
+    penguin.save(@conn)
     number_of_penguins = Penguin.all.size
     number_of_penguins.should >= 1
     penguin.destroy

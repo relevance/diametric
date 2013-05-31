@@ -42,7 +42,9 @@ public class DiametricDatabase extends RubyObject {
     
     @JRubyMethod
     public IRubyObject entity(ThreadContext context, IRubyObject arg) {
-        if (!(arg instanceof RubyFixnum)) return context.getRuntime().getNil();
+        if (!(arg instanceof RubyFixnum)) {
+            throw context.getRuntime().newArgumentError("Argument should be Fixnum");
+        }
         Long entityId = (Long) arg.toJava(Long.class);
         try {
             Entity entity = database.entity(entityId);
