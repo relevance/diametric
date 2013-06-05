@@ -18,9 +18,12 @@ if is_jruby?
   require 'lock_jar'
   jar_file = File.join(File.dirname(__FILE__), "..", "Jarfile")
   lock_file = File.join(File.dirname(__FILE__), "..", "Jarfile.lock")
+  current_dir = Dir.pwd
+  Dir.chdir(File.dirname(lock_file))
   LockJar.lock(jar_file)
   LockJar.install(lock_file)
   LockJar.load(lock_file)
+  Dir.chdir(current_dir)
 
   require 'diametric_service.jar'
   require 'diametric/diametric'
