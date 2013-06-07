@@ -352,7 +352,7 @@ module Diametric
           return thing
         end
         first_key = entity.keys.first
-        match_data = /:([a-zA-Z0-9]+)\/([a-zA-Z0-9_]+)/.match(first_key)
+        match_data = /:([a-zA-Z0-9_]+)\/([a-zA-Z0-9_]+)/.match(first_key)
         entity_name = match_data[1].capitalize
         instance = eval("#{entity_name}.new")
         instance.send("#{match_data[2]}=", entity[first_key])
