@@ -353,11 +353,11 @@ module Diametric
         end
         first_key = entity.keys.first
         match_data = /:([a-zA-Z0-9_]+)\/([a-zA-Z0-9_]+)/.match(first_key)
-        entity_name = match_data[1].capitalize
+        entity_name = match_data[1].capitalize.gsub(/(?:_|(\/))([a-z\d]*)/) { "#{$1}#{$2.capitalize}"}
         instance = eval("#{entity_name}.new")
         instance.send("#{match_data[2]}=", entity[first_key])
         entity.keys[1..-1].each do |key|
-          match_data = /:([a-zA-Z0-9]+)\/([a-zA-Z0-9_]+)/.match(key)
+          match_data = /:([a-zA-Z0-9_]+)\/([a-zA-Z0-9_]+)/.match(key)
           instance.send("#{match_data[2]}=", entity[key])
         end
         instance.send("dbid=", Diametric::Persistence::Object.new(dbid))
