@@ -8,8 +8,8 @@ module Diametric
         "#{klass}.all"
       end
 
-      def self.find(klass, params=nil)
-        "#{klass}.get(#{params})"
+      def self.find(klass, params=nil, connection=nil, resolve=false)
+        "#{klass}.get(#{params}, #{connection}, #{resolve})"
       end
 
       def self.build(klass, params=nil)

@@ -121,14 +121,11 @@ module Diametric
       end
 
       module ClassMethods
-        def get(dbid)
+        def get(dbid, connection=nil, resolve=false)
           entity = self.new
           dbid = dbid.to_i if dbid.is_a?(String)
-          datomic_entity = Diametric::Persistence::Peer.get(dbid)
-          entity.attribute_names.each do |name|
-            entity.instance_variable_set("@#{name.to_s}", datomic_entity.get(self.namespace(self.prefix, name)))
-          end
-          entity.dbid = dbid
+          connection ||= Diametric::Persistence::Peer.connect
+          entity = self.from_dbid_or_entity(dbid, connection, resolve)
           entity
         end
 

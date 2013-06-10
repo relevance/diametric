@@ -47,8 +47,9 @@ module Diametric
           connection.transact(database, data)
         end
 
-        def get(dbid)
-          res = connection.entity(database, dbid.to_i)
+        def get(dbid, conn=nil, resolve=false)
+          conn ||= connection
+          res = conn.entity(database, dbid.to_i)
 
           # TODO tighten regex to only allow fields with the model name
           attrs = res.data.map { |attr_symbol, value|
