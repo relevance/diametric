@@ -62,6 +62,8 @@ module Diametric
                 end
               end
               hash[c_key] = set_value
+            elsif c_value.respond_to?(:eid)
+              hash[c_key] = c_value.eid
             else
               hash[c_key] = c_value
             end
