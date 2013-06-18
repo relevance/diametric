@@ -5,6 +5,7 @@ require 'active_support/inflector'
 require 'active_model'
 require 'set'
 require 'value_enums'
+require 'boolean_type'
 
 module Diametric
 
@@ -39,6 +40,7 @@ module Diametric
       Float => "float",
       BigDecimal => "bigdec",
       DateTime => "instant",
+      Boolean => "boolean",
       URI => "uri"
     }
 
@@ -435,7 +437,7 @@ module Diametric
       private
 
       def value_type(vt)
-        if vt.is_a?(Class)
+        if vt.is_a?(Class) || vt.is_a?(Module)
           vt = VALUE_TYPES[vt]
         end
         namespace("db.type", vt)

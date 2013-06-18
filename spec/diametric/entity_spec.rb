@@ -237,6 +237,30 @@ describe Diametric::Entity do
 
   end
 
+  context "boolean type" do
+    subject { Choice }
+
+    it "should generate a schema", :focused => true  do
+      expected = [
+        { ":db/id" => subject.send(:tempid, ":db.part/db"),
+          ":db/ident" => ":choice/item",
+          ":db/valueType" => ":db.type/string",
+          ":db/cardinality" => ":db.cardinality/one",
+          ":db.install/_attribute" => ":db.part/db" },
+        { ":db/id" => subject.send(:tempid, ":db.part/db"),
+          ":db/ident" => ":choice/checked",
+          ":db/valueType" => ":db.type/boolean",
+          ":db/cardinality" => ":db.cardinality/one",
+          ":db.install/_attribute" => ":db.part/db" }
+      ]
+      @created_schema = subject.schema
+      expected.each do |e|
+        @created_schema.shift.should be_an_equivalent_hash(e)
+      end
+    end
+
+  end
+
   context "community sample" do
     subject { Community }
 

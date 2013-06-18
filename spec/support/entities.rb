@@ -86,6 +86,13 @@ class Book
   attribute :authors, Ref, :cardinality => :many
 end
 
+class Choice
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :item, String
+  attribute :checked, Boolean
+end
 
 class Community
   include Diametric::Entity
