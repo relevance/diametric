@@ -240,7 +240,7 @@ describe Diametric::Entity do
   context "boolean type" do
     subject { Choice }
 
-    it "should generate a schema", :focused => true  do
+    it "should generate a schema" do
       expected = [
         { ":db/id" => subject.send(:tempid, ":db.part/db"),
           ":db/ident" => ":choice/item",
@@ -258,7 +258,6 @@ describe Diametric::Entity do
         @created_schema.shift.should be_an_equivalent_hash(e)
       end
     end
-
   end
 
   context "community sample" do
