@@ -33,7 +33,7 @@ public class DiametricUUID extends RubyObject {
     }
     
     @JRubyMethod
-    public IRubyObject to_s(ThreadContext context, IRubyObject arg) {
+    public IRubyObject to_s(ThreadContext context) {
         if (java_uuid == null) return context.getRuntime().getNil();
         return RubyString.newString(context.getRuntime(), java_uuid.toString());
     }

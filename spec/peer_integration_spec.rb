@@ -61,4 +61,38 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       choice.checked.should be_true
     end
   end
+
+  context Customer do
+    before(:all) do
+      @datomic_uri = ENV['DATOMIC_URI'] || 'datomic:mem://choices'
+      @conn3 = Diametric::Persistence.establish_base_connection({:uri => @datomic_uri})
+      Customer.create_schema(@conn3)
+    end
+
+    after(:all) do
+      @conn3.release
+    end
+
+    it "should save entity with Diametric uuid" do
+      id = Diametric::Persistence::Peer.squuid
+      customer = Customer.new(:name => "John Smith", :id => id)
+      customer.save.should_not be_nil
+      result = Diametric::Persistence::Peer.q("[:find ?e :in $ :where [?e :customer/name]]", @conn3.db)
+      customer2 = Customer.from_dbid_or_entity(result.first.first, @conn3.db)
+      customer2.name.should == "John Smith"
+      customer2.id.to_s.should == id.to_s
+    end
+
+    it "should save entity with Ruby uuid" do
+      require 'uuid'
+      id = UUID.new.generate
+      customer = Customer.new(:name => "Wilber Hoe", :id => id)
+      customer.save.should_not be_nil
+      result = Diametric::Persistence::Peer.q("[:find ?e :in $ [?name] :where [?e :customer/name ?name]]", @conn3.db, ["Wilber Hoe"])
+      customer2 = Customer.from_dbid_or_entity(result.first.first, @conn3.db)
+      customer2.name.should == "Wilber Hoe"
+      customer2.id.to_s.should == id.to_s
+    end
+  end
+
 end

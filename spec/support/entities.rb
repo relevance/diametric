@@ -94,6 +94,14 @@ class Choice
   attribute :checked, Boolean
 end
 
+class Customer
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :name, String
+  attribute :id, UUID
+end
+
 class Community
   include Diametric::Entity
   include Diametric::Persistence::REST

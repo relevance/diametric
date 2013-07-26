@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -70,9 +71,17 @@ public class DiametricUtils {
     }
     
     static Object convertRubyToJava(ThreadContext context, IRubyObject value) {
-        if (value instanceof RubyString) return (Object)((RubyString)value).toJava(String.class);
+        if (value instanceof RubyString) {
+            String str = (String)((RubyString)value).toJava(String.class);
+            try {
+                return (Object)UUID.fromString(str);
+            } catch (IllegalArgumentException e) {
+                return (Object)str;
+            }
+        }
         if (value instanceof RubyBoolean) return (Object)((RubyBoolean)value).toJava(Boolean.class);
         if (value instanceof RubyFixnum) return (Object)((RubyFixnum)value).toJava(Long.class);
+        if (value instanceof DiametricUUID) return ((DiametricUUID)value).getUUID();
         if (value instanceof RubyBignum) {
             RubyString svalue = (RubyString)((RubyBignum)value).to_s();
             java.math.BigInteger bivalue = new java.math.BigInteger((String)svalue.toJava(String.class));

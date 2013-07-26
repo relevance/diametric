@@ -32,6 +32,7 @@ module Diametric
   #   @return [Integer]
   module Entity
     Ref = "ref"
+    UUID = "uuid"
     # Conversions from Ruby types to Datomic types.
     VALUE_TYPES = {
       Symbol => "keyword",
@@ -41,7 +42,8 @@ module Diametric
       BigDecimal => "bigdec",
       DateTime => "instant",
       Boolean => "boolean",
-      URI => "uri"
+      URI => "uri",
+      UUID => "uuid"
     }
 
     DEFAULT_OPTIONS = {
