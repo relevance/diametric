@@ -32,8 +32,8 @@ EOF
   gem.add_dependency 'jruby-openssl', '~> 0.8.7' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
   gem.add_dependency 'rake-compiler', '~> 0.8.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
   gem.add_dependency 'uuid', '~> 2.3.7'
+  gem.add_dependency 'pry', '~> 0.9.12'
 
-  gem.add_development_dependency 'pry', '~> 0.9.12'
   gem.add_development_dependency 'guard', '~> 1.6.2' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
   gem.add_development_dependency 'guard-rspec', '~> 2.4.0' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
   gem.add_development_dependency 'rb-inotify', '~> 0.9.0' if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"

@@ -241,18 +241,34 @@ describe Diametric::Entity do
     subject { Choice }
 
     it "should generate a schema" do
-      expected = [
-        { ":db/id" => subject.send(:tempid, ":db.part/db"),
-          ":db/ident" => ":choice/item",
-          ":db/valueType" => ":db.type/string",
-          ":db/cardinality" => ":db.cardinality/one",
-          ":db.install/_attribute" => ":db.part/db" },
-        { ":db/id" => subject.send(:tempid, ":db.part/db"),
-          ":db/ident" => ":choice/checked",
-          ":db/valueType" => ":db.type/boolean",
-          ":db/cardinality" => ":db.cardinality/one",
-          ":db.install/_attribute" => ":db.part/db" }
-      ]
+      expected = []
+      if is_jruby?
+        expected = [
+                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
+                      ":db/ident" => ":choice/item",
+                      ":db/valueType" => ":db.type/string",
+                      ":db/cardinality" => ":db.cardinality/one",
+                      ":db.install/_attribute" => ":db.part/db" },
+                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
+                      ":db/ident" => ":choice/checked",
+                      ":db/valueType" => ":db.type/boolean",
+                      ":db/cardinality" => ":db.cardinality/one",
+                      ":db.install/_attribute" => ":db.part/db" }
+                   ]
+      else
+        expected = [
+                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                      :"db/ident" => :"choice/item",
+                      :"db/valueType" => :"db.type/string",
+                      :"db/cardinality" => :"db.cardinality/one",
+                      :"db.install/_attribute" => :"db.part/db" },
+                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                      :"db/ident" => :"choice/checked",
+                      :"db/valueType" => :"db.type/boolean",
+                      :"db/cardinality" => :"db.cardinality/one",
+                      :"db.install/_attribute" => :"db.part/db" }
+                   ]
+      end
       @created_schema = subject.schema
       expected.each do |e|
         @created_schema.shift.should be_an_equivalent_hash(e)
@@ -264,18 +280,34 @@ describe Diametric::Entity do
     subject { Customer }
 
     it "should generate a schema" do
-      expected = [
-        { ":db/id" => subject.send(:tempid, ":db.part/db"),
-          ":db/ident" => ":customer/name",
-          ":db/valueType" => ":db.type/string",
-          ":db/cardinality" => ":db.cardinality/one",
-          ":db.install/_attribute" => ":db.part/db" },
-        { ":db/id" => subject.send(:tempid, ":db.part/db"),
-          ":db/ident" => ":customer/id",
-          ":db/valueType" => ":db.type/uuid",
-          ":db/cardinality" => ":db.cardinality/one",
-          ":db.install/_attribute" => ":db.part/db" }
-      ]
+      expected = []
+      if is_jruby?
+        expected = [
+                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
+                      ":db/ident" => ":customer/name",
+                      ":db/valueType" => ":db.type/string",
+                      ":db/cardinality" => ":db.cardinality/one",
+                      ":db.install/_attribute" => ":db.part/db" },
+                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
+                      ":db/ident" => ":customer/id",
+                      ":db/valueType" => ":db.type/uuid",
+                      ":db/cardinality" => ":db.cardinality/one",
+                      ":db.install/_attribute" => ":db.part/db" }
+                   ]
+      else
+        expected = [
+                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                      :"db/ident" => :"customer/name",
+                      :"db/valueType" => :"db.type/string",
+                      :"db/cardinality" => :"db.cardinality/one",
+                      :"db.install/_attribute" => :"db.part/db" },
+                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                      :"db/ident" => :"customer/id",
+                      :"db/valueType" => :"db.type/uuid",
+                      :"db/cardinality" => :"db.cardinality/one",
+                      :"db.install/_attribute" => :"db.part/db" }
+                   ]
+      end
       @created_schema = subject.schema
       expected.each do |e|
         @created_schema.shift.should be_an_equivalent_hash(e)
