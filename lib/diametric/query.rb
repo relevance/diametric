@@ -111,10 +111,11 @@ module Diametric
       # TODO check to see if the model has a `.q` method and give
       # an appropriate error if not.
       res = model.q(*data, @conn_or_db)
-
       collapse_results(res).each do |entity|
-        if self.model.instance_variable_get("@peer")
+        if self.model.instance_variable_get("@peer") && @resolve
           yield model.from_dbid_or_entity(entity.first.to_java, @conn_or_db, @resolve)
+        elsif self.model.instance_variable_get("@peer")
+          yield entity.first.to_java
         # The map is for compatibility with Java peer persistence.
         # TODO remove if possible
         else
@@ -215,6 +216,8 @@ EOQ
     end
 
     def collapse_results(res)
+      return res unless @resolve
+
       res.group_by(&:first).map do |dbid, results|
         # extract dbid from results
         # NOTE: we prefer to_a.drop(1) over block arg decomposition because

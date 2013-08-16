@@ -26,8 +26,8 @@ describe Diametric::Query do
         attribute :likes, String, :cardinality => :many
       end
       model.stub(:q => [[1, "Stu", "chocolate"], [1, "Stu", "vanilla"]])
-      model.should_receive(:from_query).with([1, "Stu", ["chocolate", "vanilla"]], nil, false)
-      Diametric::Query.new(model).each {|x| x}
+      model.should_receive(:from_query).with([1, "Stu", ["chocolate", "vanilla"]], nil, true)
+      Diametric::Query.new(model, nil, true).each {|x| x}
     end
   end
 
@@ -38,7 +38,7 @@ describe Diametric::Query do
         attribute :likes, String, :cardinality => :many
       end
     end
-    let(:query) { Diametric::Query.new(model) }
+    let(:query) { Diametric::Query.new(model, nil, true) }
 
     context "with multiple results per entity" do
       it "collapses cardinality/many attributes into lists" do
@@ -64,7 +64,7 @@ describe Diametric::Query do
         attribute :likes, String, :cardinality => :many
       end
       model.stub(:q => [[1, "Stu", "chocolate"], [1, "Stu", "vanilla"]])
-      Diametric::Query.new(model).all.each do |e|
+      Diametric::Query.new(model, nil, true).all.each do |e|
         e.name.should == "Stu"
         e.likes.class.should == Set
         e.likes.should include "chocolate"

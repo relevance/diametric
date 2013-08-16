@@ -73,7 +73,7 @@ module Diametric
           else
             connection = nil
           end
-          query = Diametric::Query.new(self, connection)
+          query = Diametric::Query.new(self, connection, true)
           query.filter(*filter)
         end
       end

@@ -52,7 +52,7 @@ describe Diametric::Config do
 
   describe ".connect!" do
     it "establishes a base connection" do
-      settings = stub
+      settings = double
       Diametric::Persistence.should_receive(:establish_base_connection).with(settings)
       Diametric::Config.connect!(settings)
     end

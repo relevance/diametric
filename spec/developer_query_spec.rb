@@ -23,7 +23,7 @@ describe Developer, :jruby => true do
     yoko = Developer.new
     yoko.name = "Yoko Harada"
     yoko.save(@conn)
-    query = Diametric::Query.new(Developer, @conn)
+    query = Diametric::Query.new(Developer, @conn, true)
     result = query.all
     result.size.should == 1
     result.first.name.should == "Yoko Harada"
@@ -34,7 +34,7 @@ describe Developer, :jruby => true do
     yoko.name = "Yoko Harada"
     yoko.nerd_rate = 50
     yoko.save(@conn)
-    query = Diametric::Query.new(Developer, @conn).where(:name => "Yoko Harada")
+    query = Diametric::Query.new(Developer, @conn, true).where(:name => "Yoko Harada")
     query_data = "[:find ?e :in $ [?name] :where [?e :developer/name ?name]]"
     query.data.first.gsub(" ", "").should == query_data.gsub(" ", "")
     result = query.all
@@ -54,7 +54,9 @@ describe Developer, :jruby => true do
     query = Diametric::Query.new(Developer, @conn).where(:name => "Clinton N. Dreisbach")
     result = query.all
     result.size.should == 1
-    friends = result.first.friends
+
+    developer = Developer.from_dbid_or_entity(result.first, @conn.db, false)
+    friends = developer.friends
     friends.each do |f|
       f.should be_a(Java::DatomicQuery::EntityMap)
     end
@@ -75,7 +77,8 @@ describe Developer, :jruby => true do
     query = Diametric::Query.new(Developer, @conn)
     result = query.all
     result.size.should == 3
-    result.collect(&:nerd_rate).should =~ [50, 98, 80]
+    resolved_result = result.map {|m| Developer.from_dbid_or_entity(m, @conn)}
+    resolved_result.collect(&:nerd_rate).should =~ [50, 98, 80]
   end
 
   it "should filter out developers" do

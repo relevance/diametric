@@ -17,7 +17,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       @conn.release
     end
 
-    let(:query) { Diametric::Query.new(Penguin, @conn) }
+    let(:query) { Diametric::Query.new(Penguin, @conn, true) }
     it "should update entity" do
       penguin = Penguin.new(:name => "Mary", :age => 2)
       penguin.save(@conn)

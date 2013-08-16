@@ -40,7 +40,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       district.tx_data.should be_empty
     end
     it "should get instance" do
-      query = Diametric::Query.new(District, @d_conn2)
+      query = Diametric::Query.new(District, @d_conn2, true)
       district = query.where(:name => "East").first
       district.name.should == "East"
       district.region.should == District::Region::E
@@ -129,10 +129,10 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       neighborhood.district = district
       neighborhood.save(@n_conn2).should_not be_nil
 
-      query = Diametric::Query.new(Neighborhood, @n_conn2)
+      query = Diametric::Query.new(Neighborhood, @n_conn2, true)
       neighborhood = query.where(:name => "Capitol Hill").first
       neighborhood.name.should == "Capitol Hill"
-      neighborhood.district.should be_a(Java::DatomicQuery::EntityMap)
+      neighborhood.district.should be_a(District)
     end
   end
 

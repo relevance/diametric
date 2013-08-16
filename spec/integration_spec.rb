@@ -79,7 +79,7 @@ describe Diametric::Entity, :integration => true do
       robin.save.should be_false
       robin.name = "Mary"
       robin.age = 3
-      expect { robin.save! }.to_not raise_error(Diametric::Errors::ValidationError)
+      expect { robin.save! }.not_to raise_error()
       robin.persisted?.should be_true
     end
     it "can update entity" do

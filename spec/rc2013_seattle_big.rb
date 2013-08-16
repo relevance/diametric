@@ -20,10 +20,10 @@ describe "Seattle Sample", :jruby => true do
 
     it "should do queries" do
       query = Diametric::Query.new(Seattle, @conn)
-      results = query.all    #362
+      results = query.all    #150
       binding.pry
 
-      query = Diametric::Query.new(Neighborhood, @conn).where(:name => "Capitol Hill")
+      query = Diametric::Query.new(Neighborhood, @conn, true).where(:name => "Capitol Hill")
       binding.pry
       # Navigating up 
       # 
@@ -51,7 +51,7 @@ describe "Seattle Sample", :jruby => true do
       #
       query = Diametric::Query.new(Seattle, @conn)
       results = query.all
-      results.size.should == 362
+      results.size.should == 150
       binding.pry
 
       past = Time.now
@@ -64,7 +64,7 @@ describe "Seattle Sample", :jruby => true do
       map2 = @conn.transact(list.first).get
       query = Diametric::Query.new(Seattle, @conn)
       results = query.all
-      results.size.should == 571
+      results.size.should == 258
 
       binding.pry
 
@@ -74,7 +74,7 @@ describe "Seattle Sample", :jruby => true do
 
       query = Diametric::Query.new(Seattle, past_db)
       results = query.all
-      results.size.should == 362
+      results.size.should == 150
 
       binding.pry
     end

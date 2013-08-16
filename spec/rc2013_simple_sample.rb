@@ -33,11 +33,11 @@ describe "RailsConf 2013", :jruby => true do
       binding.pry
       bar.save
 
-      query = Diametric::Query.new(Person)
+      query = Diametric::Query.new(Person, @conn.db, true)
       result = query.all
       binding.pry
 
-      query = Diametric::Query.new(Person).where(:name => "Yoko")
+      query = Diametric::Query.new(Person, @conn.db, true).where(:name => "Yoko")
       result = query.all
       binding.pry
 
@@ -49,19 +49,18 @@ describe "RailsConf 2013", :jruby => true do
       yoko.save
       binding.pry
 
-      query = Diametric::Query.new(Person, @conn.db).where(:name => "Yoko")
+      query = Diametric::Query.new(Person, @conn.db, true).where(:name => "Yoko")
       result = query.all
       binding.pry
 
       past_db = @conn.db.as_of(past)
       binding.pry
 
-      query = Diametric::Query.new(Person, past_db).where(:name => "Yoko")
+      query = Diametric::Query.new(Person, past_db, true).where(:name => "Yoko")
       result = query.all
       binding.pry
       
-
-      query = Diametric::Query.new(Person, @conn.db).filter(:>, :nerd_rate, 70)
+      query = Diametric::Query.new(Person, @conn.db, true).filter(:>, :nerd_rate, 70)
       result = query.all
       binding.pry
 
