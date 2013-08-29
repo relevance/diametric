@@ -72,9 +72,13 @@ public class DiametricEntity extends RubyObject {
     
     @JRubyMethod
     public IRubyObject touch(ThreadContext context) {
-        Entity touched_entity = entity.touch();
-        entity = touched_entity;
-        return this;
+        try {
+            Entity touched_entity = (Entity) clojure.lang.RT.var("datomic.api", "touch").invoke(entity);
+            entity = touched_entity;
+            return this;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
     }
 
     @JRubyMethod
