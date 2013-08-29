@@ -2,132 +2,143 @@ require 'spec_helper'
 require 'securerandom'
 
 if is_jruby?
-describe Diametric::Persistence::Peer, :jruby => true do
-  @db_name = "test-#{SecureRandom.uuid}"
-
-  it 'should create database' do
-    subject.create_database("datomic:mem://#{@db_name}").should be_true
-  end
-
-  context Diametric::Persistence::Peer do
-    it 'should connect to the database' do
-      subject.connect("datomic:mem://#{@db_name}").should be_true
-    end
-
-    it 'should get tempid' do
-      subject.tempid(":db.part/db").to_s.should match(/#db\/id\[:db.part\/db\s-\d+\]/)
-      subject.tempid(":db.part/user").to_s.should match(/#db\/id\[:db.part\/user\s-\d+\]/)
-    end
-  end
-
-  context Diametric::Persistence::Connection do
+  describe Diametric::Persistence::Peer, :jruby => true do
     @db_name = "test-#{SecureRandom.uuid}"
-    let(:connection) { Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}") }
-    let(:tempid) { Diametric::Persistence::Peer.tempid(":db.part/db") }
-    let(:user_part_tempid) { Diametric::Persistence::Peer.tempid(":db.part/user") } 
-    let(:tx_data) {
-      [{
-        ":db/id" => tempid,
-        ":db/ident" => ":person/name",
-        ":db/valueType" => ":db.type/string",
-        ":db/cardinality" => ":db.cardinality/one",
-        ":db/doc" => "A person's name",
-        ":db.install/_attribute" => ":db.part/db"
-      }]
-    }
-    let(:user_data) {
-      [{":db/id" => user_part_tempid, ":person/name" => "Alice"},
-       {":db/id" => user_part_tempid, ":person/name" => "Bob"},
-       {":db/id" => user_part_tempid, ":person/name" => "Chris"}]
-    }
 
-    it 'should transact schema' do
-      connection.transact(tx_data).class.should == Diametric::Persistence::ListenableFuture
+    it 'should create database' do
+      subject.create_database("datomic:mem://#{@db_name}").should be_true
     end
 
-    it 'should get future object for schema' do
-      connection.transact(tx_data).get.should be_true
+    context Diametric::Persistence::Peer do
+      it 'should connect to the database' do
+        subject.connect("datomic:mem://#{@db_name}").should be_true
+      end
+
+      it 'should get tempid' do
+        subject.tempid(":db.part/db").to_s.should match(/#db\/id\[:db.part\/db\s-\d+\]/)
+        subject.tempid(":db.part/user").to_s.should match(/#db\/id\[:db.part\/user\s-\d+\]/)
+        subject.tempid(":db.part/user", -1).to_s.should match(/#db\/id\[:db.part\/user\s-1\]/)
+      end
+
+      it "should return uuid from squuid" do
+        re = Regexp.new(/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/)
+        subject.squuid.to_s.should match(re)
+      end
+
+      it "should return Fixnum from squuid_time_millis" do
+        du = Diametric::Persistence::UUID.new
+        subject.squuid_time_millis(du).class.should == Fixnum
+      end
     end
 
-    it 'should transact data' do
-      connection.transact(tx_data).get
-      connection.transact(user_data).get.should be_true
-    end
-
-    it 'should resolve tempid' do
-      tmp_tempid = user_part_tempid
-      connection.transact(tx_data).get
-      map = connection.transact([{":db/id" => tmp_tempid, ":person/name" => "Alice"}]).get
-      resolved_tempid = Diametric::Persistence::Peer.resolve_tempid(map,  tmp_tempid)
-      resolved_tempid.should be_true
-      resolved_tempid.to_s.should match(/\d+/)
-      #puts "resolved_tempid: #{resolved_tempid}"
-    end
-  end
-
-  context 'Diametric query' do
-    before do
-      tx_data =
-      [{
-         ":db/id" => Diametric::Persistence::Peer.tempid(":db.part/db"),
-         ":db/ident" => ":person/name",
-         ":db/valueType" => ":db.type/string",
-         ":db/cardinality" => ":db.cardinality/one",
-         ":db/doc" => "A person's name",
-         ":db.install/_attribute" => ":db.part/db"
-       }]
-      user_data = 
-      [{":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Alice"},
-       {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Bob"},
-       {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Chris"}]
+    context Diametric::Persistence::Connection do
       @db_name = "test-#{SecureRandom.uuid}"
-      @connection = Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}")
+      let(:connection) { Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}") }
+      let(:tempid) { Diametric::Persistence::Peer.tempid(":db.part/db") }
+      let(:user_part_tempid) { Diametric::Persistence::Peer.tempid(":db.part/user") } 
+      let(:tx_data) {
+        [{
+           ":db/id" => tempid,
+           ":db/ident" => ":person/name",
+           ":db/valueType" => ":db.type/string",
+           ":db/cardinality" => ":db.cardinality/one",
+           ":db/doc" => "A person's name",
+           ":db.install/_attribute" => ":db.part/db"
+         }]
+      }
+      let(:user_data) {
+        [{":db/id" => user_part_tempid, ":person/name" => "Alice"},
+         {":db/id" => user_part_tempid, ":person/name" => "Bob"},
+         {":db/id" => user_part_tempid, ":person/name" => "Chris"}]
+      }
 
-      @connection.transact(tx_data).get
-      @connection.transact(user_data).get
+      it 'should transact schema' do
+        connection.transact(tx_data).class.should == Diametric::Persistence::ListenableFuture
+      end
+
+      it 'should get future object for schema' do
+        connection.transact(tx_data).get.should be_true
+      end
+
+      it 'should transact data' do
+        connection.transact(tx_data).get
+        connection.transact(user_data).get.should be_true
+      end
+
+      it 'should resolve tempid' do
+        tmp_tempid = user_part_tempid
+        connection.transact(tx_data).get
+        map = connection.transact([{":db/id" => tmp_tempid, ":person/name" => "Alice"}]).get
+        resolved_tempid = Diametric::Persistence::Peer.resolve_tempid(map,  tmp_tempid)
+        resolved_tempid.should be_true
+        resolved_tempid.to_s.should match(/\d+/)
+        #puts "resolved_tempid: #{resolved_tempid}"
+      end
     end
 
-    it 'should get ids from datomic' do
-      results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]", @connection.db)
-      results.class.should == Array
-      results.size.should be >= 3
-      #puts results.inspect
-    end
+    context 'Diametric query' do
+      before do
+        tx_data =
+          [{
+             ":db/id" => Diametric::Persistence::Peer.tempid(":db.part/db"),
+             ":db/ident" => ":person/name",
+             ":db/valueType" => ":db.type/string",
+             ":db/cardinality" => ":db.cardinality/one",
+             ":db/doc" => "A person's name",
+             ":db.install/_attribute" => ":db.part/db"
+           }]
+        user_data = 
+          [{":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Alice"},
+           {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Bob"},
+           {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Chris"}]
+        @db_name = "test-#{SecureRandom.uuid}"
+        @connection = Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}")
 
-    it 'should get names from datomic' do
-      results = Diametric::Persistence::Peer.q("[:find ?c ?name :where [?c :person/name ?name]]\
+        @connection.transact(tx_data).get
+        @connection.transact(user_data).get
+      end
+
+      it 'should get ids from datomic' do
+        results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]", @connection.db)
+        results.class.should == Array
+        results.size.should be >= 3
+        #puts results.inspect
+      end
+
+      it 'should get names from datomic' do
+        results = Diametric::Persistence::Peer.q("[:find ?c ?name :where [?c :person/name ?name]]\
   ", @connection.db)
-      results.flatten.should include("Alice")
-      results.flatten.should include("Bob")
-      results.flatten.should include("Chris")
-      #puts results.inspect
-    end
+        results.flatten.should include("Alice")
+        results.flatten.should include("Bob")
+        results.flatten.should include("Chris")
+        #puts results.inspect
+      end
 
-    it 'should get entity by id' do
-      results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
- @connection.db)
-      id = results[0][0]
-      @connection.db.entity(id).should be_true
-    end
+      it 'should get entity by id' do
+        results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
+                                                 @connection.db)
+        id = results[0][0]
+        @connection.db.entity(id).should be_true
+      end
 
-    it 'should get keys from entity id' do
-      results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
- @connection.db)
-      id = results[0][0]
-      entity = @connection.db.entity(id)
-      entity.keys.should include(":person/name")
-      #puts entity.keys
-    end
+      it 'should get keys from entity id' do
+        results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
+                                                 @connection.db)
+        id = results[0][0]
+        entity = @connection.db.entity(id)
+        entity.keys.should include(":person/name")
+        #puts entity.keys
+      end
 
-    it 'should get value from entity id' do
-      results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
- @connection.db)
-      id = results[0][0]
-      entity = @connection.db.entity(id)
-      value =  entity.get(entity.keys[0])
-      value.should match(/Alice|Bob|Chris/)
-      #puts value
+      it 'should get value from entity id' do
+        results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
+                                                 @connection.db)
+        id = results[0][0]
+        entity = @connection.db.entity(id)
+        value =  entity.get(entity.keys[0])
+        value.should match(/Alice|Bob|Chris/)
+        #puts value
+      end
     end
-  end
 end
 end

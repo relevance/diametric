@@ -49,11 +49,15 @@ public class DiametricConnection extends RubyObject {
     
     @JRubyMethod
     public IRubyObject db(ThreadContext context) {
-        Database database = conn.db();
-        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
-        DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
-        diametric_database.init(database);
-        return diametric_database;
+        try {
+            Database database = (Database) clojure.lang.RT.var("datomic.api", "db").invoke(conn);
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
+            DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
+            diametric_database.init(database);
+            return diametric_database;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
     }
     
     @JRubyMethod
@@ -63,17 +67,15 @@ public class DiametricConnection extends RubyObject {
             throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
         }
 
-        ListenableFuture<java.util.Map> future;
         try {
-            future = conn.transact(tx_data);
+            ListenableFuture<java.util.Map> future = (ListenableFuture<Map>) clojure.lang.RT.var("datomic.api", "transact").invoke(conn, tx_data);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
             DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
             diametric_listenable.init(future);
             return diametric_listenable;
-        } catch (Exception e) {
-            context.getRuntime().newRuntimeError(e.getMessage());
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
         }
-        return context.getRuntime().getNil();
     }
 
     @JRubyMethod
@@ -84,16 +86,20 @@ public class DiametricConnection extends RubyObject {
         RubyTime rubyTime = (RubyTime) RuntimeHelpers.invoke(context, arg, "to_time");
         Date olderThan = rubyTime.getJavaDate();
         try {
-            conn.gcStorage(olderThan);
-        } catch (Exception e) {
-            throw context.getRuntime().newRuntimeError("Datomic error: " + e.getMessage());
+            clojure.lang.RT.var("datomic.api", "gc-strage").invoke(conn, olderThan);
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError("Datomic error: " + t.getMessage());
         }
         return context.getRuntime().getNil();
     }
 
     @JRubyMethod
     public IRubyObject release(ThreadContext context) {
-        conn.release();
+        try {
+            clojure.lang.RT.var("datomic.api", "release").invoke(conn);
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
         return context.getRuntime().getNil();
     }
 }

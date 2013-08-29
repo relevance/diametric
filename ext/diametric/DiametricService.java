@@ -21,40 +21,45 @@ public class DiametricService implements BasicLibraryService {
 
         RubyClass connection = persistence.defineClassUnder("Connection", runtime.getObject(), CONNECTION_ALLOCATOR);
         connection.defineAnnotatedMethods(DiametricConnection.class);
-      
+
         RubyClass uuid = persistence.defineClassUnder("UUID", runtime.getObject(), UUID_ALLOCATOR);
         uuid.defineAnnotatedMethods(DiametricUUID.class);
-        
+
         RubyClass diametric_object = persistence.defineClassUnder("Object", runtime.getObject(), DIAMETRIC_OBJECT_ALLOCATOR);
         diametric_object.defineAnnotatedMethods(DiametricObject.class);
-        
+
+        RubyClass diametric_query_result = persistence.defineClassUnder("Collection", runtime.getObject(), COLLECTION_ALLOCATOR);
+        diametric_query_result.defineAnnotatedMethods(DiametricCollection.class);
+
         RubyClass diametric_listenable = persistence.defineClassUnder("ListenableFuture", runtime.getObject(), LISTENABLE_ALLOCATOR);
         diametric_listenable.defineAnnotatedMethods(DiametricListenableFuture.class);
-        
+
         RubyClass diametric_database = persistence.defineClassUnder("Database", runtime.getObject(), DATABASE_ALLOCATOR);
         diametric_database.defineAnnotatedMethods(DiametricDatabase.class);
-        
+
         RubyClass diametric_entity = persistence.defineClassUnder("Entity", runtime.getObject(), ENTITY_ALLOCATOR);
         diametric_entity.defineAnnotatedMethods(DiametricEntity.class);
 
         RubyModule diametric_utils = persistence.defineModuleUnder("Utils");
         diametric_utils.defineAnnotatedMethods(DiametricUtils.class);
 
+        setupClojureRT();
+
         return false;
     }
-    
+
     public static final ObjectAllocator CONNECTION_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
             return new DiametricConnection(runtime, klazz);
         }
     };
-    
+
     public static final ObjectAllocator UUID_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
             return new DiametricUUID(runtime, klazz);
         }
     };
-    
+
     public static final ObjectAllocator DIAMETRIC_OBJECT_ALLOCATOR = new ObjectAllocator() {
         DiametricObject diametric_object = null;
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
@@ -66,22 +71,32 @@ public class DiametricService implements BasicLibraryService {
             }
         }
     };
-    
+
+    public static final ObjectAllocator COLLECTION_ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new DiametricCollection(runtime, klazz);
+        }
+    };
+
     public static final ObjectAllocator LISTENABLE_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
             return new DiametricListenableFuture(runtime, klazz);
         }
     };
-    
+
     public static final ObjectAllocator DATABASE_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
             return new DiametricDatabase(runtime, klazz);
         }
     };
-    
+
     public static final ObjectAllocator ENTITY_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
             return new DiametricEntity(runtime, klazz);
         }
     };
+
+    private void setupClojureRT() {
+        clojure.lang.RT.var("clojure.core", "require").invoke(clojure.lang.Symbol.intern("datomic.api"));
+    }
 }

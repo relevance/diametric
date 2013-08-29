@@ -8,7 +8,7 @@ gem 'activemodel', '~> 4.0.0'
 gem 'datomic-client', '~> 0.4.1'
 gem 'rubyzip', '~> 0.9.9'
 
-gem 'lock_jar', '~> 0.7.4', :platform => :jruby
+gem 'lock_jar', '~> 0.7.5', :platform => :jruby
 gem 'jruby-openssl', '~> 0.8.8', :platform => :jruby
 gem 'uuid', '~> 2.3.7'
 

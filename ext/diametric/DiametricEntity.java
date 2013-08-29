@@ -41,11 +41,15 @@ public class DiametricEntity extends RubyObject {
     
     @JRubyMethod
     public IRubyObject db(ThreadContext context) {
-        Database database = entity.db();
-        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
-        DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
-        diametric_database.init(database);
-        return diametric_database;
+        try {
+            Database database = (Database) clojure.lang.RT.var("datomic.api", "db").invoke(entity);
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
+            DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
+            diametric_database.init(database);
+            return diametric_database;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
     }
     
     @JRubyMethod(name={"[]","get"}, required=1)

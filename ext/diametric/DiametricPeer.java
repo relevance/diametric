@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.jruby.Ruby;
@@ -57,14 +58,14 @@ public class DiametricPeer extends RubyModule {
         DiametricConnection rubyConnection = (DiametricConnection)clazz.allocate();
         try {
             // what value will be returned when connect fails? API doc doesn't tell anything.
-            Connection connection = Peer.connect(uriOrMap);
+            Connection connection = (Connection) clojure.lang.RT.var("datomic.api", "connect").invoke(uriOrMap);
             rubyConnection.init(connection);
             saved_connection = rubyConnection;
             return rubyConnection;
         } catch (Exception e) {
             // Diametric doesn't require creating database before connect.
-            if (e.getMessage().contains(":peer/db-not-found") && Peer.createDatabase(uriOrMap)) {
-                Connection connection = Peer.connect(uriOrMap);
+            if (e.getMessage().contains(":peer/db-not-found") && (Boolean)clojure.lang.RT.var("datomic.api", "create-database").invoke(uriOrMap)) {
+                Connection connection = (Connection) clojure.lang.RT.var("datomic.api", "connect").invoke(uriOrMap);
                 rubyConnection.init(connection);
                 saved_connection = rubyConnection;
                 return rubyConnection;
@@ -79,7 +80,7 @@ public class DiametricPeer extends RubyModule {
         if (uriOrMap == null)
             throw context.getRuntime().newArgumentError("Argument should be a String");
         try {
-            boolean status = Peer.createDatabase(uriOrMap);
+            boolean status = (Boolean)clojure.lang.RT.var("datomic.api", "create-database").invoke(uriOrMap);
             return RubyBoolean.newBoolean(context.getRuntime(), status);
         } catch (Exception e) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
@@ -94,7 +95,7 @@ public class DiametricPeer extends RubyModule {
         String newName = DiametricUtils.rubyStringToJava(args[1]);
         if (newName == null) return context.getRuntime().getNil();
         try {
-            boolean status = Peer.renameDatabase(uriOrMap, newName);
+            boolean status = (Boolean)clojure.lang.RT.var("datomic.api", "rename-database").invoke(uriOrMap, newName);
             return RubyBoolean.newBoolean(context.getRuntime(), status);
         } catch (Exception e) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
@@ -106,7 +107,7 @@ public class DiametricPeer extends RubyModule {
         String uriOrMap = DiametricUtils.rubyStringToJava(arg);
         if (uriOrMap == null) return context.getRuntime().getNil();
         try {
-            boolean status = Peer.deleteDatabase(uriOrMap);
+            boolean status = (Boolean)clojure.lang.RT.var("datomic.api", "delete-database").invoke(uriOrMap);
             return RubyBoolean.newBoolean(context.getRuntime(), status);
         } catch (Exception e) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
@@ -120,7 +121,7 @@ public class DiametricPeer extends RubyModule {
         }
         Boolean shutdownClojure = (Boolean) arg.toJava(Boolean.class);
         try {
-            Peer.shutdown(shutdownClojure);
+            clojure.lang.RT.var("datomic.api", "shutdown").invoke(shutdownClojure);
         } catch (Exception e) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
         }
@@ -136,11 +137,15 @@ public class DiametricPeer extends RubyModule {
      */
     @JRubyMethod(meta=true)
     public static IRubyObject squuid(ThreadContext context, IRubyObject klazz) {
-        java.util.UUID java_uuid = Peer.squuid();
         RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::UUID");
         diametric.DiametricUUID ruby_uuid = (diametric.DiametricUUID)clazz.allocate();
-        ruby_uuid.init(java_uuid);
-        return ruby_uuid;
+        try {
+            java.util.UUID java_uuid = (UUID) clojure.lang.RT.var("datomic.api", "squuid").invoke();
+            ruby_uuid.init(java_uuid);
+            return ruby_uuid;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError("Datomic Exception: " + t.getMessage());
+        }
     }
     
     /**
@@ -158,8 +163,13 @@ public class DiametricPeer extends RubyModule {
         }
         java.util.UUID squuid = ((diametric.DiametricUUID)arg).getUUID();
         if (squuid == null) return context.getRuntime().getNil();
-        long value = Peer.squuidTimeMillis(squuid);
-        return RubyFixnum.newFixnum(context.getRuntime(), value);
+        long value;
+        try {
+            value = (Long) clojure.lang.RT.var("datomic.api", "squuid-time-millis").invoke(squuid);
+            return RubyFixnum.newFixnum(context.getRuntime(), value);
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError("Datomic Exception: " + t.getMessage());
+        }
     }
     
     /**
@@ -174,16 +184,24 @@ public class DiametricPeer extends RubyModule {
      */
     @JRubyMethod(meta=true, required=1, optional=1)
     public static IRubyObject tempid(ThreadContext context, IRubyObject klazz, IRubyObject[] args) {
+        if (args.length < 1 || args.length > 2) {
+            throw context.getRuntime().newArgumentError("Wrong number of arguments");
+        }
         String partition = DiametricUtils.rubyStringToJava(args[0]);
         RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
         DiametricObject diametric_object = (DiametricObject)clazz.allocate();
-        if (args.length > 1 && (args[1] instanceof RubyFixnum)) {
-            long idNumber = (Long) args[1].toJava(Long.class);
-            diametric_object.update(Peer.tempid(partition, idNumber));
-        } else {
-            diametric_object.update(Peer.tempid(partition));
+        try {
+            clojure.lang.Var clj_var = clojure.lang.RT.var("datomic.api", "tempid");
+            if (args.length > 1 && (args[1] instanceof RubyFixnum)) {
+                long idNumber = (Long) args[1].toJava(Long.class);
+                diametric_object.update(clj_var.invoke(partition, idNumber));
+            } else {
+                diametric_object.update(clj_var.invoke(partition));
+            }
+            return diametric_object;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
         }
-        return diametric_object;
     }
     
     /**
@@ -197,20 +215,33 @@ public class DiametricPeer extends RubyModule {
      */
     @JRubyMethod(meta=true, required=2, rest=true)
     public static IRubyObject resolve_tempid(ThreadContext context, IRubyObject klazz, IRubyObject[] args) {
+        if (args.length != 2) {
+            throw context.getRuntime().newArgumentError("Wrong number of arguments");
+        }
+        Map map;
+        DiametricObject ruby_object;
         if ((args[0] instanceof DiametricObject) && (args[1] instanceof DiametricObject)) {
-            Map map = (Map) ((DiametricObject)args[0]).toJava();
-            DiametricObject ruby_object = (DiametricObject)args[1];
-            Object tempid = Peer.resolveTempid((Database)map.get(Connection.DB_AFTER), map.get(Connection.TEMPIDS), ruby_object.toJava());
-            ruby_object.update(tempid);
-            return ruby_object;
+            map = (Map) ((DiametricObject)args[0]).toJava();
+            ruby_object = ((DiametricObject)args[1]);
         } else {
             throw context.getRuntime().newArgumentError("Wrong argument type.");
+        }
+        try {
+            Object dbid = clojure.lang.RT.var("datomic.api", "resolve-tempid")
+                            .invoke(map.get(Connection.DB_AFTER), map.get(Connection.TEMPIDS), ruby_object.toJava());
+            ruby_object.update(dbid);
+            return ruby_object;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError("Datomic Exception: " + t.getMessage());
         }
     }
     
     @JRubyMethod(meta=true, required=2, rest=true)
     public static IRubyObject q(ThreadContext context, IRubyObject klazz, IRubyObject[] args) {
         Ruby runtime = context.getRuntime();
+        if (args.length < 2) {
+            throw runtime.newArgumentError("Wrong number of arguments");
+        }
         if (!(args[0] instanceof RubyString)) {
             throw runtime.newArgumentError("The first arg should be a query string");
         }
@@ -220,12 +251,10 @@ public class DiametricPeer extends RubyModule {
         String query = (String)args[0].toJava(String.class);
         Database database = ((DiametricDatabase)args[1]).toJava();
 
-        //System.out.println("OH QUERY IS: " + query);
-
         Collection<List<Object>> results = null;
         try {
             if (args.length == 2) {
-                results = Peer.q(query, database);
+                results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database);
             } else if ((args.length == 3) && (args[2] instanceof RubyArray)) {
                 RubyArray ruby_inputs = (RubyArray)args[2];
                 if (ruby_inputs.getLength() == 0) {
@@ -239,17 +268,17 @@ public class DiametricPeer extends RubyModule {
                     //for (int i=0; i<inputs.length; i++) {
                     //    System.out.println("OH: " + inputs[i]);
                     //}
-                    results = Peer.q(query, database, inputs);
+                    results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database, inputs);
                 }
             } else {
                 Object[] inputs = new Object[args.length-2];
                 for (int i=0; i<inputs.length; i++) {
                     inputs[i] = DiametricUtils.convertRubyToJava(context, args[i+2]);
                 }
-                results = Peer.q(query, database, inputs);
+                results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database, inputs);
             }
-        } catch (Exception e) {
-            throw runtime.newRuntimeError("Datomic Exception: " + e.getMessage());
+        } catch (Throwable t) {
+            throw runtime.newRuntimeError("Datomic Exception: " + t.getMessage());
         }
 
         if (results == null) return context.getRuntime().getNil();
@@ -371,8 +400,8 @@ public class DiametricPeer extends RubyModule {
                     array.append(ruby_entity);
                 }
                 return array;
-            } catch (Exception e) {
-                throw runtime.newRuntimeError("Datomic Error: " + e.getMessage());
+            } catch (Throwable t) {
+                throw runtime.newRuntimeError("Datomic Error: " + t.getMessage());
             }
         } else {
             throw runtime.newArgumentError("Arguments should be 'database, dbid, query_string'");
