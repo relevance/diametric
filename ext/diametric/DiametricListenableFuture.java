@@ -1,7 +1,5 @@
 package diametric;
 
-import java.util.concurrent.ExecutionException;
-
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyObject;
@@ -16,13 +14,14 @@ import datomic.ListenableFuture;
 @JRubyClass(name = "Diametric::Persistence::ListenableFuture")
 public class DiametricListenableFuture extends RubyObject {
     private static final long serialVersionUID = 2083281771243513904L;
-    private ListenableFuture future = null;
+    // future is supposed to datomic.ListenableFuture type;
+    private Object future = null;
 
     public DiametricListenableFuture(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
     }
     
-    void init(ListenableFuture future) {
+    void init(Object future) {
         this.future = future;
     }
     
@@ -36,16 +35,13 @@ public class DiametricListenableFuture extends RubyObject {
         Ruby runtime = context.getRuntime();
         if (future == null) return runtime.getNil();
         try {
-            Object result = future.get();
+            Object result = ((ListenableFuture)future).get();
             RubyClass clazz = (RubyClass)runtime.getClassFromPath("Diametric::Persistence::Object");
             DiametricObject diametric_object = (DiametricObject)clazz.allocate();
             diametric_object.update(result);
             return diametric_object;
-        } catch (InterruptedException e) {
-            runtime.newRuntimeError(e.getMessage());
-        } catch (ExecutionException e) {
-            runtime.newRuntimeError(e.getMessage());
+        } catch (Throwable t) {
+            throw runtime.newRuntimeError(t.getMessage());
         }
-        return runtime.getNil();
     }
 }

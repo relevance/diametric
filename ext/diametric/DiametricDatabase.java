@@ -21,17 +21,18 @@ import datomic.Entity;
 @JRubyClass(name = "Diametric::Persistence::Database")
 public class DiametricDatabase extends RubyObject {
     private static final long serialVersionUID = 6043433195693171937L;
-    private Database database = null;
+    // database supposed to be datomic.Database type
+    private Object database = null;
 
     public DiametricDatabase(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
     }
     
-    void init(Database database) {
+    void init(Object database) {
         this.database = database;
     }
     
-    Database toJava() {
+    Object toJava() {
         return database;
     }
     
@@ -101,6 +102,6 @@ public class DiametricDatabase extends RubyObject {
 
     @JRubyMethod
     public IRubyObject id(ThreadContext context) {
-        return RubyString.newString(context.getRuntime(), database.id());
+        return RubyString.newString(context.getRuntime(), ((Database)database).id());
     }
 }

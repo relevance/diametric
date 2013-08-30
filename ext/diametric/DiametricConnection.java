@@ -2,7 +2,6 @@ package diametric;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -15,24 +14,21 @@ import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
-import datomic.Connection;
-import datomic.Database;
-import datomic.ListenableFuture;
-
 @JRubyClass(name = "Diametric::Persistence::Connection")
 public class DiametricConnection extends RubyObject {
     private static final long serialVersionUID = 3806301567154638371L;
-    private Connection conn = null;
+    //conn should a datomic.Connection type
+    private Object conn = null;
 
     public DiametricConnection(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
     }
 
-    void init(Connection conn) {
+    void init(Object conn) {
         this.conn = conn;
     }
 
-    Connection toJava() {
+    Object toJava() {
         return conn;
     }
 
@@ -44,7 +40,7 @@ public class DiametricConnection extends RubyObject {
     @JRubyMethod
     public IRubyObject db(ThreadContext context) {
         try {
-            Database database = (Database) clojure.lang.RT.var("datomic.api", "db").invoke(conn);
+            Object database = clojure.lang.RT.var("datomic.api", "db").invoke(conn);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
             DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
             diametric_database.init(database);
@@ -62,7 +58,7 @@ public class DiametricConnection extends RubyObject {
         }
 
         try {
-            ListenableFuture<java.util.Map> future = (ListenableFuture<Map>) clojure.lang.RT.var("datomic.api", "transact").invoke(conn, tx_data);
+            Object future = clojure.lang.RT.var("datomic.api", "transact").invoke(conn, tx_data);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
             DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
             diametric_listenable.init(future);
@@ -80,7 +76,7 @@ public class DiametricConnection extends RubyObject {
         }
 
         try {
-            ListenableFuture<java.util.Map> future = (ListenableFuture<Map>) clojure.lang.RT.var("datomic.api", "transact-async").invoke(conn, tx_data);
+            Object future = clojure.lang.RT.var("datomic.api", "transact-async").invoke(conn, tx_data);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
             DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
             diametric_listenable.init(future);

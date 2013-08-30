@@ -249,7 +249,7 @@ public class DiametricPeer extends RubyModule {
             throw runtime.newArgumentError("The second arg should be a database.");
         }
         String query = (String)args[0].toJava(String.class);
-        Database database = ((DiametricDatabase)args[1]).toJava();
+        Object database = ((DiametricDatabase)args[1]).toJava();
 
         Collection<List<Object>> results = null;
         try {
@@ -348,11 +348,16 @@ public class DiametricPeer extends RubyModule {
             throw runtime.newArgumentError("Argument should be dbid");
         }
         if (saved_connection == null) throw runtime.newRuntimeError("Connection is not established");
-        Entity entity = saved_connection.toJava().db().entity(dbid);
-        RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
-        DiametricEntity ruby_entity = (DiametricEntity)clazz.allocate();
-        ruby_entity.init(entity);
-        return ruby_entity;
+        try {
+            Object database = clojure.lang.RT.var("datomic.api", "db").invoke(saved_connection.toJava());
+            Object entity = clojure.lang.RT.var("datomic.api", "entity").invoke(database, dbid);
+            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
+            DiametricEntity ruby_entity = (DiametricEntity)clazz.allocate();
+            ruby_entity.init(entity);
+            return ruby_entity;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
     }
 
     @JRubyMethod(meta=true)
@@ -360,11 +365,9 @@ public class DiametricPeer extends RubyModule {
         Object dbid = DiametricUtils.convertRubyToJava(context, arg);
         List query = datomic.Util.list((datomic.Util.list(":db.fn/retractEntity", dbid)));
         try {
-            saved_connection.toJava().transact(query).get();
-        } catch (InterruptedException e) {
-            throw context.getRuntime().newRuntimeError("Datomic error: " + e.getMessage());
-        } catch (ExecutionException e) {
-            throw context.getRuntime().newRuntimeError("Datomic error: " + e.getMessage());
+            clojure.lang.RT.var("datomic.api", "transact-async").invoke(saved_connection.toJava(), query);
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError("Datomic error: " + t.getMessage());
         }
         return context.getRuntime().getNil();
     }
@@ -382,18 +385,18 @@ public class DiametricPeer extends RubyModule {
         if (args[0] instanceof DiametricDatabase &&
                 (args[1] instanceof DiametricObject || args[1] instanceof RubyFixnum) &&
                 args[2] instanceof RubyString) {
-            Database database = ((DiametricDatabase)args[0]).toJava();
+            Object database = ((DiametricDatabase)args[0]).toJava();
             Long dbid = (Long)DiametricUtils.convertRubyToJava(context, args[1]);
             String query_string = (String)args[2].toJava(String.class);
             try {
-                Entity entity = database.entity(dbid);
-                clojure.lang.PersistentVector vector = (PersistentVector) entity.get(query_string);
-
+                Object entity = clojure.lang.RT.var("datomic.api", "entity").invoke(database, dbid);
+                clojure.lang.PersistentVector vector =
+                        (PersistentVector) clojure.lang.RT.var("clojure.core", "get").invoke(entity, query_string);
                 if (vector == null) return RubyArray.newEmptyArray(runtime);
 
                 RubyArray array = RubyArray.newArray(runtime, vector.count());
                 for (int i=0; i < vector.count(); i++) {
-                    Entity e = (Entity) vector.get(i);
+                    Object e = vector.get(i);
                     RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
                     DiametricEntity ruby_entity = (DiametricEntity)clazz.allocate();
                     ruby_entity.init(e);
