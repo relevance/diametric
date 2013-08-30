@@ -316,7 +316,7 @@ describe Diametric::Entity do
   end
 
   context "community sample" do
-    subject { Community }
+    subject { Organization }
 
     it { should respond_to(:attribute) }
     it { should respond_to(:enum) }
@@ -325,58 +325,58 @@ describe Diametric::Entity do
     it "should generate a schema" do
       expected = [
         { :"db/id" => subject.send(:tempid, :"db.part/db"),
-          :"db/ident" => :"community/name",
+          :"db/ident" => :"organization/name",
           :"db/valueType" => :"db.type/string",
           :"db/cardinality" => :"db.cardinality/one",
           :"db/fulltext" => true,
-          :"db/doc" => "A community's name",
+          :"db/doc" => "A organization's name",
           :"db.install/_attribute" => :"db.part/db" },
         { :"db/id" => subject.send(:tempid, :"db.part/db"),
-          :"db/ident" => :"community/url",
+          :"db/ident" => :"organization/url",
           :"db/valueType" => :"db.type/string",
           :"db/cardinality" => :"db.cardinality/one",
-          :"db/doc" => "A community's url",
+          :"db/doc" => "A organization's url",
           :"db.install/_attribute" => :"db.part/db" },
         { :"db/id" => subject.send(:tempid, :"db.part/db"),
-          :"db/ident" => :"community/neighborhood",
+          :"db/ident" => :"organization/neighborhood",
           :"db/valueType" => :"db.type/ref",
           :"db/cardinality" => :"db.cardinality/one",
-          :"db/doc" => "A community's neighborhood",
+          :"db/doc" => "A organization's neighborhood",
           :"db.install/_attribute" => :"db.part/db" },
         { :"db/id" => subject.send(:tempid, :"db.part/db"),
-          :"db/ident" => :"community/category",
+          :"db/ident" => :"organization/category",
           :"db/valueType" => :"db.type/string",
           :"db/cardinality" => :"db.cardinality/many",
           :"db/fulltext" => true,
-          :"db/doc" => "All community categories",
+          :"db/doc" => "All organization categories",
           :"db.install/_attribute" => :"db.part/db" },
         { :"db/id" => subject.send(:tempid, :"db.part/db"),
-          :"db/ident" => :"community/orgtype",
+          :"db/ident" => :"organization/orgtype",
           :"db/valueType" => :"db.type/ref",
           :"db/cardinality" => :"db.cardinality/one",
-          :"db/doc" => "A community orgtype enum value",
+          :"db/doc" => "A organization orgtype enum value",
           :"db.install/_attribute" => :"db.part/db" },
         { :"db/id" => subject.send(:tempid, :"db.part/db"),
-          :"db/ident" => :"community/type",
+          :"db/ident" => :"organization/type",
           :"db/valueType" => :"db.type/ref",
           :"db/cardinality" => :"db.cardinality/one",
-          :"db/doc" => "A community type enum value",
+          :"db/doc" => "A organization type enum value",
           :"db.install/_attribute" => :"db.part/db" },
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.orgtype/community" ],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.orgtype/commercial" ],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.orgtype/nonprofit"],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.orgtype/personal"],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/email-list"],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/twitter"],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/facebook-page" ],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/blog" ],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/website" ],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/wiki" ],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/myspace" ],
-        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"community.type/ning"]
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.orgtype/community" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.orgtype/commercial" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.orgtype/nonprofit"],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.orgtype/personal"],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.type/email-list"],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.type/twitter"],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.type/facebook-page" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.type/blog" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.type/website" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.type/wiki" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.type/myspace" ],
+        [ :"db/add", subject.send(:tempid, :"db.part/user"), :"db/ident", :"organization.type/ning"]
       ]
 
-      @created_schema = Community.schema
+      @created_schema = Organization.schema
       expected.each do |e|
         @created_schema.shift.should == e
       end

@@ -102,16 +102,16 @@ class Customer
   attribute :id, UUID
 end
 
-class Community
+class Organization
   include Diametric::Entity
   include Diametric::Persistence::REST
 
-  attribute :name, String, :cardinality => :one, :fulltext => true, :doc => "A community's name"
-  attribute :url, String, :cardinality => :one, :doc => "A community's url"
-  attribute :neighborhood, Ref, :cardinality => :one, :doc => "A community's neighborhood"
-  attribute :category, String, :cardinality => :many, :fulltext => true, :doc => "All community categories"
-  attribute :orgtype, Ref, :cardinality => :one, :doc => "A community orgtype enum value"
-  attribute :type, Ref, :cardinality => :one, :doc => "A community type enum value"
+  attribute :name, String, :cardinality => :one, :fulltext => true, :doc => "A organization's name"
+  attribute :url, String, :cardinality => :one, :doc => "A organization's url"
+  attribute :neighborhood, Ref, :cardinality => :one, :doc => "A organization's neighborhood"
+  attribute :category, String, :cardinality => :many, :fulltext => true, :doc => "All organization categories"
+  attribute :orgtype, Ref, :cardinality => :one, :doc => "A organization orgtype enum value"
+  attribute :type, Ref, :cardinality => :one, :doc => "A organization type enum value"
   enum :orgtype, [:community, :commercial, :nonprofit, :personal]
   enum :type, [:email_list, :twitter, :facebook_page, :blog, :website, :wiki, :myspace, :ning]
 end
