@@ -136,26 +136,26 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     end
   end
 
-  context Seattle do
+  context Community do
     before(:all) do
-      datomic_uri = "datomic:mem://seattle-#{SecureRandom.uuid}"
+      datomic_uri = "datomic:mem://community-#{SecureRandom.uuid}"
       @s_conn1 = Diametric::Persistence::Peer.connect(datomic_uri)
     end
     after(:all) do
       @s_conn1.release
     end
     it "should create schema" do
-      Seattle.create_schema(@s_conn1).get.should_not be_nil
+      Community.create_schema(@s_conn1).get.should_not be_nil
     end
   end
 
-  context Seattle do
+  context Community do
     before(:all) do
-      datomic_uri = "datomic:mem://seattle-#{SecureRandom.uuid}"
+      datomic_uri = "datomic:mem://community-#{SecureRandom.uuid}"
       @s_conn2 = Diametric::Persistence::Peer.connect(datomic_uri)
       Neighborhood.create_schema(@s_conn2).get
       District.create_schema(@s_conn2).get
-      Seattle.create_schema(@s_conn2).get
+      Community.create_schema(@s_conn2).get
     end
     after(:all) do
       @s_conn2.release
@@ -168,32 +168,32 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       neighborhood = Neighborhood.new
       neighborhood.name = "Capitol Hill"
       neighborhood.district = district
-      seattle = Seattle.new
-      seattle.name = "15th Ave Community"
-      seattle.url = "http://groups.yahoo.com/group/15thAve_Community/"
-      seattle.neighborhood = neighborhood
-      seattle.category = ["15th avenue residents"]
-      seattle.orgtype = Seattle::Orgtype::COMMUNITY
-      seattle.type = Seattle::Type::EMAIL_LIST
-      seattle.save(@n_conn2).should_not be_nil
+      community = Community.new
+      community.name = "15th Ave Community"
+      community.url = "http://groups.yahoo.com/group/15thAve_Community/"
+      community.neighborhood = neighborhood
+      community.category = ["15th avenue residents"]
+      community.orgtype = Community::Orgtype::COMMUNITY
+      community.type = Community::Type::EMAIL_LIST
+      community.save(@n_conn2).should_not be_nil
     end
 
     it "should get instance" do
-      query = Diametric::Query.new(Seattle, @s_conn2, true)
-      seattle = query.where(:name => "15th Ave Community").first
-      seattle.dbid.should_not be_nil
-      seattle.name.should == "15th Ave Community"
-      seattle.url.should == "http://groups.yahoo.com/group/15thAve_Community/"
-      seattle.neighborhood.should be_a(Neighborhood)
-      seattle.neighborhood.dbid.should_not be_nil
-      seattle.neighborhood.name.should == "Capitol Hill"
-      seattle.neighborhood.district.should be_a(District)
-      seattle.neighborhood.district.dbid.should_not be_nil
-      seattle.neighborhood.district.name.should == "East"
-      seattle.neighborhood.district.region.should == District::Region::E
-      seattle.category == ["15th avenue residents"]
-      seattle.orgtype.should == Seattle::Orgtype::COMMUNITY
-      seattle.type.should == Seattle::Type::EMAIL_LIST
+      query = Diametric::Query.new(Community, @s_conn2, true)
+      community = query.where(:name => "15th Ave Community").first
+      community.dbid.should_not be_nil
+      community.name.should == "15th Ave Community"
+      community.url.should == "http://groups.yahoo.com/group/15thAve_Community/"
+      community.neighborhood.should be_a(Neighborhood)
+      community.neighborhood.dbid.should_not be_nil
+      community.neighborhood.name.should == "Capitol Hill"
+      community.neighborhood.district.should be_a(District)
+      community.neighborhood.district.dbid.should_not be_nil
+      community.neighborhood.district.name.should == "East"
+      community.neighborhood.district.region.should == District::Region::E
+      community.category == ["15th avenue residents"]
+      community.orgtype.should == Community::Orgtype::COMMUNITY
+      community.type.should == Community::Type::EMAIL_LIST
     end
   end
 

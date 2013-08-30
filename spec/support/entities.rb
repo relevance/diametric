@@ -116,7 +116,7 @@ class Organization
   enum :type, [:email_list, :twitter, :facebook_page, :blog, :website, :wiki, :myspace, :ning]
 end
 
-class Seattle
+class Community
   include Diametric::Entity
   include Diametric::Persistence::Peer
 

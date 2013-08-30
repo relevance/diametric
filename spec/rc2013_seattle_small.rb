@@ -2,13 +2,13 @@ require 'conf_helper'
 require 'support/entities'
 
 describe Diametric::Entity, :jruby => true do
-  context Seattle do
+  context Community do
     before(:all) do
-      datomic_uri = "datomic:mem://seattle-#{SecureRandom.uuid}"
+      datomic_uri = "datomic:mem://community-#{SecureRandom.uuid}"
       @conn = Diametric::Persistence::Peer.connect(datomic_uri)
       Neighborhood.create_schema(@conn).get
       District.create_schema(@conn).get
-      Seattle.create_schema(@conn).get
+      Community.create_schema(@conn).get
       binding.pry
     end
     after(:all) do
@@ -23,36 +23,36 @@ describe Diametric::Entity, :jruby => true do
       neighborhood = Neighborhood.new
       neighborhood.name = "Capitol Hill"
       neighborhood.district = district
-      seattle = Seattle.new
-      seattle.name = "15th Ave Community"
-      seattle.url = "http://groups.yahoo.com/group/15thAve_Community/"
-      seattle.neighborhood = neighborhood
-      seattle.category = ["15th avenue residents"]
-      seattle.orgtype = Seattle::Orgtype::COMMUNITY
-      seattle.type = Seattle::Type::EMAIL_LIST
+      community = Community.new
+      community.name = "15th Ave Community"
+      community.url = "http://groups.yahoo.com/group/15thAve_Community/"
+      community.neighborhood = neighborhood
+      community.category = ["15th avenue residents"]
+      community.orgtype = Community::Orgtype::COMMUNITY
+      community.type = Community::Type::EMAIL_LIST
       binding.pry
-      res = seattle.save(@conn)
+      res = community.save(@conn)
       binding.pry
 
-      query = Diametric::Query.new(Seattle, @conn, true)
-      seattle = query.where(:name => "15th Ave Community").first
+      query = Diametric::Query.new(Community, @conn, true)
+      community = query.where(:name => "15th Ave Community").first
       binding.pry
-      puts "seattle.name: #{seattle.name}"
-      puts "seattle.url: #{seattle.url}"
-      puts "seattle.category: #{seattle.category}"
-      puts "seattle.category: #{seattle.category.to_a.join(",")}"
-      puts "seattle.orgtype: #{seattle.orgtype}"
-      puts "seattle.orgtype == Seattle::Orgtype::COMMUNITY ? #{seattle.orgtype == Seattle::Orgtype::COMMUNITY}"
-      puts "seattle.type: #{seattle.type}"
-      puts "seattle.type == Seattle::Type::EMAIL_LIST ? #{seattle.type == Seattle::Type::EMAIL_LIST}"
+      puts "community.name: #{community.name}"
+      puts "community.url: #{community.url}"
+      puts "community.category: #{community.category}"
+      puts "community.category: #{community.category.to_a.join(",")}"
+      puts "community.orgtype: #{community.orgtype}"
+      puts "community.orgtype == Community::Orgtype::COMMUNITY ? #{community.orgtype == Community::Orgtype::COMMUNITY}"
+      puts "community.type: #{community.type}"
+      puts "community.type == Community::Type::EMAIL_LIST ? #{community.type == Community::Type::EMAIL_LIST}"
       binding.pry
-      puts "seattle.neighborhood.dbid: #{seattle.neighborhood.dbid}"        
-      puts "seattle.neighborhood.name: #{seattle.neighborhood.name}"
+      puts "community.neighborhood.dbid: #{community.neighborhood.dbid}"        
+      puts "community.neighborhood.name: #{community.neighborhood.name}"
       binding.pry
-      puts "seattle.neighborhood.district.dbid: #{seattle.neighborhood.district.dbid}"
-      puts "seattle.neighborhood.district.name: #{seattle.neighborhood.district.name}"
-      puts "seattle.neighborhood.district.region: #{seattle.neighborhood.district.region}"
-      puts "seattle.neighborhood.district.region == District::Region::E ? #{seattle.neighborhood.district.region == District::Region::E}"
+      puts "community.neighborhood.district.dbid: #{community.neighborhood.district.dbid}"
+      puts "community.neighborhood.district.name: #{community.neighborhood.district.name}"
+      puts "community.neighborhood.district.region: #{community.neighborhood.district.region}"
+      puts "community.neighborhood.district.region == District::Region::E ? #{community.neighborhood.district.region == District::Region::E}"
       binding.pry
     end
   end
