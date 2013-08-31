@@ -24,11 +24,12 @@ EOF
   gem.executables = ["datomic-rest", "download-datomic"]
 
   gem.add_dependency 'edn', '~> 1.0.2'
-  gem.add_dependency 'activesupport', '~> 4.0.0'
-  gem.add_dependency 'activemodel', '~> 4.0.0'
+  gem.add_dependency 'activesupport', '~> 3.2.14'
+  gem.add_dependency 'activemodel', '~> 3.2.14'
   gem.add_dependency 'datomic-client', '~> 0.4.1'
   gem.add_dependency 'rubyzip', '~> 0.9.9'
   gem.add_dependency 'uuid', '~> 2.3.7'
+  gem.add_dependency 'rspec', '~> 2.14.1'
 
   gem.extensions = ['Rakefile']
 end
