@@ -95,4 +95,27 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     end
   end
 
+  context Account do
+    before(:all) do
+      @datomic_uri = ENV['DATOMIC_URI'] || 'datomic:mem://account'
+      @conn4 = Diametric::Persistence.establish_base_connection({:uri => @datomic_uri})
+      Account.create_schema(@conn4)
+    end
+
+    after(:all) do
+      @conn4.release
+    end
+
+    it "should save entity" do
+      account = Account.new(:name => "This month's deposits", :deposit => [100.0, 200.0], :amount => 0.0)
+      account.save.should_not be_nil
+      result = Diametric::Persistence::Peer.q("[:find ?e :in $ :where [?e :account/name]]", @conn4.db)
+      account2 = Customer.from_dbid_or_entity(result.first.first, @conn4.db)
+      account2.name.should == account.name
+      account2.amount.should == 0.0
+      account2.deposit.should include(100.0)
+      account2.deposit.should include(200.0)
+    end
+
+  end
 end

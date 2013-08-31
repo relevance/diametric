@@ -315,6 +315,55 @@ describe Diametric::Entity do
     end
   end
 
+  context "Float, Double type" do
+    subject { Account }
+
+    it "should generate a schema" do
+      expected = []
+      if is_jruby?
+        expected = [
+                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
+                      ":db/ident" => ":account/name",
+                      ":db/valueType" => ":db.type/string",
+                      ":db/cardinality" => ":db.cardinality/one",
+                      ":db.install/_attribute" => ":db.part/db" },
+                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
+                      ":db/ident" => ":account/deposit",
+                      ":db/valueType" => ":db.type/double",
+                      ":db/cardinality" => ":db.cardinality/many",
+                      ":db.install/_attribute" => ":db.part/db" },
+                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
+                      ":db/ident" => ":account/amount",
+                      ":db/valueType" => ":db.type/double",
+                      ":db/cardinality" => ":db.cardinality/one",
+                      ":db.install/_attribute" => ":db.part/db" }
+                   ]
+      else
+        expected = [
+                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                      :"db/ident" => :"account/name",
+                      :"db/valueType" => :"db.type/string",
+                      :"db/cardinality" => :"db.cardinality/one",
+                      :"db.install/_attribute" => :"db.part/db" },
+                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                      :"db/ident" => :"account/deposit",
+                      :"db/valueType" => :"db.type/double",
+                      :"db/cardinality" => :"db.cardinality/many",
+                      :"db.install/_attribute" => :"db.part/db" },
+                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                      :"db/ident" => :"account/amount",
+                      :"db/valueType" => :"db.type/double",
+                      :"db/cardinality" => :"db.cardinality/one",
+                      :"db.install/_attribute" => :"db.part/db" }
+                   ]
+      end
+      @created_schema = subject.schema
+      expected.each do |e|
+        @created_schema.shift.should be_an_equivalent_hash(e)
+      end
+    end
+  end
+
   context "community sample" do
     subject { Organization }
 

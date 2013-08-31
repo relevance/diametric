@@ -102,6 +102,15 @@ class Customer
   attribute :id, UUID
 end
 
+class Account
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :name, String
+  attribute :deposit, Float, :cardinality => :many
+  attribute :amount, Double
+end
+
 class Organization
   include Diametric::Entity
   include Diametric::Persistence::REST
