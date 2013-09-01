@@ -333,8 +333,8 @@ module Diametric
         parent
       end
 
-      def from_dbid_or_entity(thing, conn_or_db, resolve=false)
-        return thing unless conn_or_db
+      def from_dbid_or_entity(thing, conn_or_db=nil, resolve=false)
+        conn_or_db ||= Diametric::Persistence::Peer.connect.db
 
         if conn_or_db.respond_to?(:db)
           conn_or_db = conn_or_db.db
