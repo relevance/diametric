@@ -35,7 +35,6 @@ if is_jruby?
       @db_name = "test-#{SecureRandom.uuid}"
       let(:connection) { Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}") }
       let(:tempid) { Diametric::Persistence::Peer.tempid(":db.part/db") }
-      let(:user_part_tempid) { Diametric::Persistence::Peer.tempid(":db.part/user") } 
       let(:tx_data) {
         [{
            ":db/id" => tempid,
@@ -140,5 +139,9 @@ if is_jruby?
         #puts value
       end
     end
+  end
 end
+
+def user_part_tempid
+  Diametric::Persistence::Peer.tempid(":db.part/user")
 end

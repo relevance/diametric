@@ -2,10 +2,10 @@ package diametric;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -22,11 +22,8 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
-import clojure.lang.PersistentVector;
-
+import clojure.lang.PersistentHashSet;
 import datomic.Connection;
-import datomic.Database;
-import datomic.Entity;
 import datomic.Peer;
 
 @JRubyModule(name="Diametric::Persistence::Peer")
@@ -390,13 +387,17 @@ public class DiametricPeer extends RubyModule {
             String query_string = (String)args[2].toJava(String.class);
             try {
                 Object entity = clojure.lang.RT.var("datomic.api", "entity").invoke(database, dbid);
-                clojure.lang.PersistentVector vector =
-                        (PersistentVector) clojure.lang.RT.var("clojure.core", "get").invoke(entity, query_string);
-                if (vector == null) return RubyArray.newEmptyArray(runtime);
+                clojure.lang.PersistentHashSet set =
+                         (PersistentHashSet) clojure.lang.RT.var("clojure.core", "get").invoke(entity, query_string);
 
-                RubyArray array = RubyArray.newArray(runtime, vector.count());
-                for (int i=0; i < vector.count(); i++) {
-                    Object e = vector.get(i);
+                if (set == null) {
+                    return RubyArray.newEmptyArray(runtime);
+                }
+
+                RubyArray array = RubyArray.newArray(runtime, set.size());
+                Iterator iter = set.iterator();
+                while (iter.hasNext()) {
+                    Object e = iter.next();
                     RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
                     DiametricEntity ruby_entity = (DiametricEntity)clazz.allocate();
                     ruby_entity.init(e);

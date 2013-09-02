@@ -18,6 +18,7 @@ _yardoc
 build
 coverage
 data
+!spec/data
 doc/
 lib/bundler/man
 log
