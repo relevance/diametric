@@ -19,30 +19,30 @@ describe Diametric::RestService, :service =>true do
   end
 
   it "should find a specified conf file" do
-    service.datomic_conf_file?("spec/test_version_file.cnf").should be_true
+    service.datomic_conf_file?("spec/test_version_file.yml").should be_true
   end
 
   it "should return false for version no" do
-    service.datomic_conf_file?("datomic-free-0.8.3848").should be_false
+    service.datomic_conf_file?("datomic-free-0.8.4122").should be_false
   end
 
   it "should know datomic version specified" do
-    service.datomic_version("spec/test_version_file.cnf").should == "datomic-free-0.8.3848"
-    service.datomic_version("datomic-free-0.8.3848").should == "datomic-free-0.8.3848"
+    service.datomic_version("spec/test_version_file.yml").should == "datomic-free-0.8.4122"
+    service.datomic_version("datomic-free-0.8.4122").should == "datomic-free-0.8.4122"
   end
 
   it  "should know the specified version of datomic has been downloaded" do
-    service.downloaded?("spec/test_version_file.cnf", "tmp/datomic").should be_false
-    service.downloaded?("datomic-free-0.8.3848", "tmp/datomic").should be_false
+    service.downloaded?("spec/test_version_file.yml", "tmp/datomic").should be_false
+    service.downloaded?("datomic-free-0.8.4122", "tmp/datomic").should be_false
 
-    service.download("spec/test_version_file.cnf", "tmp/datomic")
+    service.download("spec/test_version_file.yml", "tmp/datomic")
   
-    service.downloaded?("spec/test_version_file.cnf", "tmp/datomic").should be_true
-    service.downloaded?("datomic-free-0.8.3848", "tmp/datomic").should be_true
+    service.downloaded?("spec/test_version_file.yml", "tmp/datomic").should be_true
+    service.downloaded?("datomic-free-0.8.4122", "tmp/datomic").should be_true
   end
 
   context Diametric::RestService do
-    let(:rest) { Diametric::RestService.new("spec/test_version_file.cnf", "tmp/datomic") }
+    let(:rest) { Diametric::RestService.new("spec/test_version_file.yml", "tmp/datomic") }
     
     it "should start and stop rest service" do
       uri = URI("http://localhost:49621")

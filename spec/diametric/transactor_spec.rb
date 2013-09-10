@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'net/http'
 
-describe Diametric::Transactor, :transactor =>true do
+describe "Transactor Service", :transactor =>true do
   let(:transactor) { Diametric::Transactor }
 
   before do
@@ -19,30 +19,30 @@ describe Diametric::Transactor, :transactor =>true do
   end
 
   it "should find a specified conf file" do
-    transactor.datomic_conf_file?("spec/test_version_file.cnf").should be_true
+    transactor.datomic_conf_file?("spec/test_version_file.yml").should be_true
   end
 
   it "should return false for version no" do
-    transactor.datomic_conf_file?("datomic-free-0.8.3848").should be_false
+    transactor.datomic_conf_file?("datomic-free-0.8.4122").should be_false
   end
 
   it "should know datomic version specified" do
-    transactor.datomic_version("spec/test_version_file.cnf").should == "datomic-free-0.8.3848"
-    transactor.datomic_version("datomic-free-0.8.3848").should == "datomic-free-0.8.3848"
+    transactor.datomic_version("spec/test_version_file.yml").should == "datomic-free-0.8.4122"
+    transactor.datomic_version("datomic-free-0.8.4122").should == "datomic-free-0.8.4122"
   end
 
   it  "should know the specified version of datomic has been downloaded" do
-    transactor.downloaded?("spec/test_version_file.cnf", "tmp/datomic").should be_false
-    transactor.downloaded?("datomic-free-0.8.3848", "tmp/datomic").should be_false
+    transactor.downloaded?("spec/test_version_file.yml", "tmp/datomic").should be_false
+    transactor.downloaded?("datomic-free-0.8.4122", "tmp/datomic").should be_false
 
-    transactor.download("spec/test_version_file.cnf", "tmp/datomic")
+    transactor.download("spec/test_version_file.yml", "tmp/datomic")
   
-    transactor.downloaded?("spec/test_version_file.cnf", "tmp/datomic").should be_true
-    transactor.downloaded?("datomic-free-0.8.3848", "tmp/datomic").should be_true
+    transactor.downloaded?("spec/test_version_file.yml", "tmp/datomic").should be_true
+    transactor.downloaded?("datomic-free-0.8.4122", "tmp/datomic").should be_true
   end
 
   context Diametric::Transactor do
-    let(:transactor) { Diametric::Transactor.new("spec/test_version_file.cnf", "tmp/datomic") }
+    let(:transactor) { Diametric::Transactor.new("spec/test_version_file.yml", "tmp/datomic") }
     
     it "should start and stop transactor" do
       filename = File.join(File.dirname(__FILE__), "..", "config", "free-transactor-template.properties")
@@ -53,7 +53,7 @@ describe Diametric::Transactor, :transactor =>true do
   end
 
   context Diametric::Transactor do
-    let(:transactor) { Diametric::Transactor.new("spec/test_version_file.cnf", "tmp/datomic") }
+    let(:transactor) { Diametric::Transactor.new("spec/test_version_file.yml", "tmp/datomic") }
 
     it "should be available to create_database and connect to" do
       filename = File.join(File.dirname(__FILE__), "..", "config", "free-transactor-template.properties")

@@ -45,8 +45,7 @@ describe "RailsConf 2013", :jruby => true do
       binding.pry
 
       yoko = result.first
-      yoko.nerd_rate = 60
-      yoko.save
+      yoko.update_attributes(:nerd_rate => 70)
       binding.pry
 
       query = Diametric::Query.new(Person, @conn.db, true).where(:name => "Yoko")
@@ -60,7 +59,11 @@ describe "RailsConf 2013", :jruby => true do
       result = query.all
       binding.pry
       
-      query = Diametric::Query.new(Person, @conn.db, true).filter(:>, :nerd_rate, 70)
+      query = Diametric::Query.new(Person, @conn.db, true).filter(:>, :nerd_rate, 60)
+      result = query.all
+      binding.pry
+
+      query = Diametric::Query.new(Person, past_db, true).filter(:>, :nerd_rate, 60)
       result = query.all
       binding.pry
 

@@ -13,7 +13,7 @@ module Diametric
     attr_accessor :datomic_version, :datomic_version_no, :datomic_home, :pid
     attr_accessor :host, :port, :db_alias, :uri
 
-    def initialize(conf="datomic_version.cnf", dest="vendor/datomic")
+   def initialize(conf="datomic_version.yml", dest="vendor/datomic")
       @conf = conf
       @dest = dest
       @datomic_version = RestService.datomic_version(conf)

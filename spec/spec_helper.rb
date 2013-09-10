@@ -1,5 +1,4 @@
 require 'rspec'
-#require 'pry'
 
 if defined?(RUBY_ENGINE) && RUBY_ENGINE == "jruby"
   require 'lock_jar'
@@ -29,14 +28,20 @@ RSpec.configure do |c|
   c.treat_symbols_as_metadata_keys_with_true_values = true
 
   c.before(:suite) do
-    @rest = Diametric::RestService.new("spec/test_version_file.cnf", "tmp/datomic")
+    @rest = Diametric::RestService.new("spec/test_version_file.yml", "tmp/datomic")
     @rest.start(:port => 46291, :db_alias => @storage, :uri => "datomic:mem://")
     PID = @rest.pid
+    if ENV['TRANSACTOR']
+      FileUtils.cp(File.join('spec', 'config', 'logback.xml'), File.join('bin', 'logback.xml'))
+    end
   end
 
   c.after(:suite) do
     Diametric::Persistence::Peer.shutdown(true) if is_jruby?
     Process.kill("HUP", PID)
+    if ENV['TRANSACTOR']
+      FileUtils.rm(File.join('bin', 'logback.xml'), :force => true)
+    end
   end
 end
 

@@ -1,5 +1,6 @@
 require 'net/http'
 require 'pathname'
+require 'yaml'
 
 module Diametric
   module ServiceBase
@@ -8,16 +9,22 @@ module Diametric
     end
 
     module ClassMethods
-      def datomic_conf_file?(file="datomic_version.cnf")
+      def datomic_conf_file?(file="datomic_version.yml")
         if Pathname.new(file).relative?
           file = File.join(File.dirname(__FILE__), "../..", file)
         end
         return File.exists?(file)
       end
 
-      def datomic_version(conf="datomic_version.cnf")
+      def datomic_version(conf="datomic_version.yml")
         if datomic_conf_file?(conf)
-          File.read(File.join(File.dirname(__FILE__), "../..", conf))
+          datomic_names = File.read(File.join(File.dirname(__FILE__), "../..", conf))
+          datomic_versions = YAML.load(datomic_names)
+          if ENV['DIAMETRIC_ENV'] && (ENV['DIAMETRIC_ENV'] == "pro")
+            datomic_versions["pro"]
+          else
+            datomic_versions["free"]
+          end
         else
           conf
         end
@@ -27,7 +34,7 @@ module Diametric
         /(\d|\.)+/.match(datomic_version_str)[0]
       end
 
-      def downloaded?(conf="datomic_version.cnf", dest="vendor/datomic")
+      def downloaded?(conf="datomic_version.yml", dest="vendor/datomic")
         datomic_home = datomic_version(conf)
         if Pathname.new(dest).relative?
           dest = File.join(File.dirname(__FILE__), "..", "..", dest)
@@ -35,7 +42,7 @@ module Diametric
         File.exists?(File.join(dest, datomic_home))
       end
 
-      def download(conf="datomic_version.cnf", dest="vendor/datomic")
+      def download(conf="datomic_version.yml", dest="vendor/datomic")
         return true if downloaded?(conf, dest)
         version = datomic_version(conf)
         url = "http://downloads.datomic.com/#{datomic_version_no(version)}/#{version}.zip"
