@@ -18,7 +18,7 @@ EOF
   gem.homepage      = "https://github.com/relevance/diametric"
   gem.platform      = 'java'
 
-  gem.files         = %w(Gemfile Jarfile LICENSE.txt README.md Rakefile datomic_version.cnf diametric-java.gemspec) + Dir.glob('lib/**/*') + Dir.glob('ext/**/*') + Dir.glob('spec/**/*')
+  gem.files         = %w(Gemfile Jarfile LICENSE.txt README.md Rakefile datomic_version.yml diametric-java.gemspec) + Dir.glob('lib/**/*') + Dir.glob('ext/**/*') + Dir.glob('spec/**/*')
   gem.executables   = []
   gem.test_files    = Dir.glob("spec/**/*.rb")
   gem.require_paths = ["lib"]
