@@ -261,10 +261,6 @@ public class DiametricPeer extends RubyModule {
                     for (int i=0; i<inputs.length; i++) {
                         inputs[i] = DiametricUtils.convertRubyToJava(context, ruby_inputs.shift(context));
                     }
-                    //System.out.println("OH INPUTS ARE: ");
-                    //for (int i=0; i<inputs.length; i++) {
-                    //    System.out.println("OH: " + inputs[i]);
-                    //}
                     results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database, inputs);
                 }
             } else {
@@ -410,5 +406,11 @@ public class DiametricPeer extends RubyModule {
         } else {
             throw runtime.newArgumentError("Arguments should be 'database, dbid, query_string'");
         }
+    }
+
+    @JRubyMethod(meta=true)
+    public static IRubyObject get_set(ThreadContext context, IRubyObject klazz) {
+        IRubyObject set = context.getRuntime().getClass("Set");
+        return context.getRuntime().getNil();
     }
 }

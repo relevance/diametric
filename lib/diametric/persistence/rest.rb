@@ -7,7 +7,7 @@ module Diametric
   module Persistence
     module REST
       @connection = nil
-      @persisted_classes = Set.new
+      @persisted_classes = ::Set.new
 
       def self.included(base)
         base.send(:include, Diametric::Persistence::Common)

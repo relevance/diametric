@@ -139,6 +139,45 @@ if is_jruby?
         #puts value
       end
     end
+
+    context Diametric::Persistence::Collection do
+      before(:each) do
+        vector =  Java::ClojureLang::PersistentVector.create(12, 23, 34, 45, 56, 67)
+        @collection = Diametric::Persistence::Collection.wrap(vector)
+      end
+
+      it 'should return length' do
+        @collection.length.should == 6
+        @collection.size.should == 6
+      end
+
+      it 'should return string expression' do
+        @collection.to_s.should == "[12 23 34 45 56 67]"
+      end
+
+      it 'should return object or nil for [index]' do
+        @collection[0].should == 12
+        @collection[4].should == 56
+        @collection[6].should == nil
+        @collection[-3].should == 45
+      end
+
+      it 'should return new collection or nil for [start, length]' do
+        @collection[1, 2].to_s.should == "[23 34]"
+        @collection[7, 1].should == nil
+        @collection[6, 1].to_s.should == "[]"
+        @collection[-2, 5].to_s.should == "[56 67]"
+        @collection[3, -1].should == nil
+      end
+
+      it 'should return new collection or nil for [range]' do
+        @collection[1..3].to_s.should == "[23 34 45]"
+        @collection[1...3].to_s.should == "[23 34]"
+        @collection[5..10].to_s.should == "[67]"
+        @collection[6..10].to_s.should == "[]"
+        @collection[7..10].should == nil
+      end
+    end
   end
 end
 

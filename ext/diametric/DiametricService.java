@@ -28,8 +28,11 @@ public class DiametricService implements BasicLibraryService {
         RubyClass diametric_object = persistence.defineClassUnder("Object", runtime.getObject(), DIAMETRIC_OBJECT_ALLOCATOR);
         diametric_object.defineAnnotatedMethods(DiametricObject.class);
 
-        RubyClass diametric_query_result = persistence.defineClassUnder("Collection", runtime.getObject(), COLLECTION_ALLOCATOR);
-        diametric_query_result.defineAnnotatedMethods(DiametricCollection.class);
+        RubyClass diametric_collection = persistence.defineClassUnder("Collection", runtime.getObject(), COLLECTION_ALLOCATOR);
+        diametric_collection.defineAnnotatedMethods(DiametricCollection.class);
+
+        RubyClass diametric_set = persistence.defineClassUnder("Set", runtime.getObject(), SET_ALLOCATOR);
+        diametric_set.defineAnnotatedMethods(DiametricSet.class);
 
         RubyClass diametric_listenable = persistence.defineClassUnder("ListenableFuture", runtime.getObject(), LISTENABLE_ALLOCATOR);
         diametric_listenable.defineAnnotatedMethods(DiametricListenableFuture.class);
@@ -75,6 +78,12 @@ public class DiametricService implements BasicLibraryService {
     public static final ObjectAllocator COLLECTION_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
             return new DiametricCollection(runtime, klazz);
+        }
+    };
+
+    public static final ObjectAllocator SET_ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new DiametricSet(runtime, klazz);
         }
     };
 
