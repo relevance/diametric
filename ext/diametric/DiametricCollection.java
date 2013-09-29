@@ -103,7 +103,14 @@ public class DiametricCollection extends RubyObject {
                 index = (Long)index_or_range.toJava(Long.class);
                 Var var = getFn("clojure.core", "nth");
                 Object value = var.invoke(vector, index);
-                return DiametricUtils.convertJavaToRuby(context, value);
+                if (index == 0L) {
+                    RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
+                    DiametricObject ruby_object = (DiametricObject)clazz.allocate();
+                    ruby_object.update(value);
+                    return ruby_object;
+                } else {
+                    return DiametricUtils.convertJavaToRuby(context, value);
+                }
             } else if (index_or_range instanceof RubyRange) {
                 RubyRange range = (RubyRange)index_or_range;
                 Long start = (Long)range.first().toJava(Long.class);
@@ -125,7 +132,14 @@ public class DiametricCollection extends RubyObject {
                 if (index < 0L) return context.getRuntime().getNil();
                 Var var = getFn("clojure.core", "nth");
                 Object value = var.invoke(vector, index);
-                return DiametricUtils.convertJavaToRuby(context, value);
+                if (index == 0L) {
+                    RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
+                    DiametricObject ruby_object = (DiametricObject)clazz.allocate();
+                    ruby_object.update(value);
+                    return ruby_object;
+                } else {
+                    return DiametricUtils.convertJavaToRuby(context, value);
+                }
             }
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -211,7 +225,11 @@ public class DiametricCollection extends RubyObject {
     public IRubyObject first(ThreadContext context) {
         Var var = getFn("clojure.core", "first");
         Object first = var.invoke(vector);
-        return DiametricUtils.convertJavaToRuby(context, first);
+        // first element should be a dbid since this is a result of diametric query
+        RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
+        DiametricObject ruby_object = (DiametricObject)clazz.allocate();
+        ruby_object.update(first);
+        return ruby_object;
     }
 
     private int getCount() {
@@ -220,6 +238,16 @@ public class DiametricCollection extends RubyObject {
             count = (Integer)var.invoke(vector);
         }
         return count;
+    }
+
+    @JRubyMethod(name="include?")
+    public IRubyObject include_p(ThreadContext context, IRubyObject arg) {
+        Object java_object = DiametricUtils.convertRubyToJava(context, arg);
+        if (vector.contains(java_object)) {
+            return context.getRuntime().getTrue();
+        } else {
+            return context.getRuntime().getFalse();
+        }
     }
 
     @JRubyMethod(name={"length", "size"})

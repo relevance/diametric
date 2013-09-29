@@ -1,7 +1,9 @@
 package diametric;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.jruby.Ruby;
@@ -16,15 +18,19 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import clojure.lang.RT;
+import clojure.lang.Var;
+
 @JRubyClass(name = "Diametric::Persistence::Set")
 public class DiametricSet extends RubyObject {
     private static final long serialVersionUID = 2565282201531713809L;
     private Collection<Object> set = null;
+    private Map<String, Var> fnMap = new HashMap<String, Var>();
 
     public DiametricSet(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
     }
-    
+
     void init(Object result) {
         if (result instanceof Collection) {
             set = (Collection<Object>)result;
@@ -35,6 +41,17 @@ public class DiametricSet extends RubyObject {
 
     Object toJava() {
         return set;
+    }
+
+    private Var getFn(String namespace, String fn) {
+        String fullname = namespace + "/" + fn;
+        if (fnMap.containsKey(fullname)) {
+            return fnMap.get(fullname);
+        } else {
+            Var var = RT.var(namespace, fn);
+            fnMap.put(fullname, var);
+            return var;
+        }
     }
 
     @JRubyMethod(meta=true)
@@ -50,12 +67,11 @@ public class DiametricSet extends RubyObject {
         }
     }
 
-
     @JRubyMethod
     public IRubyObject to_java(ThreadContext context) {
         return JavaUtil.convertJavaToUsableRubyObject(context.getRuntime(), set);
     }
-    
+
     @JRubyMethod(name={"collect", "map"})
     public IRubyObject collect(ThreadContext context, Block block) {
         Ruby runtime = context.getRuntime();
@@ -72,7 +88,7 @@ public class DiametricSet extends RubyObject {
         }
         return this;       
     }
-    
+
     @JRubyMethod
     public IRubyObject each(ThreadContext context, Block block) {
         if (block.isGiven()) {
@@ -92,31 +108,37 @@ public class DiametricSet extends RubyObject {
         }
         return this;
     }
-    
+
     @JRubyMethod(name="empty?")
     public IRubyObject empty_p(ThreadContext context) {
-        if (set.isEmpty()) {
-            return context.getRuntime().getTrue();
-        } else {
-            return context.getRuntime().getFalse();
+        Var var = getFn("clojure.core", "empty?");
+        try {
+            if ((Boolean)var.invoke(set)) {
+                return context.getRuntime().getTrue();
+            } else {
+                return context.getRuntime().getFalse();
+            }
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
         }
     }
-    
+
     @JRubyMethod
     public IRubyObject first(ThreadContext context) {
-        Iterator<Object> itr = set.iterator();
-        if (itr.hasNext()) {
-            Object next = itr.next();
-            if (next instanceof clojure.lang.PersistentVector) {
+        Var var = getFn("clojure.core", "first");
+        try {
+            Object first = var.invoke(set);
+            if (first instanceof clojure.lang.PersistentVector) {
                 RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
                 DiametricCollection ruby_collection = (DiametricCollection)clazz.allocate();
-                ruby_collection.init(next);
+                ruby_collection.init(first);
                 return ruby_collection;
             } else {
-                return DiametricUtils.convertJavaToRuby(context, next);
+                return DiametricUtils.convertJavaToRuby(context, first);
             }
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
         }
-        return context.getRuntime().getNil();
     }
 
     @JRubyMethod
@@ -145,15 +167,26 @@ public class DiametricSet extends RubyObject {
     @JRubyMethod(name="include?")
     public IRubyObject include_p(ThreadContext context, IRubyObject arg) {
         Object java_object = DiametricUtils.convertRubyToJava(context, arg);
-        if (set.contains(java_object)) {
-            return context.getRuntime().getTrue();
-        } else {
-            return context.getRuntime().getFalse();
+        Var var = getFn("clojure.core", "contains?");
+        try {
+            if ((Boolean)var.invoke(set, java_object)) {
+                return context.getRuntime().getTrue();
+            } else {
+                return context.getRuntime().getFalse();
+            }
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
         }
     }
-    
+
     @JRubyMethod(name={"length", "size"})
     public IRubyObject size(ThreadContext context) {
-        return context.getRuntime().newFixnum(set.size());
+        Var var = getFn("clojure.core", "count");
+        try {
+            Integer count = (Integer)var.invoke(set);
+            return context.getRuntime().newFixnum(count);
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
     }
 }

@@ -140,12 +140,14 @@ module Diametric
           end
 
           results = Diametric::Persistence::Peer.q(query, db, args)
+=begin
           # Diametric query expects the first element of each array in
           # results is dbid. Wraps dbid here by
           # Diametric::Persistence::Object to make it consistent
           results.each do |r|
             r[0] = Diametric::Persistence::Object.new(r[0])
           end
+=end
           results
         end
       end

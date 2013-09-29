@@ -99,7 +99,7 @@ if is_jruby?
 
       it 'should get ids from datomic' do
         results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]", @connection.db)
-        results.class.should == Array
+        results.class.should == Diametric::Persistence::Set
         results.size.should be >= 3
         #puts results.inspect
       end
@@ -107,23 +107,21 @@ if is_jruby?
       it 'should get names from datomic' do
         results = Diametric::Persistence::Peer.q("[:find ?c ?name :where [?c :person/name ?name]]\
   ", @connection.db)
-        results.flatten.should include("Alice")
-        results.flatten.should include("Bob")
-        results.flatten.should include("Chris")
-        #puts results.inspect
+        results.collect { |r| r[1] }.should =~ ["Alice", "Bob", "Chris"]
+        results.collect { |r| r if r.include?("Alice") }.compact.size.should == 1
       end
 
       it 'should get entity by id' do
         results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
                                                  @connection.db)
-        id = results[0][0]
+        id = results.first.first
         @connection.db.entity(id).should be_true
       end
 
       it 'should get keys from entity id' do
         results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
                                                  @connection.db)
-        id = results[0][0]
+        id = results.first.first
         entity = @connection.db.entity(id)
         entity.keys.should include(":person/name")
         #puts entity.keys
@@ -132,7 +130,7 @@ if is_jruby?
       it 'should get value from entity id' do
         results = Diametric::Persistence::Peer.q("[:find ?c :where [?c :person/name]]",\
                                                  @connection.db)
-        id = results[0][0]
+        id = results.first.first
         entity = @connection.db.entity(id)
         value =  entity.get(entity.keys[0])
         value.should match(/Alice|Bob|Chris/)
@@ -156,7 +154,7 @@ if is_jruby?
       end
 
       it 'should return object or nil for [index]' do
-        @collection[0].should == 12
+        @collection[0].should == Diametric::Persistence::Object.new(12)
         @collection[4].should == 56
         @collection[6].should == nil
         @collection[-3].should == 45

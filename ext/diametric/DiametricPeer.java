@@ -275,6 +275,11 @@ public class DiametricPeer extends RubyModule {
         }
 
         if (results == null) return context.getRuntime().getNil();
+        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Set");
+        DiametricSet diametric_set = (DiametricSet)clazz.allocate();
+        diametric_set.init(results);
+        return diametric_set;
+        /*
         RubyArray ruby_results = RubyArray.newArray(context.getRuntime());
         for (List list : results) {
             RubyArray ruby_elements = RubyArray.newArray(context.getRuntime());
@@ -285,6 +290,7 @@ public class DiametricPeer extends RubyModule {
             ruby_results.append(ruby_elements);
         }
         return ruby_results;
+        */
     }
     
     private static List<RubyModule> bases = new ArrayList<RubyModule>();

@@ -43,10 +43,17 @@ public class DiametricDatabase extends RubyObject {
     
     @JRubyMethod
     public IRubyObject entity(ThreadContext context, IRubyObject arg) {
-        if (!(arg instanceof RubyFixnum)) {
-            throw context.getRuntime().newArgumentError("Argument should be Fixnum");
+        Long entityId = null;
+        if (arg instanceof RubyFixnum) {
+            entityId = (Long) arg.toJava(Long.class);
+        } else if (arg instanceof DiametricObject) {
+            if (((DiametricObject)arg).toJava() instanceof Long) {
+                entityId = (Long)((DiametricObject)arg).toJava();
+            }
         }
-        Long entityId = (Long) arg.toJava(Long.class);
+        if (entityId == null) {
+            throw context.getRuntime().newArgumentError("Argument should be Fixnum or dbid object");
+        }
         try {
             Entity entity = (Entity) clojure.lang.RT.var("datomic.api", "entity").invoke(database, entityId);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
