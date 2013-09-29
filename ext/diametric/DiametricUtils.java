@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.jruby.Ruby;
@@ -126,6 +127,11 @@ public class DiametricUtils {
         if (value instanceof java.math.BigInteger) return RubyBignum.newBignum(runtime, ((java.math.BigInteger)value).longValue());
         if (value instanceof Double) return RubyFloat.newFloat(runtime, (Double)value);
         if (value instanceof Date) return RubyTime.newTime(runtime, ((Date)value).getTime());
+        if (value instanceof Set) {
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Set");
+            DiametricSet diametric_set = (DiametricSet)clazz.allocate();
+            diametric_set.init((Set)value);
+        }
         if (value instanceof java.util.UUID) {
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::UUID");
             DiametricUUID diametric_uuid = (DiametricUUID)clazz.allocate();

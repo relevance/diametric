@@ -178,6 +178,67 @@ if is_jruby?
         @collection[7..10].should == nil
       end
     end
+
+    context Diametric::Persistence::Collection do
+      before(:each) do
+        java_set = java.util.HashSet.new([0, 1, 2, 3, 4, 5, 6])
+        @set = Diametric::Persistence::Set.wrap(java_set)
+      end
+
+      it 'should return length' do
+        @set.length.should == 7
+        @set.size.should == 7
+      end
+
+      it 'should return false for empty test' do
+        @set.empty?.should == false
+      end
+
+      it 'should test inclusion' do
+        @set.include?(3).should == true
+        @set.include?(-1).should == false
+      end
+
+      it 'should return first element' do
+        [0, 1, 2, 3, 4, 5, 6].should include(@set.first)
+      end
+
+      it 'should iterate elements' do
+        @set.each do |e|
+          [0, 1, 2, 3, 4, 5, 6].should include(e)
+        end
+      end
+
+      it 'should return collected array' do
+        ret = @set.collect { |i| i * i }
+        ret.should =~ [0, 1, 4, 9, 16, 25, 36]
+      end
+
+      it 'should group the element' do
+        ret = @set.group_by { |i| i % 3 }
+        ret[0].should =~ [0, 3, 6]
+        ret[1].should =~ [1, 4]
+        ret[2].should =~ [2, 5]
+      end
+
+      it 'should group by the length' do
+        s = java.util.HashSet.new(["Homer", "Marge", "Bart", "Lisa", "Abraham", "Herb"])
+        set_of_words = Diametric::Persistence::Set.wrap(s)
+        ret = set_of_words.group_by {|w| w.length }
+        ret[4].should =~ ["Bart", "Lisa", "Herb"]
+        ret[5].should =~ ["Homer", "Marge"]
+        ret[7].should =~ ["Abraham"]
+      end
+
+      it 'should group each array by the first element' do
+        s = java.util.HashSet.new([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        set_of_ary = Diametric::Persistence::Set.wrap(s)
+        ret = set_of_ary.group_by(&:first)
+        ret[1].should == [[1, 2, 3]]
+        ret[4].should == [[4, 5, 6]]
+        ret[7].should == [[7, 8, 9]]
+      end
+    end
   end
 end
 

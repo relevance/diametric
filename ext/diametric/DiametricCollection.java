@@ -213,37 +213,6 @@ public class DiametricCollection extends RubyObject {
         Object first = var.invoke(vector);
         return DiametricUtils.convertJavaToRuby(context, first);
     }
-    /*
-    @JRubyMethod
-    public IRubyObject group_by(ThreadContext context, Block block) {
-        Ruby runtime = context.getRuntime();
-        if (block.isGiven()) {
-            RubyHash result = new RubyHash(runtime);
-            callEach(runtime, context, self, Arity.OPTIONAL, new BlockCallback() {
-                public IRubyObject call(ThreadContext ctx, IRubyObject[] largs, Block blk) {
-                    IRubyObject larg = packEnumValues(runtime, largs);
-                    IRubyObject key = block.yield(ctx, larg);
-                    synchronized (result) {
-                        RubyArray curr = (RubyArray)result.fastARef(key);
-
-                        if (curr == null) {
-                            curr = runtime.newArray();
-                            result.fastASet(key, curr);
-                        }
-                        curr.append(larg);
-                    }
-                    return runtime.getNil();
-                }
-            });
-
-            return result;
-
-            
-        } else {
-            org.jruby.RubyEnumerator.enumeratorize(runtime, this, "group_by");
-        }
-    }
-    */
 
     private int getCount() {
         if (count == null) {
