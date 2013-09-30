@@ -189,4 +189,19 @@ public class DiametricSet extends RubyObject {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
     }
+
+    @JRubyMethod
+    public IRubyObject to_a(ThreadContext context) {
+        try {
+            RubyArray array = context.getRuntime().newArray();
+            Iterator<Object> itr = set.iterator();
+            while (itr.hasNext()) {
+                Object value = itr.next();
+                array.callMethod(context, "<<", DiametricUtils.convertJavaToRuby(context, value));
+            }
+            return array;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
 }

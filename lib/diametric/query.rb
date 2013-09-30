@@ -113,9 +113,9 @@ module Diametric
       res = model.q(*data, @conn_or_db)
       collapse_results(res).each do |entity|
         if self.model.instance_variable_get("@peer") && @resolve
-          yield model.from_dbid_or_entity(entity.first.to_java, @conn_or_db, @resolve)
+          yield model.from_dbid_or_entity(entity.first, @conn_or_db, @resolve)
         elsif self.model.instance_variable_get("@peer")
-          yield entity.first.to_java
+          yield entity.first
         # The map is for compatibility with Java peer persistence.
         # TODO remove if possible
         else
@@ -216,7 +216,7 @@ EOQ
     end
 
     def collapse_results(res)
-      return res unless @resolve
+      return res if self.model.instance_variable_get("@peer")
 
       res.group_by(&:first).map do |dbid, results|
         # extract dbid from results

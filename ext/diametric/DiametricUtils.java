@@ -31,6 +31,9 @@ import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import clojure.lang.APersistentVector;
+import clojure.lang.PersistentVector;
+
 import datomic.Util;
 
 @JRubyModule(name="Diametric::Persistence::Utils")
@@ -131,6 +134,13 @@ public class DiametricUtils {
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Set");
             DiametricSet diametric_set = (DiametricSet)clazz.allocate();
             diametric_set.init((Set)value);
+            return diametric_set;
+        }
+        if (value instanceof APersistentVector) {
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
+            DiametricCollection diametric_collection = (DiametricCollection)clazz.allocate();
+            diametric_collection.init((APersistentVector)value);
+            return diametric_collection;
         }
         if (value instanceof java.util.UUID) {
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::UUID");

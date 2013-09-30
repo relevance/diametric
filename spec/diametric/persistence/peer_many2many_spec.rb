@@ -35,10 +35,11 @@ describe Diametric::Persistence::Peer, :jruby do
     author.update(:books => [book1, book2])
     result = Diametric::Persistence::Peer.q("[:find ?e ?name ?books :in $ :where [?e :author/name ?name] [?e :author/books ?books]]", @conn.db)
     result.size.should == 2
-    boo_dbid = result[0][2]
+    result_in_array = result.to_a
+    boo_dbid = result_in_array[0][2]
     boo = Book.from_dbid_or_entity(boo_dbid, @conn)
     boo.title.should match(/Honey|Chips/)
-    foo_dbid = result[1][2]
+    foo_dbid = result_in_array[1][2]
     foo = Book.from_dbid_or_entity(boo_dbid, @conn)
     foo.title.should match(/Honey|Chips/)
   end

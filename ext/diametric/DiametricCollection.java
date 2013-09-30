@@ -199,6 +199,28 @@ public class DiametricCollection extends RubyObject {
     }
 
     @JRubyMethod
+    public IRubyObject drop(ThreadContext context, IRubyObject arg) {
+        if (!(arg instanceof RubyFixnum)) {
+            throw context.getRuntime().newArgumentError("argument should be Fixnum");
+        }
+        Long n = (Long)arg.toJava(Long.class);
+        if (n < 0) {
+            throw context.getRuntime().newArgumentError("negative drop size");
+        }
+        if (n == 0) return this;
+        try {
+            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
+            Var var = getFn("clojure.core", "subvec");
+            Object value = var.invoke(vector, n);
+            DiametricCollection ruby_collection = (DiametricCollection)clazz.allocate();
+            ruby_collection.init(value);
+            return ruby_collection;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
+    @JRubyMethod
     public IRubyObject each(ThreadContext context, Block block) {
         if (block.isGiven()) {
             Iterator<Object> itr = vector.iterator();
@@ -242,8 +264,17 @@ public class DiametricCollection extends RubyObject {
 
     @JRubyMethod(name="include?")
     public IRubyObject include_p(ThreadContext context, IRubyObject arg) {
+        Var include_p_fn = null;
+        if (fnMap.containsKey("include?")) {
+            include_p_fn = fnMap.get("include?");
+        } else {
+            Var var = getFn("clojure.core", "load-string");
+            include_p_fn = (Var)var.invoke("(defn include? [v array] (some (partial = v) array))");
+            fnMap.put("include?", include_p_fn);
+        }
         Object java_object = DiametricUtils.convertRubyToJava(context, arg);
-        if (vector.contains(java_object)) {
+        Object result = include_p_fn.invoke(java_object, vector);
+        if ((result instanceof Boolean) && (Boolean)result) {
             return context.getRuntime().getTrue();
         } else {
             return context.getRuntime().getFalse();
@@ -253,6 +284,11 @@ public class DiametricCollection extends RubyObject {
     @JRubyMethod(name={"length", "size"})
     public IRubyObject size(ThreadContext context) {
         return context.getRuntime().newFixnum(getCount());
+    }
+
+    @JRubyMethod
+    public IRubyObject to_a(ThreadContext context) {
+        return this;
     }
 
     @JRubyMethod

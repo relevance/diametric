@@ -350,6 +350,8 @@ module Diametric
           else
             entity = conn_or_db.entity(dbid)
           end
+        elsif thing.kind_of? java.lang.Long
+          entity = conn_or_db.entity(Diametric::Persistence::Object.new(thing))
         elsif thing.respond_to?(:to_java)
           dbid = thing.to_java
           entity = conn_or_db.entity(dbid)
@@ -365,7 +367,7 @@ module Diametric
           match_data = /:([a-zA-Z0-9_]+)\/([a-zA-Z0-9_]+)/.match(key)
           instance.send("#{match_data[2]}=", entity[key])
         end
-        instance.send("dbid=", Diametric::Persistence::Object.new(dbid))
+        instance.send("dbid=", Diametric::Persistence::Object.new(entity.get("db/id")))
 
         if resolve
           instance = resolve_ref_dbid(instance, conn_or_db)
