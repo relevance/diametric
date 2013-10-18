@@ -75,6 +75,7 @@ public class DiametricUtils {
     }
     
     static Object convertRubyToJava(ThreadContext context, IRubyObject value) {
+        if (value instanceof RubyNil) return null;
         if (value instanceof RubyString) {
             String str = (String)((RubyString)value).toJava(String.class);
             try {
@@ -121,6 +122,7 @@ public class DiametricUtils {
    
     static IRubyObject convertJavaToRuby(ThreadContext context, Object value) {
         Ruby runtime = context.getRuntime();
+        if (value == null) return context.getRuntime().getNil();
         if (value instanceof String) return RubyString.newString(runtime, (String)value);
         if (value instanceof Boolean) return RubyBoolean.newBoolean(runtime, (Boolean)value);
         if (value instanceof Long) return RubyFixnum.newFixnum(runtime, (Long)value);

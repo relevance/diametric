@@ -1,10 +1,9 @@
 package diametric;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.jruby.Ruby;
+import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyObject;
@@ -18,7 +17,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import clojure.lang.APersistentVector;
-import clojure.lang.RT;
+import clojure.lang.LazySeq;
 import clojure.lang.Var;
 
 @JRubyClass(name = "Diametric::Persistence::Collection")
@@ -27,7 +26,6 @@ public class DiametricCollection extends RubyObject {
     private static final long serialVersionUID = 7656855654760249694L;
     private APersistentVector vector = null;
     private Integer count = null;  // unable to count the vector size that exceeds Integer
-    private Map<String, Var> fnMap = new HashMap<String, Var>();
 
     public DiametricCollection(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
@@ -43,17 +41,6 @@ public class DiametricCollection extends RubyObject {
 
     Object toJava() {
         return vector;
-    }
-
-    private Var getFn(String namespace, String fn) {
-        String fullname = namespace + "/" + fn;
-        if (fnMap.containsKey(fullname)) {
-            return fnMap.get(fullname);
-        } else {
-            Var var = RT.var(namespace, fn);
-            fnMap.put(fullname, var);
-            return var;
-        }
     }
 
     @JRubyMethod(meta=true)
@@ -101,16 +88,7 @@ public class DiametricCollection extends RubyObject {
         try {
             if (index_or_range instanceof RubyFixnum) {
                 index = (Long)index_or_range.toJava(Long.class);
-                Var var = getFn("clojure.core", "nth");
-                Object value = var.invoke(vector, index);
-                if (index == 0L) {
-                    RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
-                    DiametricObject ruby_object = (DiametricObject)clazz.allocate();
-                    ruby_object.update(value);
-                    return ruby_object;
-                } else {
-                    return DiametricUtils.convertJavaToRuby(context, value);
-                }
+                return commonArefIndex(context, index);
             } else if (index_or_range instanceof RubyRange) {
                 RubyRange range = (RubyRange)index_or_range;
                 Long start = (Long)range.first().toJava(Long.class);
@@ -130,16 +108,7 @@ public class DiametricCollection extends RubyObject {
                 if (index >= (long)getCount()) return context.getRuntime().getNil();
                 if (index < 0L) index += (long)getCount();
                 if (index < 0L) return context.getRuntime().getNil();
-                Var var = getFn("clojure.core", "nth");
-                Object value = var.invoke(vector, index);
-                if (index == 0L) {
-                    RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
-                    DiametricObject ruby_object = (DiametricObject)clazz.allocate();
-                    ruby_object.update(value);
-                    return ruby_object;
-                } else {
-                    return DiametricUtils.convertJavaToRuby(context, value);
-                }
+                return commonArefIndex(context, index);
             }
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -157,12 +126,25 @@ public class DiametricCollection extends RubyObject {
         }
     }
 
+    private IRubyObject commonArefIndex(ThreadContext context, Long index) {
+        Var var = DiametricCommon.getFn("clojure.core", "nth");
+        Object value = var.invoke(vector, index);
+        if (index == 0L) {
+            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
+            DiametricObject ruby_object = (DiametricObject)clazz.allocate();
+            ruby_object.update(value);
+            return ruby_object;
+        } else {
+            return DiametricUtils.convertJavaToRuby(context, value);
+        }
+    }
+
     private IRubyObject commonAref(ThreadContext context, Long start, Long length, Long last) {
         try {
             long end = length != null ? (start + length) : last;
             // checking a vector's length may be a costly operation.
             // allows to raise exception for the first time
-            Var var = getFn("clojure.core", "subvec");
+            Var var = DiametricCommon.getFn("clojure.core", "subvec");
             // subvec returns from 'start' to element (- end 1)
             Object value = var.invoke(vector, start, end);
             RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
@@ -185,7 +167,7 @@ public class DiametricCollection extends RubyObject {
 
         long end = length != null ? (start + length) : last;
         end = (end <= (long)getCount()) ? end : (long)getCount();
-        Var var = getFn("clojure.core", "subvec");
+        Var var = DiametricCommon.getFn("clojure.core", "subvec");
         // subvec returns from 'start' to element (- end 1)
         try {
             Object value = var.invoke(vector, start, end);
@@ -199,6 +181,135 @@ public class DiametricCollection extends RubyObject {
     }
 
     @JRubyMethod
+    public IRubyObject assoc(ThreadContext context, IRubyObject arg) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable");
+    }
+
+    @JRubyMethod
+    public IRubyObject at(ThreadContext context, IRubyObject arg) {
+        Long index = null;
+        try {
+            if (arg instanceof RubyFixnum) {
+                index = (Long)arg.toJava(Long.class);
+                return commonArefIndex(context, index);
+            } else {
+                throw context.getRuntime().newArgumentError("argument should be fixnum");
+            }
+        } catch (Throwable t) {
+            if (t instanceof IndexOutOfBoundsException) {
+                // raised only when index is greater than the last index or negative
+                if (index >= (long)getCount()) return context.getRuntime().getNil();
+                if (index < 0L) index += (long)getCount();
+                if (index < 0L) return context.getRuntime().getNil();
+                return commonArefIndex(context, index);
+            }
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
+    @JRubyMethod
+    public IRubyObject bsearch(ThreadContext context, Block block) {
+        throw context.getRuntime().newRuntimeError("bsearch is not supported.");
+    }
+
+    @JRubyMethod
+    public IRubyObject clear(ThreadContext context) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod(name={"collect", "map"})
+    public IRubyObject collect(ThreadContext context, Block block) {
+        if (block.isGiven()) {
+            RubyArray ary = context.getRuntime().newArray();
+            return DiametricCommon.collect(context, block, vector.iterator(), ary);
+        } else {
+            return this;
+        }
+    }
+
+    @JRubyMethod(name={"collect!", "map!"})
+    public IRubyObject collect_bang(ThreadContext context, Block block) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod
+    public IRubyObject combination(ThreadContext context, IRubyObject arg, Block block) {
+        throw context.getRuntime().newRuntimeError("Not supported yet. Perhaps, doesn't make sense for query result.");
+    }
+
+    @JRubyMethod
+    public IRubyObject compact(ThreadContext context) {
+        try {
+            Var var = DiametricCommon.getFn("clojure.core", "remove");
+            Var nil_p = DiametricCommon.getFn("clojure.core", "nil?");
+            LazySeq value = (LazySeq) var.invoke(nil_p, vector);
+            Iterator itr = value.iterator();
+            RubyArray result = context.getRuntime().newArray();
+            while (itr.hasNext()) {
+                Object obj = itr.next();
+                result.callMethod("<<", DiametricUtils.convertJavaToRuby(context, obj));
+            }
+            return result;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
+    @JRubyMethod(name="compact!")
+    public IRubyObject compact_bang(ThreadContext context) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod
+    public IRubyObject concat(ThreadContext context, IRubyObject arg) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod
+    public IRubyObject count(ThreadContext context, Block block) {
+        if (block.isGiven()) {
+            return context.getRuntime().newFixnum(DiametricCommon.count(context, block, vector.iterator()));
+        } else {
+            return context.getRuntime().newFixnum(getCount());
+        }
+    }
+
+    @JRubyMethod(required = 1)
+    public IRubyObject count(ThreadContext context, IRubyObject arg, Block block) {
+        if (block.isGiven()) {
+            throw context.getRuntime().newArgumentError("given block not used");
+        } else {
+            Object java_object = DiametricUtils.convertRubyToJava(context, arg);
+            return context.getRuntime().newFixnum(DiametricCommon.count(context, java_object, vector));
+        }
+    }
+
+    @JRubyMethod
+    public IRubyObject cycle(ThreadContext context, Block block) {
+        throw context.getRuntime().newRuntimeError("Not supported yet. Perhaps, doesn't make sense for query result.");
+    }
+
+    @JRubyMethod
+    public IRubyObject cycle(ThreadContext context, IRubyObject arg, Block block) {
+        throw context.getRuntime().newRuntimeError("Not supported yet. Perhaps, doesn't make sense for query result.");
+    }
+
+    @JRubyMethod
+    public IRubyObject delete(ThreadContext context, IRubyObject arg, Block block) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod(name={"delete_at", "slice!"}, required=1, optional=1)
+    public IRubyObject delete_at(ThreadContext context, IRubyObject arg[]) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod(name={"delete_if", "reject!"})
+    public IRubyObject delete_if(ThreadContext context, Block block) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod(name={"drop", "take"})
     public IRubyObject drop(ThreadContext context, IRubyObject arg) {
         if (!(arg instanceof RubyFixnum)) {
             throw context.getRuntime().newArgumentError("argument should be Fixnum");
@@ -209,9 +320,9 @@ public class DiametricCollection extends RubyObject {
         }
         if (n == 0) return this;
         try {
-            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
-            Var var = getFn("clojure.core", "subvec");
+            Var var = DiametricCommon.getFn("clojure.core", "subvec");
             Object value = var.invoke(vector, n);
+            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
             DiametricCollection ruby_collection = (DiametricCollection)clazz.allocate();
             ruby_collection.init(value);
             return ruby_collection;
@@ -235,8 +346,8 @@ public class DiametricCollection extends RubyObject {
 
     @JRubyMethod(name="empty?")
     public IRubyObject empty_p(ThreadContext context) {
-        Var var = getFn("clojure.core", "empty?");
-        if ((Boolean)var.invoke(vector)) {
+        Boolean result = DiametricCommon.empty_p(context, vector);
+        if (result) {
             return context.getRuntime().getTrue();
         } else {
             return context.getRuntime().getFalse();
@@ -245,8 +356,7 @@ public class DiametricCollection extends RubyObject {
 
     @JRubyMethod
     public IRubyObject first(ThreadContext context) {
-        Var var = getFn("clojure.core", "first");
-        Object first = var.invoke(vector);
+        Object first = DiametricCommon.first(context, vector);
         // first element should be a dbid since this is a result of diametric query
         RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
         DiametricObject ruby_object = (DiametricObject)clazz.allocate();
@@ -256,7 +366,7 @@ public class DiametricCollection extends RubyObject {
 
     private int getCount() {
         if (count == null) {
-            Var var = getFn("clojure.core", "count");
+            Var var = DiametricCommon.getFn("clojure.core", "count");
             count = (Integer)var.invoke(vector);
         }
         return count;
@@ -265,19 +375,23 @@ public class DiametricCollection extends RubyObject {
     @JRubyMethod(name="include?")
     public IRubyObject include_p(ThreadContext context, IRubyObject arg) {
         Var include_p_fn = null;
-        if (fnMap.containsKey("include?")) {
-            include_p_fn = fnMap.get("include?");
+        if (DiametricCommon.fnMap.containsKey("include?")) {
+            include_p_fn = DiametricCommon.fnMap.get("include?");
         } else {
-            Var var = getFn("clojure.core", "load-string");
+            Var var = DiametricCommon.getFn("clojure.core", "load-string");
             include_p_fn = (Var)var.invoke("(defn include? [v array] (some (partial = v) array))");
-            fnMap.put("include?", include_p_fn);
+            DiametricCommon.fnMap.put("include?", include_p_fn);
         }
         Object java_object = DiametricUtils.convertRubyToJava(context, arg);
-        Object result = include_p_fn.invoke(java_object, vector);
-        if ((result instanceof Boolean) && (Boolean)result) {
-            return context.getRuntime().getTrue();
-        } else {
-            return context.getRuntime().getFalse();
+        try {
+            Object result = include_p_fn.invoke(java_object, vector);
+            if ((result instanceof Boolean) && (Boolean)result) {
+                return context.getRuntime().getTrue();
+            } else {
+                return context.getRuntime().getFalse();
+            }
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
         }
     }
 
@@ -293,8 +407,6 @@ public class DiametricCollection extends RubyObject {
 
     @JRubyMethod
     public IRubyObject to_s(ThreadContext context) {
-        Var var = getFn("clojure.core", "str");
-        String value = (String)var.invoke(vector);
-        return context.getRuntime().newString(value);
+        return context.getRuntime().newString(DiametricCommon.to_s(context, vector));
     }
 }

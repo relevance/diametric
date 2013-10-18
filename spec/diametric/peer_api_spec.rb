@@ -142,11 +142,21 @@ if is_jruby?
       before(:each) do
         vector =  Java::ClojureLang::PersistentVector.create(12, 23, 34, 45, 56, 67)
         @collection = Diametric::Persistence::Collection.wrap(vector)
+        vector2 =  Java::ClojureLang::PersistentVector.create(12, false, 23, nil, 34, 45, nil, 56, nil, false, 67)
+        @collection2 = Diametric::Persistence::Collection.wrap(vector2)
+      end
+
+      it 'should raise error for assoc method' do
+        expect { @collection.assoc("something") }.to raise_error(RuntimeError)
       end
 
       it 'should return length' do
         @collection.length.should == 6
         @collection.size.should == 6
+      end
+
+      it 'should return false for empty test' do
+        @collection.empty?.should == false
       end
 
       it 'should return string expression' do
@@ -175,9 +185,81 @@ if is_jruby?
         @collection[6..10].to_s.should == "[]"
         @collection[7..10].should == nil
       end
+
+      it 'should return object or nil at(index)' do
+        @collection.at(4).should == 56
+        @collection.at(-1).should == 67
+      end
+
+      it 'should raise error for bsearch method' do
+        expect { @collection.bsearch {|x| x} }.to raise_error(RuntimeError)
+      end
+
+      it 'should raise error for clear method' do
+        expect { @collection.clear }.to raise_error(RuntimeError)
+      end
+
+      it 'should return new array for collect or map method' do
+        @collection.collect {|x| x > 40 }.should == [false, false, false, true, true, true]
+        @collection.map(&:to_s).should == ["12", "23", "34", "45", "56", "67"]
+      end
+
+      it 'should raise error for collect! or map! method' do
+        expect { @collection.collect! {|x| x > 40 } }.to raise_error(RuntimeError)
+        expect { @collection.map!(&:to_s) }.to raise_error(RuntimeError)
+      end
+
+      it 'should strip nil element out from vector but not false for compact method' do
+        @collection2.compact.should == [12, false, 23, 34, 45, 56, false, 67]
+      end
+
+      it 'should raise error for compact! method' do
+        expect { @collection.compact! }.to raise_error(RuntimeError)
+      end
+
+      it 'should raise error for concat method' do
+        expect { @collection.concat([100, 200]) }.to raise_error(RuntimeError)
+      end
+
+      it 'should count speicied object for count method' do
+        @collection.count.should == 6
+        @collection2.count(false).should == 2
+        @collection2.count(100).should == 0
+        @collection2.count(67).should == 1
+        @collection2.count(nil).should == 3
+      end
+
+      it 'should raise error for cycle method' do
+        expect { @collection.cycle { |x| x } }.to raise_error(RuntimeError)
+        expect { @collection.cycle(2) { |x| x } }.to raise_error(RuntimeError)
+      end
+
+      it 'should raise error for delete method' do
+        expect { @collection.delete(12) }.to raise_error(RuntimeError)
+        expect { @collection.delete(100) { "not found" } }.to raise_error(RuntimeError)
+      end
+
+      it 'should raise error for delete_at and slice! method' do
+        expect { @collection.delete_at(2) }.to raise_error(RuntimeError)
+        expect { @collection.slice!(2) }.to raise_error(RuntimeError)
+        expect { @collection.slice!(2, 2) }.to raise_error(RuntimeError)
+        expect { @collection.slice!(2, 2) }.to raise_error(RuntimeError)
+        expect { @collection.slice!(0...2) }.to raise_error(RuntimeError)
+      end
+
+      it 'should raise error for delete_if and reject! method' do
+        expect { @collection.delete_if {|x| x > 30} }.to raise_error(RuntimeError)
+        expect { @collection.reject! {|x| x < 30} }.to raise_error(RuntimeError)
+      end
+
+      it 'should drop or take elements' do
+        @collection.drop(2).to_s.should == "[34 45 56 67]"
+        @collection.take(3).to_s.should == "[45 56 67]"
+      end
+
     end
 
-    context Diametric::Persistence::Collection do
+    context Diametric::Persistence::Set do
       before(:each) do
         java_set = java.util.HashSet.new([0, 1, 2, 3, 4, 5, 6])
         @set = Diametric::Persistence::Set.wrap(java_set)
