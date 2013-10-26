@@ -139,11 +139,16 @@ if is_jruby?
     end
 
     context Diametric::Persistence::Collection do
-      before(:each) do
+      before(:all) do
         vector =  Java::ClojureLang::PersistentVector.create(12, 23, 34, 45, 56, 67)
         @collection = Diametric::Persistence::Collection.wrap(vector)
+        @seq = Diametric::Persistence::Collection.be_lazy(vector)
         vector2 =  Java::ClojureLang::PersistentVector.create(12, false, 23, nil, 34, 45, nil, 56, nil, false, 67)
         @collection2 = Diametric::Persistence::Collection.wrap(vector2)
+        @seq2 = Diametric::Persistence::Collection.be_lazy(vector2)
+        empty_vector =  Java::ClojureLang::PersistentVector.create()
+        @empty_collection = Diametric::Persistence::Collection.wrap(empty_vector)
+        @empty_seq = Diametric::Persistence::Collection.be_lazy(empty_vector)
       end
 
       it 'should raise error for assoc method' do
@@ -153,42 +158,69 @@ if is_jruby?
       it 'should return length' do
         @collection.length.should == 6
         @collection.size.should == 6
-      end
-
-      it 'should return false for empty test' do
-        @collection.empty?.should == false
+        @seq.length.should == 6
+        @seq.size.should == 6
       end
 
       it 'should return string expression' do
-        @collection.to_s.should == "[12 23 34 45 56 67]"
+        @collection.to_s.should == "[12, 23, 34, 45, 56, 67]"
+        @seq.to_s.should == "[12, 23, 34, 45, 56, 67]"
       end
 
       it 'should return object or nil for [index]' do
-        @collection[0].should == Diametric::Persistence::Object.new(12)
+        @collection[0].should == 12
         @collection[4].should == 56
         @collection[6].should == nil
         @collection[-3].should == 45
+        @collection[0].should == 12
+        @collection[4].should == 56
+        @collection[6].should == nil
+        @collection[-3].should == 45
+
+        @seq[0].should == 12
+        @seq[4].should == 56
+        @seq[6].should == nil
+        @seq[-3].should == 45
+        @seq[0].should == 12
+        @seq[4].should == 56
+        @seq[6].should == nil
+        @seq[-3].should == 45
       end
 
       it 'should return new collection or nil for [start, length]' do
-        @collection[1, 2].to_s.should == "[23 34]"
+        @collection[1, 2].should == [23, 34]
         @collection[7, 1].should == nil
-        @collection[6, 1].to_s.should == "[]"
-        @collection[-2, 5].to_s.should == "[56 67]"
+        @collection[6, 1].should == []
+        @collection[-2, 5].should == [56, 67]
         @collection[3, -1].should == nil
+
+        @seq[1, 2].should == [23, 34]
+        @seq[7, 1].should == nil
+        @seq[6, 1].should == []
+        @seq[-2, 5].should == [56, 67]
+        @seq[3, -1].should == nil
       end
 
       it 'should return new collection or nil for [range]' do
-        @collection[1..3].to_s.should == "[23 34 45]"
-        @collection[1...3].to_s.should == "[23 34]"
-        @collection[5..10].to_s.should == "[67]"
-        @collection[6..10].to_s.should == "[]"
+        @collection[1..3].should == [23, 34, 45]
+        @collection[1...3].should == [23, 34]
+        @collection[5..10].should == [67]
+        @collection[6..10].should == []
         @collection[7..10].should == nil
+
+        @seq[1..3].should == [23, 34, 45]
+        @seq[1...3].should == [23, 34]
+        @seq[5..10].should == [67]
+        @seq[6..10].should == []
+        @seq[7..10].should == nil
       end
 
       it 'should return object or nil at(index)' do
         @collection.at(4).should == 56
         @collection.at(-1).should == 67
+
+        @seq.at(4).should == 56
+        @seq.at(-1).should == 67
       end
 
       it 'should raise error for bsearch method' do
@@ -202,6 +234,9 @@ if is_jruby?
       it 'should return new array for collect or map method' do
         @collection.collect {|x| x > 40 }.should == [false, false, false, true, true, true]
         @collection.map(&:to_s).should == ["12", "23", "34", "45", "56", "67"]
+
+        @seq.collect {|x| x > 40 }.should == [false, false, false, true, true, true]
+        @seq.map(&:to_s).should == ["12", "23", "34", "45", "56", "67"]
       end
 
       it 'should raise error for collect! or map! method' do
@@ -211,6 +246,8 @@ if is_jruby?
 
       it 'should strip nil element out from vector but not false for compact method' do
         @collection2.compact.should == [12, false, 23, 34, 45, 56, false, 67]
+
+        @seq2.compact.should == [12, false, 23, 34, 45, 56, false, 67]
       end
 
       it 'should raise error for compact! method' do
@@ -221,12 +258,18 @@ if is_jruby?
         expect { @collection.concat([100, 200]) }.to raise_error(RuntimeError)
       end
 
-      it 'should count speicied object for count method' do
+      it 'should count speicfied object for count method' do
         @collection.count.should == 6
         @collection2.count(false).should == 2
         @collection2.count(100).should == 0
         @collection2.count(67).should == 1
         @collection2.count(nil).should == 3
+
+        @seq.count.should == 6
+        @seq2.count(false).should == 2
+        @seq2.count(100).should == 0
+        @seq2.count(67).should == 1
+        @seq2.count(nil).should == 3
       end
 
       it 'should raise error for cycle method' do
@@ -253,10 +296,175 @@ if is_jruby?
       end
 
       it 'should drop or take elements' do
-        @collection.drop(2).to_s.should == "[34 45 56 67]"
-        @collection.take(3).to_s.should == "[45 56 67]"
+        @collection.drop(2).should == [34, 45, 56, 67]
+        @collection.take(3).should == [45, 56, 67]
+
+        @seq.drop(2).should == [34, 45, 56, 67]
+        @seq.take(3).should == [45, 56, 67]
       end
 
+      it 'should drop or take elements while block returns true' do
+        @collection.drop_while {|x| x < 30}.should == [34, 45, 56, 67]
+        @collection2.take_while {|x| x != nil}.should == [nil, 34, 45, nil, 56, nil, false, 67]
+
+        @seq.drop_while {|x| x < 30}.should == [34, 45, 56, 67]
+        @seq2.take_while {|x| x != nil}.should == [nil, 34, 45, nil, 56, nil, false, 67]
+      end
+
+      it 'should iterate elements' do
+        result = []
+        @collection.each {|e| result << e.to_s}
+        result.should == ["12", "23", "34", "45", "56", "67"]
+
+        result = []
+        @collection.each_index {|e| result << e.to_s}
+        result.should == ["0", "1", "2", "3", "4", "5"]
+
+        result = []
+        @seq.each {|e| result << e.to_s}
+        result.should == ["12", "23", "34", "45", "56", "67"]
+
+        result = []
+        @seq.each_index {|e| result << e.to_s}
+        result.should == ["0", "1", "2", "3", "4", "5"]
+      end
+
+      it 'should return true or false for empty test' do
+        @collection.empty?.should == false
+        @empty_collection.empty?.should == true
+
+        @seq.empty?.should == false
+        @empty_seq.empty?.should == true
+      end
+
+      it 'should return true or false for eql? test' do
+        @collection.eql?([12, 23, 34, 45, 56, 67]).should be_true
+        @collection.eql?(@collection2).should be_false
+
+        @seq.eql?([12, 23, 34, 45, 56, 67]).should be_true
+        @seq.eql?(@seq2).should be_false
+      end
+
+      it 'should fetch a value or raise IndexError/default/block value' do
+        @collection.fetch(1).should == 23
+        @collection.fetch(-1).should == 67
+        @collection.fetch(100, "have a nice day").should == "have a nice day"
+        message = ""
+        @collection.fetch(-100) {|i| message = "#{i} is out of bounds"}
+        message.should == "-100 is out of bounds"
+
+        @seq.fetch(1).should == 23
+        @seq.fetch(-1).should == 67
+        @seq.fetch(100, "have a nice day").should == "have a nice day"
+        message = ""
+        @seq.fetch(-100) {|i| message = "#{i} is out of bounds"}
+        message.should == "-100 is out of bounds"
+      end
+
+      it 'should raise error for fill method' do
+        expect { @collection.fill("x") }.to raise_error(RuntimeError)
+        expect { @collection.fill("z", 2, 2) }.to raise_error(RuntimeError)
+        expect { @collection.fill("y", 0..1) }.to raise_error(RuntimeError)
+        expect { @collection.fill {|i| i*i} }.to raise_error(RuntimeError)
+        expect { @collection.fill(-2) {|i| i*i} }.to raise_error(RuntimeError)
+      end
+
+      it 'should return index of the first matched object' do
+        @collection.find_index(34).should == 2
+        @collection2.find_index(nil).should == 3
+        @collection.find_index(100).should == nil
+        @collection.find_index { |x| x % 7 == 0 }.should == 4
+        @collection.find_index { |x| x < 0 }.should == nil
+        @collection.index(45).should == 3
+        @collection2.index(false).should == 1
+        @collection2.index(true).should == nil
+        @collection.index { |x| x.odd? }.should == 1
+        @collection.index { |x| x > 100 }.should == nil
+
+        @seq.find_index(34).should == 2
+        @seq2.find_index(nil).should == 3
+        @seq.find_index(100).should == nil
+        @seq.find_index { |x| x % 7 == 0 }.should == 4
+        @seq.find_index { |x| x < 0 }.should == nil
+        @seq.index(45).should == 3
+        @seq2.index(false).should == 1
+        @seq2.index(true).should == nil
+        @seq.index { |x| x.odd? }.should == 1
+        @seq.index { |x| x > 100 }.should == nil
+      end
+
+      it 'should return first element or first n elements' do
+        @collection.first.should == 12
+        @collection.first(3).should == [12, 23, 34]
+        @collection.first(100).should == [12, 23, 34, 45, 56, 67]
+
+        @seq.first.should == 12
+        @seq.first(3).should == [12, 23, 34]
+        @seq.first(100).should == [12, 23, 34, 45, 56, 67]
+      end
+
+      it 'should raise error for flatten/flatten! methods' do
+        expect { @collection.flatten }.to raise_error(RuntimeError)
+        expect { @collection.flatten(2) }.to raise_error(RuntimeError)
+        expect { @collection.flatten! }.to raise_error(RuntimeError)
+        expect { @collection.flatten(100) }.to raise_error(RuntimeError)
+      end
+
+      it 'should return true from frozen? method' do
+        @collection.frozen?.should == true
+
+        @seq.frozen?.should == true
+      end
+
+      it 'should return truethiness for include? method' do
+        @collection.include?(56).should be_true
+        @collection2.include?(nil).should be_true
+        @collection2.include?(false).should be_true
+        @collection.include?("a").should be_false
+
+        @seq.include?(56).should be_true
+        @seq2.include?(nil).should be_true
+        @seq2.include?(false).should be_true
+        @seq.include?("a").should be_false
+      end
+
+      it 'should raise error for replace method' do
+        expect { @collection.replace(["x", "y", "z"]) }.to raise_error(RuntimeError)
+      end
+
+      it 'should raise error for insert method' do
+        expect { @collection.insert(2, 99) }.to raise_error(RuntimeError)
+        expect { @collection.insert(-2, 1, 2, 3) }.to raise_error(RuntimeError)
+      end
+
+      it 'should return string representation' do
+        @collection.inspect.should == "[12, 23, 34, 45, 56, 67]"
+
+        @seq.inspect.should == "[12, 23, 34, 45, 56, 67]"
+      end
+
+      it 'should return joined string' do
+        @collection.join.should == "122334455667"
+        @collection.join(", ").should == "12, 23, 34, 45, 56, 67"
+
+        @seq.join.should == "122334455667"
+        @seq.join(", ").should == "12, 23, 34, 45, 56, 67"
+      end
+
+      it 'should raise error for keep_if and select! methods' do
+        expect { @collection.keep_if {|v| v == 0} }.to raise_error(RuntimeError)
+        expect { @collection.keep_if }.to raise_error(RuntimeError)
+        expect { @collection.select! {|v| v == 0} }.to raise_error(RuntimeError)
+        expect { @collection.select! }.to raise_error(RuntimeError)
+      end
+
+      it 'should return last elements' do
+        @collection.last.should == 67
+        @collection.last(2).should == [56, 67]
+
+        @seq.last.should == 67
+        @seq.last(2).should == [56, 67]
+      end
     end
 
     context Diametric::Persistence::Set do

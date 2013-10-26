@@ -1,6 +1,5 @@
 package diametric;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -32,8 +31,8 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import clojure.lang.APersistentVector;
+import clojure.lang.LazySeq;
 import clojure.lang.PersistentVector;
-
 import datomic.Util;
 
 @JRubyModule(name="Diametric::Persistence::Utils")
@@ -138,10 +137,12 @@ public class DiametricUtils {
             diametric_set.init((Set)value);
             return diametric_set;
         }
-        if (value instanceof APersistentVector) {
+        if ((value instanceof APersistentVector) ||
+                (value instanceof LazySeq) ||
+                (value instanceof PersistentVector.ChunkedSeq)){
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
             DiametricCollection diametric_collection = (DiametricCollection)clazz.allocate();
-            diametric_collection.init((APersistentVector)value);
+            diametric_collection.init((List)value);
             return diametric_collection;
         }
         if (value instanceof java.util.UUID) {

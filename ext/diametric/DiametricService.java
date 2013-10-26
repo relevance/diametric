@@ -1,6 +1,9 @@
 package diametric;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -8,6 +11,9 @@ import org.jruby.RubyModule;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.BasicLibraryService;
+
+import clojure.lang.RT;
+import clojure.lang.Var;
 
 public class DiametricService implements BasicLibraryService {
 
@@ -105,7 +111,25 @@ public class DiametricService implements BasicLibraryService {
         }
     };
 
+    static Map<String, Var> fnMap = null;
+
     private void setupClojureRT() {
         clojure.lang.RT.var("clojure.core", "require").invoke(clojure.lang.Symbol.intern("datomic.api"));
+        clojure.lang.RT.var("clojure.core", "require").invoke(clojure.lang.Symbol.intern("clojure.string"));
+        if (fnMap == null) {
+            fnMap = new HashMap<String, Var>();
+            Collections.synchronizedMap(fnMap);
+        }
+    }
+
+    static Var getFn(String namespace, String fn) {
+        String fullname = namespace + "/" + fn;
+        if (fnMap.containsKey(fullname)) {
+            return fnMap.get(fullname);
+        } else {
+            Var var = RT.var(namespace, fn);
+            fnMap.put(fullname, var);
+            return var;
+        }
     }
 }
