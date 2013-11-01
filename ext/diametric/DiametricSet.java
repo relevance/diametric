@@ -1,7 +1,9 @@
 package diametric;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.jruby.Ruby;
@@ -17,12 +19,15 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import clojure.lang.IPersistentSet;
+import clojure.lang.PersistentHashMap;
+import clojure.lang.PersistentHashSet;
 import clojure.lang.Var;
 
 @JRubyClass(name = "Diametric::Persistence::Set")
 public class DiametricSet extends RubyObject {
     private static final long serialVersionUID = 2565282201531713809L;
-    private Collection<Object> set = null;
+    private PersistentHashSet set = null;
     private Integer count = null;  // unable to count the vector size that exceeds Integer
     private DiametricCommon common = null;
 
@@ -31,9 +36,14 @@ public class DiametricSet extends RubyObject {
     }
 
     void init(Object result) {
-        if (result instanceof Collection) {
-            set = (Collection<Object>)result;
+        if (result instanceof PersistentHashSet) {
+            set = (PersistentHashSet)result;
+        } else if (result instanceof HashSet) {
+            set = PersistentHashSet.create(((HashSet)result).toArray(new Object[0]));
+        } else if (result instanceof List) {
+            set = PersistentHashSet.create((List)result);
         } else {
+            System.out.println(result.getClass().getCanonicalName());
             throw new RuntimeException("Wrong type of query result");
         }
         common = new DiametricCommon();
@@ -80,6 +90,24 @@ public class DiametricSet extends RubyObject {
     @JRubyMethod(name="empty?")
     public IRubyObject empty_p(ThreadContext context) {
         return common.empty_p(context, set);
+    }
+
+    @JRubyMethod(name={"==", "eql?", "equal?"})
+    public IRubyObject equal_p(ThreadContext context, IRubyObject arg) {
+        if (!(arg.respondsTo("intersection"))) {
+            throw context.getRuntime().newArgumentError("argument should be Set");
+        }
+        try {
+            IPersistentSet other = DiametricUtils.getPersistentSet(context, arg);
+            Var var = DiametricService.getFn("clojure.core", "=");
+            if ((Boolean)var.invoke(set, other)) {
+                return context.getRuntime().getTrue();
+            } else {
+                return context.getRuntime().getFalse();
+            }
+        } catch(Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
     }
 
     @JRubyMethod(name={"drop", "take"})
@@ -134,13 +162,25 @@ public class DiametricSet extends RubyObject {
     @JRubyMethod(name="include?")
     public IRubyObject include_p(ThreadContext context, IRubyObject arg) {
         Object java_object = DiametricUtils.convertRubyToJava(context, arg);
-        Var var = DiametricService.getFn("clojure.core", "contains?");
         try {
+            Var var = DiametricService.getFn("clojure.core", "contains?");
             if ((Boolean)var.invoke(set, java_object)) {
                 return context.getRuntime().getTrue();
             } else {
                 return context.getRuntime().getFalse();
             }
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
+    @JRubyMethod(name={"&", "intersection"})
+    public IRubyObject intersection(ThreadContext context, IRubyObject arg) {
+        if (!(arg.respondsTo("intersection"))) throw context.getRuntime().newArgumentError("argument should be a set");
+        IPersistentSet other = (IPersistentSet)DiametricUtils.getPersistentSet(context, arg);
+        try {
+            Var var = DiametricService.getFn("clojure.set", "intersection");
+            return DiametricUtils.convertJavaToRuby(context, var.invoke(set, other));
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -181,5 +221,17 @@ public class DiametricSet extends RubyObject {
     @JRubyMethod
     public IRubyObject to_s(ThreadContext context) {
         return common.to_s(context, set);
+    }
+
+    @JRubyMethod(name={"|", "union"})
+    public IRubyObject union(ThreadContext context, IRubyObject arg) {
+        if (!(arg.respondsTo("union"))) throw context.getRuntime().newArgumentError("argument should be a set");
+        IPersistentSet other = (IPersistentSet)DiametricUtils.getPersistentSet(context, arg);
+        try {
+            Var var = DiametricService.getFn("clojure.set", "union");
+            return DiametricUtils.convertJavaToRuby(context, var.invoke(set, other));
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
     }
 }

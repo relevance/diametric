@@ -86,6 +86,75 @@ public class DiametricCollection extends RubyObject {
         return JavaUtil.convertJavaToUsableRubyObject(context.getRuntime(), vector_or_seq);
     }
 
+    @JRubyMethod(name="&")
+    public IRubyObject op_and(ThreadContext context, IRubyObject arg) {
+        throw context.getRuntime().newRuntimeError("Not supported. Perhaps, doesn't make sense for query result.");
+    }
+
+    @JRubyMethod(name="*")
+    public IRubyObject op_times(ThreadContext context, IRubyObject arg) {
+        if (arg instanceof RubyFixnum) {
+            Var append_n_times_fn = null;
+            if (DiametricService.fnMap.containsKey("append-n-times")) {
+                append_n_times_fn = DiametricService.fnMap.get("append-n-times");
+            } else {
+                Var var = DiametricService.getFn("clojure.core", "load-string");
+                append_n_times_fn = (Var)var.invoke("(defn append-n-times [n array] (reduce concat (replicate n array)))");
+                DiametricService.fnMap.put("append-n-times", append_n_times_fn);
+            }
+            Integer n = (Integer)arg.toJava(Integer.class);
+            try {
+                Object value = append_n_times_fn.invoke(n, vector_or_seq);
+                RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
+                DiametricCollection ruby_collection = (DiametricCollection)clazz.allocate();
+                ruby_collection.init(value);
+                return ruby_collection;
+            } catch (Throwable t) {
+                throw context.getRuntime().newRuntimeError(t.getMessage());
+            }
+        } else if (arg instanceof RubyString) {
+            return join(context, arg);
+        } else {
+            throw context.getRuntime().newArgumentError("argument should be either String or Fixnum");
+        }
+    }
+
+    @JRubyMethod(name="+")
+    public IRubyObject op_plus(ThreadContext context, IRubyObject arg) {
+        if (!(arg instanceof List)) {
+            throw context.getRuntime().newRuntimeError("argument should be array");
+        }
+        List other = (List)arg;
+        try {
+            Var var = DiametricService.getFn("clojure.core", "concat");
+            Object value = var.invoke(vector_or_seq, other);
+            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
+            DiametricCollection ruby_collection = (DiametricCollection)clazz.allocate();
+            ruby_collection.init(value);
+            return ruby_collection;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
+    @JRubyMethod(name="<<")
+    public IRubyObject op_append(ThreadContext context) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod(name="<=>")
+    public IRubyObject op_cmp(ThreadContext context, IRubyObject arg) {
+        if (!(arg instanceof List)) return context.getRuntime().getNil();
+        List other = (List)arg;
+        try {
+            Var var = DiametricService.getFn("clojure.core", "compare");
+            Integer value = (Integer)var.invoke(vector_or_seq, other);
+            return context.getRuntime().newFixnum(value);
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
     @JRubyMethod(name={"[]", "slice"}, required=1, optional=1)
     public IRubyObject aref(ThreadContext context, IRubyObject[] args) {
         /*
@@ -216,7 +285,7 @@ public class DiametricCollection extends RubyObject {
 
     @JRubyMethod
     public IRubyObject assoc(ThreadContext context, IRubyObject arg) {
-        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable");
+        throw context.getRuntime().newRuntimeError("Not yet supported. Might be implented later depends on datomic queries.");
     }
 
     @JRubyMethod
@@ -623,8 +692,48 @@ public class DiametricCollection extends RubyObject {
     }
 
     @JRubyMethod
+    public IRubyObject pack(ThreadContext context, IRubyObject arg) {
+        throw context.getRuntime().newRuntimeError("Not supported. Perhaps, doesn't make sense for query result.");
+    }
+
+    @JRubyMethod
+    public IRubyObject permutation(ThreadContext context, IRubyObject arg, Block block) {
+        throw context.getRuntime().newRuntimeError("Not supported. Perhaps, doesn't make sense for query result.");
+    }
+
+    @JRubyMethod
+    public IRubyObject permutation(ThreadContext context, Block block) {
+        throw context.getRuntime().newRuntimeError("Not supported. Perhaps, doesn't make sense for query result.");
+    }
+
+    @JRubyMethod
+    public IRubyObject pop(ThreadContext context) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod
+    public IRubyObject pop(ThreadContext context, IRubyObject arg) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod(rest = true)
+    public IRubyObject product(ThreadContext context, IRubyObject[] args, Block block) {
+        throw context.getRuntime().newRuntimeError("Not supported. Perhaps, doesn't make sense for query result.");
+    }
+
+    @JRubyMethod
     public IRubyObject replace(ThreadContext context, IRubyObject arg) {
         throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod(rest = true)
+    public IRubyObject push(ThreadContext context, IRubyObject[] arg) {
+        throw context.getRuntime().newRuntimeError("Not supported. Data is immutable.");
+    }
+
+    @JRubyMethod
+    public IRubyObject rassoc(ThreadContext context, IRubyObject arg) {
+        throw context.getRuntime().newRuntimeError("Not yet supported. Might be implented later depends on datomic queries.");
     }
 
     private int getCount() {
@@ -644,7 +753,7 @@ public class DiametricCollection extends RubyObject {
         }
     }
 
-    @JRubyMethod
+    @JRubyMethod(name={"to_a", "to_ary"})
     public IRubyObject to_a(ThreadContext context) {
         return this;
     }

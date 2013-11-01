@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +32,9 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import clojure.lang.APersistentVector;
+import clojure.lang.IPersistentSet;
 import clojure.lang.LazySeq;
+import clojure.lang.PersistentHashSet;
 import clojure.lang.PersistentVector;
 import datomic.Util;
 
@@ -101,22 +104,34 @@ public class DiametricUtils {
             RubyTime tmvalue = (RubyTime)RuntimeHelpers.invoke(context, value, "to_time");
             return (Object)tmvalue.getJavaDate();
         }
+        // needs to check Set since Set responses to "to_a"
+        if (value.respondsTo("intersection")) {
+            return getPersistentSet(context, value);
+        }
         //System.out.println("NOT YET CONVERTED");
         //System.out.println("RESPONDSTO? TO_A:" + value.respondsTo("to_a"));
         if (value.respondsTo("to_a")) { // might be Set for cardinality many type
-            RubyArray ruby_array = (RubyArray)RuntimeHelpers.invoke(context, value, "to_a");
-            List<Object> list = new ArrayList<Object>();
-            while (true) {
-                IRubyObject element = ruby_array.shift(context);
-                if (element.isNil()) break;
-                list.add(DiametricUtils.convertRubyToJava(context, element));
-            }
-            return Collections.unmodifiableList(list);
+            return getList(context, value);
         }
         if (value instanceof DiametricObject) {
             return ((DiametricObject)value).toJava();
         }
         return (Object)value.toJava(Object.class);
+    }
+
+    static IPersistentSet getPersistentSet(ThreadContext context, IRubyObject value) {
+        return PersistentHashSet.create((List)value.callMethod(context, "to_a"));
+    }
+
+    static List<Object> getList(ThreadContext context, IRubyObject value) {
+        RubyArray ruby_array = (RubyArray)RuntimeHelpers.invoke(context, value, "to_a");
+        List<Object> list = new ArrayList<Object>();
+        while (true) {
+            IRubyObject element = ruby_array.shift(context);
+            if (element.isNil()) break;
+            list.add(DiametricUtils.convertRubyToJava(context, element));
+        }
+        return Collections.unmodifiableList(list);
     }
    
     static IRubyObject convertJavaToRuby(ThreadContext context, Object value) {

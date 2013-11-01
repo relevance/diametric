@@ -151,8 +151,21 @@ if is_jruby?
         @empty_seq = Diametric::Persistence::Collection.be_lazy(empty_vector)
       end
 
+      it 'should raise error for & method' do
+        expect { @collection & [100, 200] }.to raise_error(RuntimeError)
+      end
+
       it 'should raise error for assoc method' do
         expect { @collection.assoc("something") }.to raise_error(RuntimeError)
+      end
+
+      it 'should repeat elements by * method' do
+        @collection.*(2).should == [12, 23, 34, 45, 56, 67, 12, 23, 34, 45, 56, 67]
+        @collection.*(",").should == "12,23,34,45,56,67"
+      end
+
+      it 'should concat other array' do
+        @collection.+([100, 200]).should == [12, 23, 34, 45, 56, 67, 100, 200]
       end
 
       it 'should return length' do
@@ -471,6 +484,18 @@ if is_jruby?
       before(:each) do
         java_set = java.util.HashSet.new([0, 1, 2, 3, 4, 5, 6])
         @set = Diametric::Persistence::Set.wrap(java_set)
+        java_set2 = java.util.HashSet.new([0, 11, 2, 3, 44, 5, 66])
+        @set2 = Diametric::Persistence::Set.wrap(java_set)
+      end
+
+      it 'should return intersection'  do
+        @set.&(Set.new([3, 6, 9])).should == [3, 6].to_set
+        @set.intersection(Set.new([0, 4, 8])).should == [0, 4].to_set
+      end
+
+      it 'should return union' do
+        @set.|(Set.new([3, 6, 9])).should == [0, 1, 2, 3, 4, 5, 6, 9].to_set
+        @set.union(Set.new([0, 4, 8])).should == [0, 1, 2, 3, 4, 5, 6, 8].to_set
       end
 
       it 'should return length' do
