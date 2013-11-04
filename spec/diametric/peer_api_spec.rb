@@ -168,6 +168,10 @@ if is_jruby?
         @collection.+([100, 200]).should == [12, 23, 34, 45, 56, 67, 100, 200]
       end
 
+      it 'should get difference from other array' do
+        @collection.-([12, 45, 67]).should == [23, 34, 56]
+      end
+
       it 'should return length' do
         @collection.length.should == 6
         @collection.size.should == 6

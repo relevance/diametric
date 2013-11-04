@@ -28,7 +28,6 @@ module Diametric
       @filter_attrs = []
       @conn_or_db = connection_or_database
       @resolve = resolve
-      @query_result = nil
     end
 
     # Add conditions to your Datomic query. Conditions check for equality
@@ -111,7 +110,7 @@ module Diametric
     def each
       # TODO check to see if the model has a `.q` method and give
       # an appropriate error if not.
-      @query_result = model.q(*data, @conn_or_db)
+      res = model.q(*data, @conn_or_db)
       collapse_results(res).each do |entity|
         if self.model.instance_variable_get("@peer") && @resolve
           yield model.from_dbid_or_entity(entity.first, @conn_or_db, @resolve)
@@ -129,9 +128,6 @@ module Diametric
     #
     # @return [Array<Entity>] Query results.
     def all
-      if self.model.instance_variable_get("@peer")
-        return model.q(*data, @conn_or_db)
-      end
       map { |x| x }
     end
 

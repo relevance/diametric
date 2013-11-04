@@ -27,7 +27,7 @@ import clojure.lang.Var;
 @JRubyClass(name = "Diametric::Persistence::Set")
 public class DiametricSet extends RubyObject {
     private static final long serialVersionUID = 2565282201531713809L;
-    private PersistentHashSet set = null;
+    private Set<Object> set = null; // java.util.HashSet or clojure.lang.PersistentHashSet
     private Integer count = null;  // unable to count the vector size that exceeds Integer
     private DiametricCommon common = null;
 
@@ -35,18 +35,20 @@ public class DiametricSet extends RubyObject {
         super(runtime, klazz);
     }
 
-    void init(Object result) {
-        if (result instanceof PersistentHashSet) {
-            set = (PersistentHashSet)result;
-        } else if (result instanceof HashSet) {
-            set = PersistentHashSet.create(((HashSet)result).toArray(new Object[0]));
-        } else if (result instanceof List) {
-            set = PersistentHashSet.create((List)result);
+    void init(Object value) {
+        if ((value instanceof PersistentHashSet) || (value instanceof HashSet)) {
+            set = (Set)value;
+        } else if (value instanceof List) {
+            set = (Set)PersistentHashSet.create((List)value);
         } else {
-            System.out.println(result.getClass().getCanonicalName());
-            throw new RuntimeException("Wrong type of query result");
+            throw new RuntimeException("Wrong type for Set");
         }
         common = new DiametricCommon();
+    }
+
+    PersistentHashSet convertHashSetToPersistentHashSet(Set set) {
+        // bad performance conversion, needs to be careful to use
+        return PersistentHashSet.create(set.toArray(new Object[0]));
     }
 
     Object toJava() {
@@ -94,11 +96,22 @@ public class DiametricSet extends RubyObject {
 
     @JRubyMethod(name={"==", "eql?", "equal?"})
     public IRubyObject equal_p(ThreadContext context, IRubyObject arg) {
-        if (!(arg.respondsTo("intersection"))) {
-            throw context.getRuntime().newArgumentError("argument should be Set");
+        if (arg.isNil()) return context.getRuntime().getFalse();
+        IPersistentSet other = null;
+        if (arg.respondsTo("intersection")) {
+            other = DiametricUtils.getPersistentSet(context, arg);
+        } else if (arg instanceof HashSet) {
+            other = convertHashSetToPersistentHashSet((HashSet)arg);
+        } else if (arg instanceof DiametricSet) {
+            if (((DiametricSet)arg).toJava() instanceof HashSet) {
+                other = convertHashSetToPersistentHashSet((HashSet)((DiametricSet)arg).toJava());
+            } else {
+                other = (IPersistentSet)((DiametricSet)arg).toJava();
+            }
+        } else {
+            return context.getRuntime().getFalse();
         }
         try {
-            IPersistentSet other = DiametricUtils.getPersistentSet(context, arg);
             Var var = DiametricService.getFn("clojure.core", "=");
             if ((Boolean)var.invoke(set, other)) {
                 return context.getRuntime().getTrue();
@@ -126,14 +139,7 @@ public class DiametricSet extends RubyObject {
     @JRubyMethod
     public IRubyObject first(ThreadContext context) {
         Object first = common.first(context, set);
-        if (first instanceof clojure.lang.PersistentVector) {
-            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
-            DiametricCollection ruby_collection = (DiametricCollection) clazz.allocate();
-            ruby_collection.init(first);
-            return ruby_collection;
-        } else {
-            return DiametricUtils.convertJavaToRuby(context, first);
-        }
+        return DiametricUtils.convertJavaToRuby(context, first);
     }
 
     @JRubyMethod
@@ -180,7 +186,12 @@ public class DiametricSet extends RubyObject {
         IPersistentSet other = (IPersistentSet)DiametricUtils.getPersistentSet(context, arg);
         try {
             Var var = DiametricService.getFn("clojure.set", "intersection");
-            return DiametricUtils.convertJavaToRuby(context, var.invoke(set, other));
+            if (set instanceof HashSet) {
+                PersistentHashSet value = convertHashSetToPersistentHashSet(set);
+                return DiametricUtils.convertJavaToRuby(context, var.invoke(value, other));
+            } else {
+                return DiametricUtils.convertJavaToRuby(context, var.invoke(set, other));
+            }
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -229,7 +240,29 @@ public class DiametricSet extends RubyObject {
         IPersistentSet other = (IPersistentSet)DiametricUtils.getPersistentSet(context, arg);
         try {
             Var var = DiametricService.getFn("clojure.set", "union");
-            return DiametricUtils.convertJavaToRuby(context, var.invoke(set, other));
+            if (set instanceof HashSet) {
+                PersistentHashSet value = convertHashSetToPersistentHashSet(set);
+                return DiametricUtils.getDiametricSet(context, (Set)var.invoke(value, other));
+            } else {
+                return DiametricUtils.getDiametricSet(context, (Set)var.invoke(set, other));
+            }
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
+    @JRubyMethod(name={"-", "difference"})
+    public IRubyObject difference(ThreadContext context, IRubyObject arg) {
+        if (!(arg.respondsTo("difference"))) throw context.getRuntime().newArgumentError("argument should be a set");
+        IPersistentSet other = (IPersistentSet)DiametricUtils.getPersistentSet(context, arg);
+        try {
+            Var var = DiametricService.getFn("clojure.set", "difference");
+            if (set instanceof HashSet) {
+                PersistentHashSet value = convertHashSetToPersistentHashSet(set);
+                return DiametricUtils.getDiametricSet(context, (Set)var.invoke(value, other));
+            } else {
+                return DiametricUtils.getDiametricSet(context, (Set)var.invoke(set, other));
+            }
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }

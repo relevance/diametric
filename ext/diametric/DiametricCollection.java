@@ -54,12 +54,9 @@ public class DiametricCollection extends RubyObject {
     @JRubyMethod(meta=true)
     public static IRubyObject wrap(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
         try {
-            clojure.lang.PersistentVector v =
+            clojure.lang.PersistentVector value =
                     (clojure.lang.PersistentVector)arg.toJava(clojure.lang.PersistentVector.class);
-            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
-            DiametricCollection ruby_collection = (DiametricCollection)clazz.allocate();
-            ruby_collection.init(v);
-            return ruby_collection;
+            return DiametricUtils.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -72,10 +69,7 @@ public class DiametricCollection extends RubyObject {
                     (clojure.lang.PersistentVector)arg.toJava(clojure.lang.PersistentVector.class);
             Var var = DiametricService.getFn("clojure.core", "take");
             Object value = var.invoke(100, v);
-            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
-            DiametricCollection ruby_collection = (DiametricCollection)clazz.allocate();
-            ruby_collection.init(value);
-            return ruby_collection;
+            return DiametricUtils.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -89,6 +83,32 @@ public class DiametricCollection extends RubyObject {
     @JRubyMethod(name="&")
     public IRubyObject op_and(ThreadContext context, IRubyObject arg) {
         throw context.getRuntime().newRuntimeError("Not supported. Perhaps, doesn't make sense for query result.");
+    }
+
+    @JRubyMethod(name="-")
+    public IRubyObject op_diff(ThreadContext context, IRubyObject arg) {
+        if (!(arg instanceof List)) {
+            throw context.getRuntime().newRuntimeError("argument should be array");
+        }
+        List other = (List)arg;
+        Var two_arrays_diff_fn = null;
+        if (DiametricService.fnMap.containsKey("two-arrays-diff")) {
+            two_arrays_diff_fn = DiametricService.fnMap.get("two-arrays-diff");
+        } else {
+            Var var = DiametricService.getFn("clojure.core", "load-string");
+            String fn =
+                    "(defn two-arrays-diff [this other]\n" +
+                    "  (let [f (fn [ary n] (remove (partial = n) ary))]\n"+
+                    "    (reduce f this other)))";
+            two_arrays_diff_fn = (Var)var.invoke(fn);
+            DiametricService.fnMap.put("two-arrays-diff", two_arrays_diff_fn);
+        }
+        try {
+            Object value = two_arrays_diff_fn.invoke(vector_or_seq, other);
+            return DiametricUtils.getDiametricCollection(context, (List)value);
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
     }
 
     @JRubyMethod(name="*")
@@ -105,10 +125,7 @@ public class DiametricCollection extends RubyObject {
             Integer n = (Integer)arg.toJava(Integer.class);
             try {
                 Object value = append_n_times_fn.invoke(n, vector_or_seq);
-                RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
-                DiametricCollection ruby_collection = (DiametricCollection)clazz.allocate();
-                ruby_collection.init(value);
-                return ruby_collection;
+                return DiametricUtils.getDiametricCollection(context, (List)value);
             } catch (Throwable t) {
                 throw context.getRuntime().newRuntimeError(t.getMessage());
             }
@@ -128,10 +145,7 @@ public class DiametricCollection extends RubyObject {
         try {
             Var var = DiametricService.getFn("clojure.core", "concat");
             Object value = var.invoke(vector_or_seq, other);
-            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
-            DiametricCollection ruby_collection = (DiametricCollection)clazz.allocate();
-            ruby_collection.init(value);
-            return ruby_collection;
+            return DiametricUtils.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -241,10 +255,7 @@ public class DiametricCollection extends RubyObject {
                 if (length == null) length = last - start;
                 value = commonArefByDropTake(start, length);
             }
-            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
-            DiametricCollection ruby_collection = (DiametricCollection) clazz.allocate();
-            ruby_collection.init(value);
-            return ruby_collection;
+            return DiametricUtils.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
             if (t instanceof IndexOutOfBoundsException) {
                 return retryAref(context, start, length, last);
@@ -461,13 +472,14 @@ public class DiametricCollection extends RubyObject {
 
     @JRubyMethod(name={"eql?", "=="})
     public IRubyObject equal_p(ThreadContext context, IRubyObject arg) {
+        if (arg.isNil()) return context.getRuntime().getFalse();
         Object other_vector = null;
         if (arg instanceof DiametricCollection) {
             other_vector = ((DiametricCollection)arg).toJava();
         } else if ((arg instanceof List) || (arg instanceof RubyArray)) {
             other_vector = arg;
         } else {
-            throw context.getRuntime().newArgumentError("argument should be Array");
+            return context.getRuntime().getFalse();
         }
         try {
             Var var = DiametricService.getFn("clojure.core", "=");

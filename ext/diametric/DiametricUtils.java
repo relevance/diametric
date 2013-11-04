@@ -133,7 +133,7 @@ public class DiametricUtils {
         }
         return Collections.unmodifiableList(list);
     }
-   
+
     static IRubyObject convertJavaToRuby(ThreadContext context, Object value) {
         Ruby runtime = context.getRuntime();
         if (value == null) return context.getRuntime().getNil();
@@ -147,18 +147,12 @@ public class DiametricUtils {
         if (value instanceof Double) return RubyFloat.newFloat(runtime, (Double)value);
         if (value instanceof Date) return RubyTime.newTime(runtime, ((Date)value).getTime());
         if (value instanceof Set) {
-            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Set");
-            DiametricSet diametric_set = (DiametricSet)clazz.allocate();
-            diametric_set.init((Set)value);
-            return diametric_set;
+            return getDiametricSet(context, (Set)value);
         }
         if ((value instanceof APersistentVector) ||
                 (value instanceof LazySeq) ||
                 (value instanceof PersistentVector.ChunkedSeq)){
-            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
-            DiametricCollection diametric_collection = (DiametricCollection)clazz.allocate();
-            diametric_collection.init((List)value);
-            return diametric_collection;
+            return getDiametricCollection(context, (List)value);
         }
         if (value instanceof java.util.UUID) {
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::UUID");
@@ -167,6 +161,20 @@ public class DiametricUtils {
             return diametric_uuid;
         }
         return JavaUtil.convertJavaToUsableRubyObject(runtime, value);
+    }
+
+    static IRubyObject getDiametricSet(ThreadContext context, Set value) {
+        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Set");
+        DiametricSet diametric_set = (DiametricSet)clazz.allocate();
+        diametric_set.init(value);
+        return diametric_set;
+    }
+
+    static IRubyObject getDiametricCollection(ThreadContext context, List value) {
+        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
+        DiametricCollection diametric_collection = (DiametricCollection)clazz.allocate();
+        diametric_collection.init((List)value);
+        return diametric_collection;
     }
 
     static List<Object> convertRubyTxDataToJava(ThreadContext context, IRubyObject arg) {
