@@ -102,7 +102,6 @@ module Diametric
           child.instance_variable_set("@previously_changed", child.changes)
           child.changed_attributes.clear
           child.dbid = resolve_tempid(map, child.dbid)
-          child.instance_variable_set("@tx_map", map)
         end
         resolve_changes(queue, map) unless queue.empty?
       end
@@ -138,17 +137,7 @@ module Diametric
           else
             db = conn_or_db
           end
-
-          results = Diametric::Persistence::Peer.q(query, db, args)
-=begin
-          # Diametric query expects the first element of each array in
-          # results is dbid. Wraps dbid here by
-          # Diametric::Persistence::Object to make it consistent
-          results.each do |r|
-            r[0] = Diametric::Persistence::Object.new(r[0])
-          end
-=end
-          results
+          Diametric::Persistence::Peer.q(query, db, args)
         end
       end
     end

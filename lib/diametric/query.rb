@@ -115,7 +115,7 @@ module Diametric
         if self.model.instance_variable_get("@peer") && @resolve
           yield model.reify(entity.first, @conn_or_db, @resolve)
         elsif self.model.instance_variable_get("@peer")
-          yield entity.first
+          yield entity
         # The map is for compatibility with Java peer persistence.
         # TODO remove if possible
         else
@@ -127,8 +127,13 @@ module Diametric
     # Return all query results.
     #
     # @return [Array<Entity>] Query results.
-    def all
-      map { |x| x }
+    #         or Set([Array<dbid>]) for Peer without resolve option
+    def all(conn_or_db=@conn_or_db)
+      if self.model.instance_variable_get("@peer") && !@resolve
+        model.q(*data, conn_or_db)
+      else
+        map { |x| x }
+      end
     end
 
     # Create a Datomic query from the conditions and filters passed to this
