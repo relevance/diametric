@@ -116,7 +116,7 @@ module Diametric
         if result
           query_string = ":#{result[1]}/_#{result[2]}"
           entities = Diametric::Persistence::Peer.reverse_q(args[0].db, self.dbid, query_string)
-          entities.collect {|e| self.class.from_dbid_or_entity(e, args[0])}
+          entities.collect {|e| self.class.reify(e, args[0])}
         else
           super
         end
@@ -127,7 +127,7 @@ module Diametric
           entity = self.new
           dbid = dbid.to_i if dbid.is_a?(String)
           connection ||= Diametric::Persistence::Peer.connect
-          entity = self.from_dbid_or_entity(dbid, connection, resolve)
+          entity = self.reify(dbid, connection, resolve)
           entity
         end
 

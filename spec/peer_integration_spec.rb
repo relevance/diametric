@@ -57,7 +57,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       choice = Choice.new(:item => "Boots", :checked => true)
       choice.save.should_not be_nil
       result = Diametric::Persistence::Peer.q("[:find ?e :in $ :where [?e :choice/checked]]", @conn2.db)
-      choice = Choice.from_dbid_or_entity(result.first.first, @conn2.db)
+      choice = Choice.reify(result.first.first, @conn2.db)
       choice.checked.should be_true
     end
   end
@@ -78,7 +78,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       customer = Customer.new(:name => "John Smith", :id => id)
       customer.save.should_not be_nil
       result = Diametric::Persistence::Peer.q("[:find ?e :in $ :where [?e :customer/name]]", @conn3.db)
-      customer2 = Customer.from_dbid_or_entity(result.first.first, @conn3.db)
+      customer2 = Customer.reify(result.first.first, @conn3.db)
       customer2.name.should == "John Smith"
       customer2.id.to_s.should == id.to_s
     end
@@ -89,7 +89,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       customer = Customer.new(:name => "Wilber Hoe", :id => id)
       customer.save.should_not be_nil
       result = Diametric::Persistence::Peer.q("[:find ?e :in $ [?name] :where [?e :customer/name ?name]]", @conn3.db, ["Wilber Hoe"])
-      customer2 = Customer.from_dbid_or_entity(result.first.first, @conn3.db)
+      customer2 = Customer.reify(result.first.first, @conn3.db)
       customer2.name.should == "Wilber Hoe"
       customer2.id.to_s.should == id.to_s
     end
@@ -110,7 +110,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       account = Account.new(:name => "This month's deposits", :deposit => [100.0, 200.0], :amount => 0.0)
       account.save.should_not be_nil
       result = Diametric::Persistence::Peer.q("[:find ?e :in $ :where [?e :account/name]]", @conn4.db)
-      account2 = Customer.from_dbid_or_entity(result.first.first, @conn4.db)
+      account2 = Customer.reify(result.first.first, @conn4.db)
       account2.name.should == account.name
       account2.amount.should == 0.0
       account2.deposit.should include(100.0)

@@ -21,7 +21,7 @@ describe Diametric::Persistence::Peer, :jruby do
     author.update(:books => [book])
     result = Diametric::Persistence::Peer.q("[:find ?e ?name ?books :in $ :where [?e :author/name ?name] [?e :author/books ?books]]", @conn.db)
     boo_dbid = result.first[2]
-    boo = Author.from_dbid_or_entity(boo_dbid, @conn)
+    boo = Author.reify(boo_dbid, @conn)
     boo.title.should == "Candy"
   end
 
@@ -37,10 +37,10 @@ describe Diametric::Persistence::Peer, :jruby do
     result.size.should == 2
     result_in_array = result.to_a
     boo_dbid = result_in_array[0][2]
-    boo = Book.from_dbid_or_entity(boo_dbid, @conn)
+    boo = Book.reify(boo_dbid, @conn)
     boo.title.should match(/Honey|Chips/)
     foo_dbid = result_in_array[1][2]
-    foo = Book.from_dbid_or_entity(boo_dbid, @conn)
+    foo = Book.reify(boo_dbid, @conn)
     foo.title.should match(/Honey|Chips/)
   end
 
@@ -59,19 +59,19 @@ describe Diametric::Persistence::Peer, :jruby do
     result = Diametric::Persistence::Peer.q("[:find ?e :in $ [?name] :where [?e :author/name ?name]]", @conn.db, ["Ms. Wilber"])
     result.size.should == 1
     result.first.first.to_s.should == author1.dbid.to_s
-    a = Author.from_dbid_or_entity(result.first.first, @conn)
+    a = Author.reify(result.first.first, @conn)
     a.books.size.should == 2
     a.books.each do |b|
-      Author.from_dbid_or_entity(b, @conn).title.should match(/Pie|Donuts/)
+      Author.reify(b, @conn).title.should match(/Pie|Donuts/)
     end
 
     result = Diametric::Persistence::Peer.q("[:find ?e :in $ [?title] :where [?e :book/title ?title]]", @conn.db, ["Pie"])
     result.size.should == 1
     result.first.first.to_s.should == book1.dbid.to_s
-    b = Book.from_dbid_or_entity(result.first.first, @conn)
+    b = Book.reify(result.first.first, @conn)
     b.authors.size.should == 2
     b.authors.each do |a|
-      Book.from_dbid_or_entity(a, @conn).name.should match(/Ms\.\sWilber|Mr\.\sSmith/)
+      Book.reify(a, @conn).name.should match(/Ms\.\sWilber|Mr\.\sSmith/)
     end
   end
 end

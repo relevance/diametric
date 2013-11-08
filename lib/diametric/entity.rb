@@ -317,12 +317,12 @@ module Diametric
           if parent.class.attributes[e][:value_type] == "ref"
             ref = parent.instance_variable_get("@#{e.to_s}")
             if ref.is_a?(Fixnum) || ref.is_a?(Java::DatomicQuery::EntityMap)
-              child = from_dbid_or_entity(ref, connection)
+              child = reify(ref, connection)
               child = resolve_ref_dbid(child, connection)
               parent.instance_variable_set("@#{e.to_s}", child)
             elsif ref.is_a?(Set)
               children = ref.inject(Set.new) do |memo, entity|
-               child = from_dbid_or_entity(entity, connection)
+               child = reify(entity, connection)
                 memo.add(child)
                 memo
               end
@@ -333,7 +333,7 @@ module Diametric
         parent
       end
 
-      def from_dbid_or_entity(thing, conn_or_db=nil, resolve=false)
+      def reify(thing, conn_or_db=nil, resolve=false)
         conn_or_db ||= Diametric::Persistence::Peer.connect.db
 
         if conn_or_db.respond_to?(:db)
@@ -380,7 +380,7 @@ module Diametric
         if self.instance_variable_get("@peer")
           connection ||= Diametric::Persistence::Peer.connect
         end
-        from_dbid_or_entity(id, connection)
+        reify(id, connection)
       end
 
       # Returns the prefix for this model used in Datomic. Can be

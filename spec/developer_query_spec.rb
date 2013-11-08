@@ -55,7 +55,7 @@ describe Developer, :jruby => true do
     result = query.all
     result.size.should == 1
 
-    developer = Developer.from_dbid_or_entity(result.first, @conn.db, false)
+    developer = Developer.reify(result.first, @conn.db, false)
     friends = developer.friends
     friends.each do |f|
       f.should be_a(Java::DatomicQuery::EntityMap)
@@ -77,7 +77,7 @@ describe Developer, :jruby => true do
     query = Diametric::Query.new(Developer, @conn)
     result = query.all
     result.size.should == 3
-    resolved_result = result.map {|m| Developer.from_dbid_or_entity(m, @conn)}
+    resolved_result = result.map {|m| Developer.reify(m, @conn)}
     resolved_result.collect(&:nerd_rate).should =~ [50, 98, 80]
   end
 
