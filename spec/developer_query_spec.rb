@@ -94,7 +94,7 @@ describe Developer, :jruby => true do
     ryan.save(@conn)
 
     query = Diametric::Query.new(Developer, @conn).filter(:>, :nerd_rate, 70)
-    query_data = "[:find ?e :in $ :where [?e :developer/nerd_rate ?nerd_rate] [(> ?nerd_rate 70)]]"
+    query_data = "[:find ?e :in $ [?nerd_rate_value] :where [?e :developer/nerd_rate ?nerd_rate] [(> ?nerd_rate ?nerd_rate_value)]]"
     query.data.first.gsub(" ", "").should == query_data.gsub(" ", "")
     result = query.all
     result.size.should == 2

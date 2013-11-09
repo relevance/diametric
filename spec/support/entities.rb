@@ -52,6 +52,7 @@ class Penguin
 
   attribute :name, String
   attribute :age, Integer
+  attribute :birthday, DateTime
 end
 
 class Rat

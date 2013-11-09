@@ -81,23 +81,22 @@ module Diametric
         filter = filter.map { |e| convert_filter_element(e) }
         filter = EDN::Type::List.new(*filter)
       end
-
       query.filters += [[filter]]
       query
     end
 
     def peer_filter(*filter)
       query = self.dup
-
       if filter.first.is_a?(Array)
         filter = filter.first
       end
       filter_attrs << filter[1].to_s
-      filter[1] = "?#{filter[1].to_s}"
-      filter = filter.tap {|e| e.to_s }.join(" ")
-      filter = "[(#{filter})]"
-
-      query.filters << filter
+      query_filter = []
+      query_filter << filter[0].to_s
+      query_filter << "?#{filter[1].to_s}"
+      query_filter << filter[2..-1]
+      query_filter = query_filter.flatten
+      query.filters += [query_filter]
       query
     end
 
@@ -191,8 +190,15 @@ EOQ
           clauses = filter_attrs.inject(clauses) do |memo, attribute|
             memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
           end
+          from = filter_attrs.inject("[") {|memo, attr| memo + "?#{attr}_value "} + "]"
+          filter_query =
+            "[" +
+            filters.inject("") {|memo, filter| memo + "(#{filter[0]} #{filter[1]} #{filter[1]}_value) "} +
+            "]"
+          args ||= []
+          args = filters.inject(args) {|args, filter| args + filter[2..-1]}
         end
-        query = "[:find ?e :in $ #{from} :where #{clauses} #{filters.join}]"
+        query = "[:find ?e :in $ #{from} :where #{clauses} #{filter_query}]"
       end
 
       [query, args]

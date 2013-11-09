@@ -18,27 +18,57 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     end
 
     let(:query) { Diametric::Query.new(Penguin, @conn, true) }
+
     it "should update entity" do
-      penguin = Penguin.new(:name => "Mary", :age => 2)
+      bday = DateTime.parse('2005-01-01')
+      penguin = Penguin.new(:name => "Mary", :age => 2, :birthday => bday)
       penguin.save(@conn)
       penguin.update(:age => 3)
       penguin.name.should == "Mary"
       penguin.age.should == 3
+      penguin.birthday.should == bday
     end
 
     it "should search upadated attributes" do
-      penguin = query.where(:name => "Mary").first
-      penguin.name.should == "Mary"
-      penguin.age.should == 3
+      bday = DateTime.parse('1900-02-02')
+      penguin = Penguin.new(:name => "Mary J.", :age => 200, :birthday => bday)
+      penguin.save(@conn)
+      penguin = query.where(:name => "Mary J.").first
+      penguin.name.should == "Mary J."
+      penguin.age.should == 200
+      penguin.birthday == bday
     end
 
     it "should destroy entity" do
-      penguin = Penguin.new(:name => "Mary", :age => 2)
+      penguin = Penguin.new(:name => "Mary Jo.", :age => 2)
       penguin.save(@conn)
       number_of_penguins = Penguin.all.size
       number_of_penguins.should >= 1
       penguin.destroy
       Penguin.all.size.should == (number_of_penguins -1)
+    end
+
+    it "should find by where query" do
+      Penguin.new(name: "Mary Jo.", birthday: DateTime.parse('1900-12-31')).save
+      Penguin.new(name: "Mary Jen.", birthday: DateTime.parse('1999-12-31')).save
+      Penguin.new(name: "Mary Jr.", birthday: DateTime.parse('2013-01-01')).save
+      Penguin.new(name: "Mary Jay.", birthday: DateTime.parse('2011-01-01')).save
+      query = Penguin.where(birthday: DateTime.parse('1999-12-31'))
+      query.each do |ary|
+        p = Penguin.reify(ary.first)
+        p.birthday.should == DateTime.parse('1999-12-31')
+      end
+    end
+
+    it "should find by filter query" do
+      Penguin.new(name: "Mary Jo.", birthday: DateTime.parse('1890-12-31')).save
+      Penguin.new(name: "Mary Jen.", birthday: DateTime.parse('1999-12-31')).save
+      Penguin.new(name: "Mary Jr.", birthday: DateTime.parse('2013-01-01')).save
+      Penguin.new(name: "Mary Jay.", birthday: DateTime.parse('1850-02-22')).save
+      query = Penguin.filter(:<, :birthday, DateTime.parse('1900-01-01'))
+      result = query.all
+      result.size.should == 2
+      result.collect(&:name).should =~ ["Mary Jay.", "Mary Jo."]
     end
   end
 
