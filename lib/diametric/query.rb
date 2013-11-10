@@ -181,7 +181,7 @@ EOQ
           clauses = conditions.keys.inject("") do |memo, attribute|
             memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
           end
-          from = conditions.inject("[") {|memo, kv| memo + "?#{kv.shift} "} +"]"
+          from = conditions.inject("") {|memo, kv| memo + "?#{kv.shift} "}
           args = conditions.map { |_, v| v }
         end
 
@@ -190,7 +190,8 @@ EOQ
           clauses = filter_attrs.inject(clauses) do |memo, attribute|
             memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
           end
-          from = filter_attrs.inject("[") {|memo, attr| memo + "?#{attr}_value "} + "]"
+          from ||= ""
+          from = filter_attrs.inject(from) {|from, attr| from + "?#{attr}_value "}
           filter_query =
             "[" +
             filters.inject("") {|memo, filter| memo + "(#{filter[0]} #{filter[1]} #{filter[1]}_value) "} +
@@ -198,7 +199,7 @@ EOQ
           args ||= []
           args = filters.inject(args) {|args, filter| args + filter[2..-1]}
         end
-        query = "[:find ?e :in $ #{from} :where #{clauses} #{filter_query}]"
+        query = "[:find ?e :in $ [#{from}] :where #{clauses} #{filter_query}]"
       end
 
       [query, args]

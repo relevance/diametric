@@ -45,21 +45,21 @@ module Diametric
           end
         end
 
-        def all(connection=nil, resolve=false)
+        def all(connection=nil, resolve=true)
           if self.instance_variable_get("@peer")
             connection ||= Diametric::Persistence::Peer.connect
           end
           Diametric::Query.new(self, connection, resolve).all
         end
 
-        def first(conditions = {}, connection=nil, resolve=false)
+        def first(conditions = {}, connection=nil, resolve=true)
           if self.instance_variable_get("@peer")
             connection ||= Diametric::Persistence::Peer.connect
           end
           where(conditions, connection, resolve).first
         end
 
-        def where(conditions = {}, connection=nil, resolve=false)
+        def where(conditions = {}, connection=nil, resolve=true)
           if self.instance_variable_get("@peer")
             connection ||= Diametric::Persistence::Peer.connect
           end
