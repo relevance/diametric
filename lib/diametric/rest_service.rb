@@ -6,7 +6,7 @@ module Diametric
     class << self
       def datomic_command(datomic_home)
         classpath = datomic_classpath(datomic_home)
-        command = ["java -server -Xmx1g", "-cp", classpath, "clojure.main", "-i", "#{datomic_home}/bin/bridge.clj", "--main datomic.rest"].flatten.join(" ")
+        ["java -server -Xmx1g", "-cp", classpath, "clojure.main", "-i", "#{datomic_home}/bin/bridge.clj", "--main datomic.rest"].flatten.join(" ")
       end
     end
 
@@ -51,7 +51,7 @@ module Diametric
     end
 
     def port_available?(uri)
-      response = Net::HTTP.get_response(uri)
+      Net::HTTP.get_response(uri)
       false
     rescue Errno::ECONNREFUSED
       true
@@ -60,7 +60,7 @@ module Diametric
     def ready?(uri)
       while true
         begin
-          response = Net::HTTP.get_response(uri)
+          Net::HTTP.get_response(uri)
           return true
         rescue
           sleep 1
