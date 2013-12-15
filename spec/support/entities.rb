@@ -157,3 +157,27 @@ class District
   attribute :region, Ref, :cardinality => :one, :doc => "A district region enum value"
   enum :region, [:n, :ne, :e, :se, :s, :sw, :w, :nw]
 end
+
+# issue 43
+module This
+  class Bug
+    include Diametric::Entity
+    include Diametric::Persistence::Peer
+
+    attribute :id, String, index: true
+    attribute :name, String
+  end
+end
+
+module Outermost
+  module Outer
+    module Inner
+      class Innermost
+        include Diametric::Entity
+        include Diametric::Persistence::Peer
+
+        attribute :name, String
+      end
+    end
+  end
+end

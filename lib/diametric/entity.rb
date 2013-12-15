@@ -359,13 +359,11 @@ module Diametric
           return thing
         end
         first_key = entity.keys.first
-        match_data = /:([a-zA-Z0-9_]+)\/([a-zA-Z0-9_]+)/.match(first_key)
-        entity_name = match_data[1].capitalize.gsub(/(?:_|(\/))([a-z\d]*)/) { "#{$1}#{$2.capitalize}"}
-        instance = eval("#{entity_name}.new")
-        instance.send("#{match_data[2]}=", entity[first_key])
-        entity.keys[1..-1].each do |key|
-          match_data = /:([a-zA-Z0-9_]+)\/([a-zA-Z0-9_]+)/.match(key)
-          instance.send("#{match_data[2]}=", entity[key])
+        class_name = to_classname(first_key)
+        instance = eval("#{class_name}.new")
+        entity.keys.each do |key|
+          matched_data = /:([a-zA-Z0-9_\.]+)\/([a-zA-Z0-9_]+)/.match(key)
+          instance.send("#{matched_data[2]}=", entity[key])
         end
         instance.send("dbid=", Diametric::Persistence::Object.new(entity.get("db/id")))
 
@@ -374,6 +372,30 @@ module Diametric
         end
 
         instance
+      end
+
+      def to_classname(key)
+        names = []
+        # drops the first character ":"
+        key.chars.drop(1).inject("") do |memo, c|
+          if c == "/"
+            # means the end of class name
+            names << memo
+            break
+          elsif c == "."
+            # namespace delimiter
+            names << memo
+            memo = ""
+          elsif c == "-"
+            # Clojure uses - for name, but Ruby can't
+            # converts dash to underscore
+            memo << "_"
+          else
+            memo << c
+          end
+          memo
+        end
+        names.collect(&:capitalize).join("::")
       end
 
       def find(id)
@@ -393,7 +415,7 @@ module Diametric
       #
       # @return [String]
       def prefix
-        @namespace_prefix || self.to_s.underscore.sub('/', '.')
+        @namespace_prefix || self.to_s.underscore.gsub('/', '.')
       end
 
       # Create a temporary id placeholder.

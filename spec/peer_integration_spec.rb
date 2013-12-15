@@ -150,6 +150,30 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       account2.deposit.should include(100.0)
       account2.deposit.should include(200.0)
     end
+  end
 
+  context 'issue43' do
+    before do
+      @datomic_uri = 'datomic:mem://issue43'
+      @conn_issue43 = Diametric::Persistence.establish_base_connection({:uri => @datomic_uri})
+      This::Bug.create_schema(@conn_issue43).get
+      Outermost::Outer::Inner::Innermost.create_schema(@conn_issue43).get
+    end
+
+    after do
+      @conn_issue43.release
+    end
+
+    it 'should get all entities' do
+      This::Bug.new(id: '123').save
+      result = This::Bug.all
+      result.first.id.should == '123'
+    end
+
+    it 'should get all entities of nested modules' do
+      Outermost::Outer::Inner::Innermost.new(name: 'nested').save
+      result = Outermost::Outer::Inner::Innermost.all
+      result.first.name.should == 'nested'
+    end
   end
 end
