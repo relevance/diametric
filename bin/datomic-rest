@@ -23,7 +23,7 @@ opts = OptionParser.new do |opts|
 end
 opts.parse!
 
-DATOMIC_NAME = File.read(File.join(File.dirname(__FILE__), "..", "datomic_version.cnf"))
+DATOMIC_NAME = File.read(File.join(File.dirname(__FILE__), "..", "datomic_version.yml"))
 
 require 'diametric/rest_service'
 
