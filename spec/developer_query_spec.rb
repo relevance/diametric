@@ -117,4 +117,16 @@ describe Developer, :jruby => true do
     result.size.should == 1
     result.first.friends.collect(&:name).should =~ ["Yoko Harada", "Clinton N. Dreisbach"]
   end
+
+  it "should not think found objects are dirty" do
+    david = Developer.new
+    david.name = "David Bock"
+    david.nerd_rate = 42
+    david.save(@conn)
+    query = Diametric::Query.new(Developer, @conn)
+    result = query.all
+    developer = Developer.reify(result.first.first, @conn.db, false)
+    developer.changed.should == []
+  end
+
 end
