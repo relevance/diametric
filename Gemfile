@@ -3,13 +3,13 @@
 source 'https://rubygems.org'
 
 gem 'edn', '~> 1.0.2'
-gem 'activesupport', '~> 3.2.14'
-gem 'activemodel', '~> 3.2.14'
+gem 'activesupport', '~> 3.2.16'
+gem 'activemodel', '~> 3.2.16'
 gem 'datomic-client', '~> 0.4.1'
 gem 'rubyzip', '~> 0.9.9'
 
 gem 'lock_jar', '~> 0.7.5', :platform => :jruby
-gem 'jruby-openssl', '~> 0.8.8', :platform => :jruby
+gem 'jruby-openssl', :platform => :jruby
 gem 'uuid', '~> 2.3.7'
 
 gem 'rspec', '~> 2.14.1'
