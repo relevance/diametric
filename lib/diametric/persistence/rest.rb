@@ -47,6 +47,28 @@ module Diametric
           connection.transact(database, data)
         end
 
+        def create_schema
+          transact(schema)
+        end
+
+        def all
+          Diametric::Query.new(self, nil, true).all
+        end
+
+        def first(conditions = {})
+          where(conditions).first
+        end
+
+        def where(conditions = {})
+          query = Diametric::Query.new(self, nil, true)
+          query.where(conditions)
+        end
+
+        def filter(*filter)
+          query = Diametric::Query.new(self, nil, true)
+          query.filter(*filter)
+        end
+
         def get(dbid, conn=nil, resolve=false)
           conn ||= connection
           res = conn.entity(database, dbid.to_i)

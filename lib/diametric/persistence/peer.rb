@@ -122,6 +122,33 @@ module Diametric
       end
 
       module ClassMethods
+        def create_schema(connection=nil)
+          connection ||= Diametric::Persistence::Peer.connect
+          connection.transact(schema)
+        end
+
+        def all(connection=nil, resolve=true)
+          connection ||= Diametric::Persistence::Peer.connect
+          Diametric::Query.new(self, connection, resolve).all
+        end
+
+        def first(conditions = {}, connection=nil, resolve=true)
+          connection ||= Diametric::Persistence::Peer.connect
+          where(conditions, connection, resolve).first
+        end
+
+        def where(conditions = {}, connection=nil, resolve=true)
+          connection ||= Diametric::Persistence::Peer.connect
+          query = Diametric::Query.new(self, connection, resolve)
+          query.where(conditions)
+        end
+
+        def filter(connection, *filter)
+          connection ||= Diametric::Persistence::Peer.connect
+          query = Diametric::Query.new(self, connection, true)
+          query.filter(*filter)
+        end
+
         def get(dbid, connection=nil, resolve=false)
           entity = self.new
           dbid = dbid.to_i if dbid.is_a?(String)

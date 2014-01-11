@@ -2,7 +2,6 @@ module Diametric
   module Persistence
     module Common
       def self.included(base)
-        base.send(:extend, ClassMethods)
         base.send(:include, InstanceMethods)
       end
 
@@ -32,49 +31,6 @@ module Diametric
             self.class.fail_validate!(self) unless errors.empty?
           end
           return true
-        end
-      end
-
-      module ClassMethods
-        def create_schema(connection=nil)
-          if self.instance_variable_get("@peer")
-            connection ||= Diametric::Persistence::Peer.connect
-            connection.transact(schema)
-          else
-            transact(schema)
-          end
-        end
-
-        def all(connection=nil, resolve=true)
-          if self.instance_variable_get("@peer")
-            connection ||= Diametric::Persistence::Peer.connect
-          end
-          Diametric::Query.new(self, connection, resolve).all
-        end
-
-        def first(conditions = {}, connection=nil, resolve=true)
-          if self.instance_variable_get("@peer")
-            connection ||= Diametric::Persistence::Peer.connect
-          end
-          where(conditions, connection, resolve).first
-        end
-
-        def where(conditions = {}, connection=nil, resolve=true)
-          if self.instance_variable_get("@peer")
-            connection ||= Diametric::Persistence::Peer.connect
-          end
-          query = Diametric::Query.new(self, connection, resolve)
-          query.where(conditions)
-        end
-
-        def filter(*filter)
-          if self.instance_variable_get("@peer")
-            connection = Diametric::Persistence::Peer.connect
-          else
-            connection = nil
-          end
-          query = Diametric::Query.new(self, connection, true)
-          query.filter(*filter)
         end
       end
     end

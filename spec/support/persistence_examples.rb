@@ -65,7 +65,8 @@ shared_examples "persistence API" do
       end
 
       it "can find it by attribute" do
-        model2 = model_class.first({:name => "Wilbur"}, nil, true)
+        model2 = model_class.first({:name => "Wilbur"}, nil, true) if model_class.ancestors.include? Diametric::Persistence::Peer
+        model2 = model_class.first({:name => "Wilbur"}) if model_class.ancestors.include? Diametric::Persistence::REST
         model2.should_not be_nil
         model2.dbid.should == model.dbid
         model2.should == model if model2.is_a? Rat
@@ -73,23 +74,30 @@ shared_examples "persistence API" do
       end
 
       it "can find all matching conditions" do
-        mice = model_class.where({:name => "Wilbur"}, nil, true).where(:age => 2).all
+        if model_class.ancestors.include? Diametric::Persistence::Peer
+          mice = model_class.where({:name => "Wilbur"}, nil, true).where(:age => 2).all
+        else
+          mice = model_class.where({:name => "Wilbur"}).where(:age => 2).all
+        end
         mice.should == [model]
         mice.should include(model)
       end
 
       it "can filter entities" do
-        mice = model_class.filter(:<, :age, 3).all
+        mice = model_class.filter(nil, :<, :age, 3).all if model_class.ancestors.include? Diametric::Persistence::Peer
+        mice = model_class.filter(:<, :age, 3).all if model_class.ancestors.include? Diametric::Persistence::REST
         mice.should == [model]
         mice.should include(model)
 
-        mice = model_class.filter(:>, :age, 3).all
+        mice = model_class.filter(nil, :>, :age, 3).all if model_class.ancestors.include? Diametric::Persistence::Peer
+        mice = model_class.filter(:>, :age, 3).all if model_class.ancestors.include? Diametric::Persistence::REST
         mice.should == []
       end
 
       it "can find all" do
         model_class.new(:name => "Smith", :age => 5).save
-        mice = model_class.all(nil, true)
+        mice = model_class.all(nil, true) if model_class.ancestors.include? Diametric::Persistence::Peer
+        mice = model_class.all if model_class.ancestors.include? Diametric::Persistence::REST
         mice.should_not be_nil
         mice.size.should == 2
         names = ["Smith", "Wilbur"]

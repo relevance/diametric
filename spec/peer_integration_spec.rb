@@ -64,7 +64,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       Penguin.new(name: "Mary Jen.", birthday: DateTime.parse('1999-12-31'), awesomeness: true).save
       Penguin.new(name: "Mary Jr.", birthday: DateTime.parse('2013-01-01'), awesomeness: false).save
       Penguin.new(name: "Mary Jay.", birthday: DateTime.parse('1850-02-22'), awesomeness: false).save
-      query = Penguin.filter(:<, :birthday, DateTime.parse('1900-01-01'))
+      query = Penguin.filter(@conn, :<, :birthday, DateTime.parse('1900-01-01'))
       result = query.all
       result.size.should == 2
       result.collect(&:name).should =~ ["Mary Jay.", "Mary Jo."]
