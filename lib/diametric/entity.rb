@@ -210,11 +210,6 @@ module Diametric
       # @return [Array] A Datomic schema, as Ruby data that can be
       #   converted to EDN.
       def schema
-        return peer_schema if self.instance_variable_get("@peer")
-        rest_schema
-      end
-
-      def rest_schema
         defaults = {
           :"db/id" => tempid(:"db.part/db"),
           :"db/cardinality" => :"db.cardinality/one",
@@ -240,57 +235,14 @@ module Diametric
                                      :"db/valueType" => value_type(value_type),
                                    }).merge(opts)
         end
-
         enum_schema = [
           :"db/add", tempid(:"db.part/user"), :"db/ident"
         ]
-        prefix = self.name.downcase
+        prefix = self.to_s.underscore
         @enums.each do |key, values|
           values.each do |value|
             ident_value = :"#{prefix}.#{key.downcase}/#{value.to_s.sub(/_/, "-").downcase}"
             es = [:"db/add", tempid(:"db.part/user"), :"db/ident", ident_value]
-            schema_array << es
-          end
-        end
-        schema_array
-      end
-
-      # Generates a Datomic schema for a model's attributes.
-      #
-      # @return [Array] A Datomic schema, as Ruby data that can be
-      #   converted to EDN.
-      def peer_schema
-        defaults = {
-          ":db/cardinality" => ":db.cardinality/one",
-          ":db.install/_attribute" => ":db.part/db"
-        }
-
-        schema_array = @attributes.reduce([]) do |schema, (attribute, opts)|
-          opts = opts.dup
-          value_type = opts.delete(:value_type)
-
-          unless opts.empty?
-            opts[:cardinality] = namespace("db.cardinality", opts[:cardinality])
-            opts[:unique] = namespace("db.unique", opts[:unique]) if opts[:unique]
-            opts = opts.map { |k, v|
-              k = namespace("db", k)
-              [k, v]
-            }
-            opts = Hash[*opts.flatten]
-          end
-
-          schema << defaults.merge({
-                                     ":db/id" => Diametric::Persistence::Peer.tempid(":db.part/db"),
-                                     ":db/ident" => namespace(prefix, attribute),
-                                     ":db/valueType" => value_type(value_type),
-                                   }).merge(opts)
-        end
-
-        prefix = self.name.downcase
-        @enums.each do |key, values|
-          values.each do |value|
-            ident_value = ":#{prefix}.#{key.downcase}/#{value.to_s.sub(/_/, "-").downcase}"
-            es = [":db/add", Diametric::Persistence::Peer.tempid(":db.part/user"), ":db/ident", ident_value]
             schema_array << es
           end
         end
@@ -426,15 +378,7 @@ module Diametric
       #
       # @return [EDN::Type::Unknown] Temporary id placeholder.
       def tempid(*e)
-        if self.instance_variable_get("@peer")
-          if e[0].to_s.include?("user")
-            return Diametric::Persistence::Peer.tempid(":db.part/user")
-          else
-            return Diametric::Persistence::Peer.tempid(":db.part/db")
-          end
-        else
-          EDN.tagged_element('db/id', e)
-        end
+        EDN.tagged_element('db/id', e)
       end
 
       # Namespace a attribute for Datomic.
@@ -444,11 +388,7 @@ module Diametric
       #
       # @return [Symbol] Namespaced attribute.
       def namespace(ns, attribute)
-        if self.instance_variable_get("@peer")
-          ":" + [ns.to_s, attribute.to_s].join("/")
-        else
-          [ns.to_s, attribute.to_s].join("/").to_sym
-        end
+        [ns.to_s, attribute.to_s].join("/").to_sym
       end
 
       # Raise an error if validation failed.

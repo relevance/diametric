@@ -23,6 +23,7 @@ import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
@@ -31,11 +32,15 @@ import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import clojure.lang.APersistentMap;
 import clojure.lang.APersistentVector;
 import clojure.lang.IPersistentSet;
+import clojure.lang.Keyword;
 import clojure.lang.LazySeq;
+import clojure.lang.PersistentArrayMap;
 import clojure.lang.PersistentHashSet;
 import clojure.lang.PersistentVector;
+import clojure.lang.Var;
 import datomic.Util;
 
 @JRubyModule(name="Diametric::Persistence::Utils")
@@ -98,6 +103,19 @@ public class DiametricUtils {
         if (value instanceof RubyTime) {
             RubyTime tmvalue = (RubyTime)value;
             return (Object)tmvalue.getJavaDate();
+        }
+        if (value instanceof RubySymbol) {
+            if (value.respondsTo("to_edn")) {
+                // schema keyword
+                RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_s");
+                return (Object)Keyword.intern((String)edn_string.asJavaString());
+            }
+        }
+        if (value.respondsTo("to_edn")) {
+            // schema value, for example, EDN::Type::Unknown
+            RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_edn");
+            Var reader = DiametricService.getFn("clojure.core", "read-string");
+            return reader.invoke((String)edn_string.asJavaString());
         }
         if (value.respondsTo("to_time")) {
             // DateTime or Date
@@ -177,49 +195,54 @@ public class DiametricUtils {
         return diametric_collection;
     }
 
-    static List<Object> convertRubyTxDataToJava(ThreadContext context, IRubyObject arg) {
-        List<Object> tx_data = null;
+    static PersistentVector convertRubyTxDataToJava(ThreadContext context, IRubyObject arg) {
         if (arg instanceof RubyArray) {
-            tx_data = fromRubyArray(context, arg);
+            return fromRubyArray(context, (RubyArray)arg);
         } else {
             Object obj = arg.toJava(Object.class);
             if (obj instanceof clojure.lang.PersistentVector) {
-                tx_data = (clojure.lang.PersistentVector)obj;
+                return (clojure.lang.PersistentVector)obj;
             }
         }
-        return tx_data;
+        return null;
     }
 
-    private static List<Object> fromRubyArray(ThreadContext context, IRubyObject arg) {
-        RubyArray ruby_tx_data = (RubyArray)arg;
-        List<Object> java_tx_data = new ArrayList<Object>();
-        for (int i=0; i<ruby_tx_data.getLength(); i++) {
-            IRubyObject element = (IRubyObject) ruby_tx_data.get(i);
+    private static PersistentVector fromRubyArray(ThreadContext context, RubyArray ruby_array) {
+        Var var = DiametricService.getFn("clojure.core", "vector");
+        PersistentVector clj_tx_data = (PersistentVector)var.invoke();
+        Var adder = DiametricService.getFn("clojure.core", "conj");
+        for (int i=0; i<ruby_array.getLength(); i++) {
+            IRubyObject element = (IRubyObject) ruby_array.get(i);
             if (element instanceof RubyHash) {
-                RubyHash ruby_hash = (RubyHash) element;
-                Map<Object, Object> keyvals = new HashMap<Object, Object>();
-                while (true) {
-                    IRubyObject pair = ruby_hash.shift(context);
-                    if (pair instanceof RubyNil) break;
-                    Object key = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
-                    Object value = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
-                    keyvals.put(key, value);
-                }
-                java_tx_data.add(Collections.unmodifiableMap(keyvals));
+                APersistentMap map = fromRubyHash(context, (RubyHash)element);
+                clj_tx_data = (PersistentVector)adder.invoke(clj_tx_data, map);
             } else if (element instanceof RubyArray) {
-                RubyArray ruby_array = (RubyArray) element;
-                List<Object> keyvals = new ArrayList<Object>();
-                while (true) {
-                    IRubyObject ruby_element = ruby_array.shift(context);
-                    if (ruby_element instanceof RubyNil) break;
-                    Object key_or_value = DiametricUtils.convertRubyToJava(context, ruby_element);
-                    keyvals.add(key_or_value);
-                }
-                java_tx_data.add(Collections.unmodifiableList(keyvals));
+                PersistentVector vector = fromRubyArray(context, (RubyArray)element);
+                clj_tx_data =  (PersistentVector)adder.invoke(clj_tx_data, vector);
             } else {
-                continue;
+                clj_tx_data =
+                        (PersistentVector)adder.invoke(clj_tx_data, DiametricUtils.convertRubyToJava(context, element));
             }
         }
-        return java_tx_data;
+        return clj_tx_data;
+    }
+
+    private static APersistentMap fromRubyHash(ThreadContext context, RubyHash ruby_hash) {
+        Var var = DiametricService.getFn("clojure.core", "hash-map");
+        APersistentMap map = (APersistentMap)var.invoke();
+        Var associator = DiametricService.getFn("clojure.core", "assoc");
+        while (true) {
+            IRubyObject pair = ruby_hash.shift(context);
+            if (pair instanceof RubyNil) break;
+            Object key = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
+            Object value = DiametricUtils.convertRubyToJava(context, ((RubyArray) pair).shift(context));
+            if (value instanceof RubyHash) {
+                value = fromRubyHash(context, (RubyHash)value);
+            } else if (value instanceof RubyArray) {
+                value = fromRubyArray(context, (RubyArray)value);
+            }
+            map = (APersistentMap)associator.invoke(map, key, value);
+        }
+        return map;
     }
 }

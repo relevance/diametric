@@ -72,6 +72,62 @@ class Mouse
   attribute :age, Integer
 end
 
+class ScarletMacaw
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :name, String
+  attribute :description, String, :fulltext => true
+  attribute :talkative, Boolean
+  attribute :height, Integer
+  attribute :average_speed, Float
+  attribute :observed, DateTime
+  attribute :case_no, UUID, :index => true
+  attribute :serial, UUID, :unique => :value
+end
+
+class Peacock
+  include Diametric::Entity
+  include Diametric::Persistence::REST
+
+  attribute :name, String
+  attribute :description, String, :fulltext => true
+  attribute :talkative, Boolean
+  attribute :height, Integer
+  attribute :average_speed, Float
+  attribute :observed, DateTime
+  attribute :case_no, UUID, :index => true
+  attribute :serial, UUID, :unique => :value
+end
+
+class MyWords
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :words, String, :cardinality => :many
+end
+
+class YourWords
+  include Diametric::Entity
+  include Diametric::Persistence::REST
+
+  attribute :words, String, :cardinality => :many
+end
+
+class Cage
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :rat, Ref
+end
+
+class Box
+  include Diametric::Entity
+  include Diametric::Persistence::REST
+
+  attribute :mouse, Ref
+end
+
 class Author
   include Diametric::Entity
   include Diametric::Persistence::Peer
@@ -86,6 +142,38 @@ class Book
 
   attribute :title, String
   attribute :authors, Ref, :cardinality => :many
+end
+
+class Writer
+  include Diametric::Entity
+  include Diametric::Persistence::REST
+
+  attribute :name, String
+  attribute :articles, Ref, :cardinality => :many
+end
+
+class Article
+  include Diametric::Entity
+  include Diametric::Persistence::REST
+
+  attribute :title, String
+  attribute :writers, Ref, :cardinality => :many
+end
+
+class Role
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :type, Ref
+  enum :type, [:accountant, :manager, :developer]
+end
+
+class Position
+  include Diametric::Entity
+  include Diametric::Persistence::REST
+
+  attribute :type, Ref
+  enum :type, [:accountant, :manager, :developer]
 end
 
 class Choice

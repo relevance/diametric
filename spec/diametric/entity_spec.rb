@@ -3,29 +3,6 @@ require 'diametric/entity'
 
 require 'rspec/expectations'
 
-RSpec::Matchers.define :be_an_equivalent_hash do |expected|
-  match do |actual|
-    status = true
-    expected.each do |k, v|
-      next if k == ":db/id"
-      status = false if actual[k].nil?
-      status = false unless actual[k] == v
-    end
-    status
-  end
-end
-
-RSpec::Matchers.define :be_an_equivalent_array do |expected|
-  match do |actual|
-    status = true
-    expected.each_with_index do |e, index|
-      next if e == "#db/id[:db.part/user]"
-      status = false unless actual[index] == e
-    end
-    status
-  end
-end
-
 describe Diametric::Entity do
   describe "in a class" do
     subject { Person }

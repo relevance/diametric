@@ -52,7 +52,7 @@ public class DiametricConnection extends RubyObject {
 
     @JRubyMethod
     public IRubyObject transact(ThreadContext context, IRubyObject arg) {
-        List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg);
+        List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg); // this may raise exception
         if (tx_data == null) {
             throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
         }

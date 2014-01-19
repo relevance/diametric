@@ -45,6 +45,29 @@ RSpec.configure do |c|
   end
 end
 
+RSpec::Matchers.define :be_an_equivalent_hash do |expected|
+  match do |actual|
+    status = true
+    expected.keys.each do |k|
+      next if k == :"db/id"
+      status = false if actual[k].nil?
+      status = false unless actual[k] == expected[k]
+    end
+    status
+  end
+end
+
+RSpec::Matchers.define :be_an_equivalent_array do |expected|
+  match do |actual|
+    status = true
+    expected.each_with_index do |e, index|
+      next if e.kind_of?(String) && (e.gsub(/ /, "") == "#db/id[:db.part/user]")
+      status = false unless actual[index] == e
+    end
+    status
+  end
+end
+
 shared_examples "ActiveModel" do |model|
   require 'test/unit/assertions'
   require 'active_model/lint'
