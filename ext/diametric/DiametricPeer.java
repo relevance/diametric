@@ -18,10 +18,12 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
+import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import clojure.lang.Keyword;
 import clojure.lang.PersistentHashSet;
 import datomic.Connection;
 import datomic.Peer;
@@ -184,7 +186,11 @@ public class DiametricPeer extends RubyModule {
         if (args.length < 1 || args.length > 2) {
             throw context.getRuntime().newArgumentError("Wrong number of arguments");
         }
-        String partition = DiametricUtils.rubyStringToJava(args[0]);
+        if (!(args[0] instanceof RubySymbol)) {
+            throw context.getRuntime().newArgumentError("The first argument should be a Symbol");
+        }
+        RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, args[0], "to_s");
+        Keyword partition = Keyword.intern((String)edn_string.asJavaString());
         RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
         DiametricObject diametric_object = (DiametricObject)clazz.allocate();
         try {

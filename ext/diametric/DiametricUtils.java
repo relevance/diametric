@@ -105,11 +105,9 @@ public class DiametricUtils {
             return (Object)tmvalue.getJavaDate();
         }
         if (value instanceof RubySymbol) {
-            if (value.respondsTo("to_edn")) {
-                // schema keyword
-                RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_s");
-                return (Object)Keyword.intern((String)edn_string.asJavaString());
-            }
+            // schema or data keyword
+            RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_s");
+            return (Object)Keyword.intern((String)edn_string.asJavaString());
         }
         if (value.respondsTo("to_edn")) {
             // schema value, for example, EDN::Type::Unknown

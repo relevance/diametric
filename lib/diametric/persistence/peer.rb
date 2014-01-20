@@ -122,6 +122,23 @@ module Diametric
       end
 
       module ClassMethods
+
+        # Create a temporary id placeholder.
+        #
+        # @param e [*#to_edn] Elements to put in the placeholder. Should
+        #   be either partition or partition and a negative number to be
+        #   used as a reference.
+        #
+        # @return [Diametric::Persistence::Object] Temporary id placeholder.
+        def tempid(*e)
+          if e.size == 1
+            return Diametric::Persistence::Peer.tempid(e[0])
+          elsif e.size == 2
+            return Diametric::Persistence::Peer.tempid(e[0], e[1])
+          end
+          nil
+        end
+
         def create_schema(connection=nil)
           connection ||= Diametric::Persistence::Peer.connect
           connection.transact(schema)

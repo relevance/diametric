@@ -211,7 +211,6 @@ module Diametric
       #   converted to EDN.
       def schema
         defaults = {
-          :"db/id" => tempid(:"db.part/db"),
           :"db/cardinality" => :"db.cardinality/one",
           :"db.install/_attribute" => :"db.part/db"
         }
@@ -233,6 +232,7 @@ module Diametric
           schema << defaults.merge({
                                      :"db/ident" => namespace(prefix, attribute),
                                      :"db/valueType" => value_type(value_type),
+                                     :"db/id" => tempid(:"db.part/db")
                                    }).merge(opts)
         end
         enum_schema = [
@@ -370,17 +370,6 @@ module Diametric
         @namespace_prefix || self.to_s.underscore.gsub('/', '.')
       end
 
-      # Create a temporary id placeholder.
-      #
-      # @param e [*#to_edn] Elements to put in the placeholder. Should
-      #   be either partition or partition and a negative number to be
-      #   used as a reference.
-      #
-      # @return [EDN::Type::Unknown] Temporary id placeholder.
-      def tempid(*e)
-        EDN.tagged_element('db/id', e)
-      end
-
       # Namespace a attribute for Datomic.
       #
       # @param ns [#to_s] Namespace.
@@ -490,12 +479,8 @@ module Diametric
       end
 
       if entity_tx.present?
-        if self.class.instance_variable_get("@peer")
-          @dbid ||= tempid
-          txes << entity_tx.merge({":db/id" => dbid})
-        else
-          txes << entity_tx.merge({:"db/id" => dbid || tempid})
-        end
+        @dbid ||= tempid
+        txes << entity_tx.merge({:"db/id" => dbid})
       end
       txes
     end
