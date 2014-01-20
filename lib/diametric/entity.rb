@@ -51,7 +51,7 @@ module Diametric
       :cardinality => :one
     }
 
-    @temp_ref = -1000
+    @temp_ref = -1000000
 
     def self.included(base)
       base.send(:extend, ClassMethods)

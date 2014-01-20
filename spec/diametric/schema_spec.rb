@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Diametric::Entity, :integration do
+describe Diametric::Entity, :integration => true, :jruby => true do
   context Rat do # Peer
     let(:expected) {
       [{:"db/id"=>"#db/id [:db.part/db]",
