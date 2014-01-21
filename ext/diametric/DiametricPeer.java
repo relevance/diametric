@@ -245,13 +245,19 @@ public class DiametricPeer extends RubyModule {
         if (args.length < 2) {
             throw runtime.newArgumentError("Wrong number of arguments");
         }
-        if (!(args[0] instanceof RubyString)) {
-            throw runtime.newArgumentError("The first arg should be a query string");
+        Object query = null;
+        if (args[0] instanceof RubyArray) {
+            query = DiametricUtils.fromRubyArray(context, (RubyArray)args[0]);
+        } else if (args[0] instanceof RubyString) {
+            query = DiametricUtils.rubyStringToJava(args[0]);
         }
+        if (query == null) {
+            throw runtime.newArgumentError("The first arg should be a query string or array");
+        }
+        System.out.println("query: " + query.toString());
         if (!(args[1] instanceof DiametricDatabase)) {
             throw runtime.newArgumentError("The second arg should be a database.");
         }
-        String query = (String)args[0].toJava(String.class);
         Object database = ((DiametricDatabase)args[1]).toJava();
 
         Collection<List<Object>> results = null;

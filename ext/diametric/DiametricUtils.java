@@ -72,6 +72,24 @@ public class DiametricUtils {
         }
     }
 
+    @JRubyMethod(meta=true)
+    public static IRubyObject read_string(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
+        if (!(arg instanceof RubyString)) {
+            throw context.getRuntime().newArgumentError("Argument should be string");
+        }
+        RubyString ruby_string = (RubyString)arg;
+        try {
+            Var reader = DiametricService.getFn("clojure.core", "read-string");
+            Object value = reader.invoke((String)ruby_string.asJavaString());
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
+            DiametricObject diametric_object = (DiametricObject)clazz.allocate();
+            diametric_object.update(value);
+            return diametric_object;
+        } catch (Exception e) {
+            throw context.getRuntime().newRuntimeError(e.getMessage());
+        }
+    }
+
     static String rubyStringToJava(IRubyObject arg) {
         if (arg instanceof RubyString) {
             // TODO probably, we need to specify encoding.
@@ -110,10 +128,14 @@ public class DiametricUtils {
             return (Object)Keyword.intern((String)edn_string.asJavaString());
         }
         if (value.respondsTo("to_edn")) {
-            // schema value, for example, EDN::Type::Unknown
-            RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_edn");
-            Var reader = DiametricService.getFn("clojure.core", "read-string");
-            return reader.invoke((String)edn_string.asJavaString());
+            if (value.respondsTo("symbol")) {  // EDN::Type::Symbol (query)
+                RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_edn");
+                return (Object)clojure.lang.Symbol.intern((String)edn_string.asJavaString());
+            } else { // EDN::Type::Unknown (dbid)
+                RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_edn");
+                Var reader = DiametricService.getFn("clojure.core", "read-string");
+                return reader.invoke((String)edn_string.asJavaString());
+            }
         }
         if (value.respondsTo("to_time")) {
             // DateTime or Date
@@ -205,7 +227,7 @@ public class DiametricUtils {
         return null;
     }
 
-    private static PersistentVector fromRubyArray(ThreadContext context, RubyArray ruby_array) {
+    static PersistentVector fromRubyArray(ThreadContext context, RubyArray ruby_array) {
         Var var = DiametricService.getFn("clojure.core", "vector");
         PersistentVector clj_tx_data = (PersistentVector)var.invoke();
         Var adder = DiametricService.getFn("clojure.core", "conj");

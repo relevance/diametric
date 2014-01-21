@@ -15,7 +15,7 @@ module Diametric
   class Query
     include Enumerable
 
-    attr_reader :conditions, :filters, :filter_attrs, :model, :connection, :resolve
+    attr_reader :conditions, :filters, :filter_attrs, :filter_values, :model, :connection, :resolve
 
     # Create a new Datomic query.
     #
@@ -26,6 +26,7 @@ module Diametric
       @conditions = {}
       @filters = []
       @filter_attrs = []
+      @filter_values = []
       @conn_or_db = connection_or_database
       @resolve = resolve
     end
@@ -72,7 +73,7 @@ module Diametric
     #   that will be converted into a Datalog query.
     # @return [Query]
     def filter(*filter)
-      return peer_filter(filter) if self.model.instance_variable_get("@peer")
+      return peer_filter(*filter) if self.model.instance_variable_get("@peer")
       query = self.dup
 
       if filter.first.is_a?(EDN::Type::List)
@@ -87,16 +88,19 @@ module Diametric
 
     def peer_filter(*filter)
       query = self.dup
-      if filter.first.is_a?(Array)
-        filter = filter.first
+      query.filter_attrs += (self.model.attribute_names & filter)
+      filter = filter.map do |e|
+        if e.is_a? Symbol
+          convert_filter_element(e)
+        elsif e.is_a? String
+          e
+        else
+          query.filter_values << e
+          ~"?#{query.filter_attrs.last.to_s}value"
+        end
       end
-      filter_attrs << filter[1].to_s
-      query_filter = []
-      query_filter << filter[0].to_s
-      query_filter << "?#{filter[1].to_s}"
-      query_filter << filter[2..-1]
-      query_filter = query_filter.flatten
-      query.filters += [query_filter]
+      filter = EDN::Type::List.new(*filter)
+      query.filters << [Diametric::Persistence::Utils.read_string(filter.to_edn)]
       query
     end
 
@@ -177,31 +181,26 @@ module Diametric
  [(= ?ns ?include-ns)]]
 EOQ
       else
-        unless conditions.empty?
-          clauses = conditions.keys.inject("") do |memo, attribute|
-            memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
-          end
-          from = conditions.inject("") {|memo, kv| memo + "?#{kv.shift} "}
-          args = conditions.map { |_, v| v }
+        from = conditions.map { |k, _| ~"?#{k}" }
+        if filter_attrs.empty?
+          keys = conditions.keys
+        else
+          keys = (conditions.keys + filter_attrs).uniq
+          from = keys.inject(from) { |memo, key| memo << ~"?#{key}value"; memo }
         end
+        clauses = keys.map { |attribute|
+          [~"?e", model.namespace(model.prefix, attribute), ~"?#{attribute}"]
+        }
+        clauses += filters
 
-        unless filter_attrs.empty?
-          clauses ||= ""
-          clauses = filter_attrs.inject(clauses) do |memo, attribute|
-            memo + "[?e " + model.namespace(model.prefix, attribute) + " ?#{attribute} ] "
-          end
-          from ||= ""
-          from = filter_attrs.inject(from) {|from, attr| from + "?#{attr}_value "}
-          filter_query =
-            "[" +
-            filters.inject("") {|memo, filter| memo + "(#{filter[0]} #{filter[1]} #{filter[1]}_value) "} +
-            "]"
-          args ||= []
-          args = filters.inject(args) {|args, filter| args + filter[2..-1]}
-        end
-        query = "[:find ?e :in $ [#{from}] :where #{clauses} #{filter_query}]"
+        args = conditions.map { |_, v| v }
+        args += filter_values
+        query = [
+                 :find, ~"?e",
+                 :in, ~"\$", from,
+                 :where, *clauses
+                ]
       end
-
       [query, args]
     end
 
@@ -213,6 +212,14 @@ EOQ
 
     def filters=(filters)
       @filters = filters
+    end
+
+    def filter_attrs=(filter_attrs)
+      @filter_attrs = filter_attrs
+    end
+
+    def filter_values=(filter_values)
+      @filter_values = filter_values
     end
 
     def convert_filter_element(element)
