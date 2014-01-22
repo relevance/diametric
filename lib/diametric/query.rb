@@ -1,4 +1,5 @@
 require 'diametric'
+require 'edn'
 
 module Diametric
   # +Query+ objects are used to generate Datomic queries, whether to

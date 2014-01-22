@@ -117,7 +117,7 @@ module Diametric
         self.dbid = self.dbid.to_i if self.dbid.class == String
 
         res = self.class.transact(tx_data)
-        if dbid.nil?
+        if dbid.nil? || dbid.is_a?(EDN::Type::Unknown)
           self.dbid = res.data[:tempids].values.first
         end
 
