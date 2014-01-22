@@ -347,7 +347,7 @@ module Diametric
           end
           memo
         end
-        names.collect(&:capitalize).join("::")
+        names.collect(&:camelize).join("::")
       end
 
       def find(id)
