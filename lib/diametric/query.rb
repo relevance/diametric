@@ -182,13 +182,22 @@ module Diametric
  [(= ?ns ?include-ns)]]
 EOQ
       else
-        from = conditions.map { |k, _| ~"?#{k}" }
+        from = conditions.map do |k, v|
+          if v.kind_of? Array
+            [~"?#{k}",
+             Diametric::Persistence::Utils.read_string("...")]
+          else
+            ~"?#{k}"
+          end
+        end
+
         if filter_attrs.empty?
           keys = conditions.keys
         else
           keys = (conditions.keys + filter_attrs).uniq
           from = keys.inject(from) { |memo, key| memo << ~"?#{key}value"; memo }
         end
+
         clauses = keys.map { |attribute|
           [~"?e", model.namespace(model.prefix, attribute), ~"?#{attribute}"]
         }
@@ -196,9 +205,10 @@ EOQ
 
         args = conditions.map { |_, v| v }
         args += filter_values
+
         query = [
                  :find, ~"?e",
-                 :in, ~"\$", from,
+                 :in, ~"\$", from.flatten(1),
                  :where, *clauses
                 ]
       end

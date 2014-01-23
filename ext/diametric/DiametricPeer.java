@@ -25,6 +25,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 import clojure.lang.Keyword;
 import clojure.lang.PersistentHashSet;
+import clojure.lang.PersistentVector;
 import datomic.Connection;
 import datomic.Peer;
 
@@ -269,11 +270,10 @@ public class DiametricPeer extends RubyModule {
                 if (ruby_inputs.getLength() == 0) {
                     results = Peer.q(query, database);
                 } else {
-                    Object[] inputs = new Object[ruby_inputs.getLength()];
-                    for (int i=0; i<inputs.length; i++) {
-                        inputs[i] = DiametricUtils.convertRubyToJava(context, ruby_inputs.shift(context));
-                    }
-                    results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database, inputs);
+                    PersistentVector clj_args = DiametricUtils.fromRubyArray(context, (RubyArray)ruby_inputs);
+                    System.out.println("query: " + query.toString());
+                    System.out.println("query args: " + clj_args.toString());
+                    results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database, clj_args);
                 }
             } else {
                 Object[] inputs = new Object[args.length-2];

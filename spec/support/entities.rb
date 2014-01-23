@@ -79,7 +79,7 @@ class ScarletMacaw
   attribute :name, String
   attribute :description, String, :fulltext => true
   attribute :talkative, Boolean
-  attribute :height, Integer
+  attribute :colors, Integer
   attribute :average_speed, Float
   attribute :observed, DateTime
   attribute :case_no, UUID, :index => true
@@ -93,11 +93,12 @@ class Peacock
   attribute :name, String
   attribute :description, String, :fulltext => true
   attribute :talkative, Boolean
-  attribute :height, Integer
+  attribute :colors, Integer
   attribute :average_speed, Float
   attribute :observed, DateTime
-  attribute :case_no, UUID, :index => true
-  attribute :serial, UUID, :unique => :value
+  # REST failes to save UUID
+  #attribute :case_no, UUID, :index => true
+  #attribute :serial, UUID, :unique => :value
 end
 
 class MyWords

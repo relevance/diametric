@@ -181,7 +181,7 @@ module Diametric
           else
             db = conn_or_db
           end
-          Diametric::Persistence::Peer.q(query, db, args)
+          Diametric::Persistence::Peer.q(query, db, args.flatten(1))
         end
       end
     end

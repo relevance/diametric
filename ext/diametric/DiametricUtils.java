@@ -103,11 +103,7 @@ public class DiametricUtils {
         if (value instanceof RubyNil) return null;
         if (value instanceof RubyString) {
             String str = (String)((RubyString)value).toJava(String.class);
-            try {
-                return (Object)UUID.fromString(str);
-            } catch (IllegalArgumentException e) {
-                return (Object)str;
-            }
+            return getStringOrUUID(str);
         }
         if (value instanceof RubyBoolean) return (Object)((RubyBoolean)value).toJava(Boolean.class);
         if (value instanceof RubyFixnum) return (Object)((RubyFixnum)value).toJava(Long.class);
@@ -127,15 +123,10 @@ public class DiametricUtils {
             RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_s");
             return (Object)Keyword.intern((String)edn_string.asJavaString());
         }
-        if (value.respondsTo("to_edn")) {
-            if (value.respondsTo("symbol")) {  // EDN::Type::Symbol (query)
-                RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_edn");
-                return (Object)clojure.lang.Symbol.intern((String)edn_string.asJavaString());
-            } else { // EDN::Type::Unknown (dbid)
-                RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_edn");
-                Var reader = DiametricService.getFn("clojure.core", "read-string");
-                return reader.invoke((String)edn_string.asJavaString());
-            }
+        if (value.respondsTo("to_edn") && value.respondsTo("symbol")) {
+            // EDN::Type::Symbol (query)
+            RubyString edn_string = (RubyString)RuntimeHelpers.invoke(context, value, "to_edn");
+            return (Object)clojure.lang.Symbol.intern((String)edn_string.asJavaString());
         }
         if (value.respondsTo("to_time")) {
             // DateTime or Date
@@ -148,13 +139,21 @@ public class DiametricUtils {
         }
         //System.out.println("NOT YET CONVERTED");
         //System.out.println("RESPONDSTO? TO_A:" + value.respondsTo("to_a"));
-        if (value.respondsTo("to_a")) { // might be Set for cardinality many type
-            return getList(context, value);
-        }
+        //if (value.respondsTo("to_a")) { // might be Set for cardinality many type
+        //    return getList(context, value);
+        //}
         if (value instanceof DiametricObject) {
             return ((DiametricObject)value).toJava();
         }
         return (Object)value.toJava(Object.class);
+    }
+
+    static Object getStringOrUUID(String str) {
+        try {
+            return (Object)UUID.fromString(str);
+        } catch (IllegalArgumentException e) {
+            return (Object)str;
+        }
     }
 
     static IPersistentSet getPersistentSet(ThreadContext context, IRubyObject value) {
@@ -232,16 +231,20 @@ public class DiametricUtils {
         PersistentVector clj_tx_data = (PersistentVector)var.invoke();
         Var adder = DiametricService.getFn("clojure.core", "conj");
         for (int i=0; i<ruby_array.getLength(); i++) {
-            IRubyObject element = (IRubyObject) ruby_array.get(i);
+            Object element = ruby_array.get(i);
             if (element instanceof RubyHash) {
                 APersistentMap map = fromRubyHash(context, (RubyHash)element);
                 clj_tx_data = (PersistentVector)adder.invoke(clj_tx_data, map);
             } else if (element instanceof RubyArray) {
                 PersistentVector vector = fromRubyArray(context, (RubyArray)element);
-                clj_tx_data =  (PersistentVector)adder.invoke(clj_tx_data, vector);
-            } else {
+                clj_tx_data = (PersistentVector)adder.invoke(clj_tx_data, vector);
+            } else if (element instanceof IRubyObject) {
                 clj_tx_data =
-                        (PersistentVector)adder.invoke(clj_tx_data, DiametricUtils.convertRubyToJava(context, element));
+                        (PersistentVector)adder.invoke(clj_tx_data, DiametricUtils.convertRubyToJava(context, (IRubyObject)element));
+            } else if (element instanceof String) {
+                clj_tx_data = (PersistentVector)adder.invoke(clj_tx_data, getStringOrUUID((String)element));
+            } else {
+                clj_tx_data = (PersistentVector)adder.invoke(clj_tx_data, element);
             }
         }
         return clj_tx_data;
