@@ -3,17 +3,23 @@ require 'diametric/persistence/common'
 module Diametric
   module Persistence
     module Peer
-
       def save(connection=nil)
         return false unless valid?
         return true unless changed?
         connection ||= Diametric::Persistence::Peer.connect
 
-        parsed_data = []
-        parse_tx_data(tx_data, parsed_data)
+        #parsed_data = []
+        #parse_tx_data(tx_data, parsed_data)
 
-        map = connection.transact(parsed_data).get
-
+        #map = connection.transact(parsed_data).get
+        map = connection.transact(tx_data).get
+=begin
+    resolve_fn = Java::ClojureLang::RT.var("datomic.api", "resolve-tempid")
+    tempids_key = Java::ClojureLang::Keyword.intern("tempids")
+    ids = map.to_java.get(tempids_key)
+    db  = connection.db.to_java
+    resolve_fn.invoke(db, ids, self.dbid.to_java)
+=end
         resolve_changes([self], map)
 
         map

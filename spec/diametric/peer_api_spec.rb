@@ -15,9 +15,9 @@ if is_jruby?
       end
 
       it 'should get tempid' do
-        subject.tempid(":db.part/db").to_s.should match(/#db\/id\[:db.part\/db\s-\d+\]/)
-        subject.tempid(":db.part/user").to_s.should match(/#db\/id\[:db.part\/user\s-\d+\]/)
-        subject.tempid(":db.part/user", -1).to_s.should match(/#db\/id\[:db.part\/user\s-1\]/)
+        subject.tempid(:"db.part/db").to_s.should match(/#db\/id\[:db.part\/db\s-\d+\]/)
+        subject.tempid(:"db.part/user").to_s.should match(/#db\/id\[:db.part\/user\s-\d+\]/)
+        subject.tempid(:"db.part/user", -1).to_s.should match(/#db\/id\[:db.part\/user\s-1\]/)
       end
 
       it "should return uuid from squuid" do
@@ -34,21 +34,21 @@ if is_jruby?
     context Diametric::Persistence::Connection do
       @db_name = "test-#{SecureRandom.uuid}"
       let(:connection) { Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}") }
-      let(:tempid) { Diametric::Persistence::Peer.tempid(":db.part/db") }
+      let(:tempid) { Diametric::Persistence::Peer.tempid(:"db.part/db") }
       let(:tx_data) {
         [{
-           ":db/id" => tempid,
-           ":db/ident" => ":person/name",
-           ":db/valueType" => ":db.type/string",
-           ":db/cardinality" => ":db.cardinality/one",
-           ":db/doc" => "A person's name",
-           ":db.install/_attribute" => ":db.part/db"
+           :"db/id" => tempid,
+           :"db/ident" => :"person/name",
+           :"db/valueType" => :"db.type/string",
+           :"db/cardinality" => :"db.cardinality/one",
+           :"db/doc" => "A person's name",
+           :"db.install/_attribute" => :"db.part/db"
          }]
       }
       let(:user_data) {
-        [{":db/id" => user_part_tempid, ":person/name" => "Alice"},
-         {":db/id" => user_part_tempid, ":person/name" => "Bob"},
-         {":db/id" => user_part_tempid, ":person/name" => "Chris"}]
+        [{:"db/id" => user_part_tempid, :"person/name" => "Alice"},
+         {:"db/id" => user_part_tempid, :"person/name" => "Bob"},
+         {:"db/id" => user_part_tempid, :"person/name" => "Chris"}]
       }
 
       it 'should transact schema' do
@@ -79,17 +79,17 @@ if is_jruby?
       before do
         tx_data =
           [{
-             ":db/id" => Diametric::Persistence::Peer.tempid(":db.part/db"),
-             ":db/ident" => ":person/name",
-             ":db/valueType" => ":db.type/string",
-             ":db/cardinality" => ":db.cardinality/one",
-             ":db/doc" => "A person's name",
-             ":db.install/_attribute" => ":db.part/db"
+             :"db/id" => Diametric::Persistence::Peer.tempid(:"db.part/db"),
+             :"db/ident" => :"person/name",
+             :"db/valueType" => :"db.type/string",
+             :"db/cardinality" => :"db.cardinality/one",
+             :"db/doc" => "A person's name",
+             :"db.install/_attribute" => :"db.part/db"
            }]
         user_data = 
-          [{":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Alice"},
-           {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Bob"},
-           {":db/id" => Diametric::Persistence::Peer.tempid(":db.part/user"), ":person/name" => "Chris"}]
+          [{:"db/id" => Diametric::Persistence::Peer.tempid(:"db.part/user"), :"person/name" => "Alice"},
+           {:"db/id" => Diametric::Persistence::Peer.tempid(:"db.part/user"), :"person/name" => "Bob"},
+           {:"db/id" => Diametric::Persistence::Peer.tempid(:"db.part/user"), :"person/name" => "Chris"}]
         @db_name = "test-#{SecureRandom.uuid}"
         @connection = Diametric::Persistence::Peer.connect("datomic:mem://#{@db_name}")
 
@@ -560,5 +560,5 @@ if is_jruby?
 end
 
 def user_part_tempid
-  Diametric::Persistence::Peer.tempid(":db.part/user")
+  Diametric::Persistence::Peer.tempid(:"db.part/user")
 end

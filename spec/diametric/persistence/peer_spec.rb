@@ -50,4 +50,22 @@ describe Diametric::Persistence::Peer, :integration => true, :jruby => true do
       let(:model_class) { MyWords }
     end
   end
+=begin
+  context Cage do
+    before do
+      datomic_uri = "datomic:mem://cage-#{SecureRandom.uuid}"
+      @conn = Diametric::Persistence::Peer.connect(datomic_uri)
+      Cage.create_schema(@conn).get
+    end
+
+    after do
+      @conn.release
+    end
+
+    it_behaves_like "supports has_one relation" do
+      let(:parent_class) { Cage }
+      let(:child_class) { Rat }
+    end
+  end
+=end
 end

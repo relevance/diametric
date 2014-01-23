@@ -73,4 +73,28 @@ describe Diametric::Persistence::REST, :integration do
       end
     end
   end
+=begin
+  context "simple queries for has a relation" do
+    before do
+      @db_uri = ENV['DATOMIC_URI'] || 'http://localhost:46291'
+      @storage = ENV['DATOMIC_STORAGE'] || 'free'
+      @dbname = ENV['DATOMIC_NAME'] || "box-#{SecureRandom.uuid}"
+      @connection_options = {
+        :uri => @db_uri,
+        :storage => @storage,
+        :database => @dbname
+      }
+    end
+
+    it_behaves_like "supports has_one relation" do
+      let(:parent_class) { Box }
+      let(:child_class) { Mouse }
+
+      before do
+        Diametric::Persistence::REST.connect(@connection_options)
+        Diametric::Persistence::REST.create_schemas
+      end
+    end
+  end
+=end
 end

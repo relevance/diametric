@@ -43,13 +43,6 @@ module Diametric
           @database || Diametric::Persistence::REST.database
         end
 
-        # Create a temporary id placeholder.
-        #
-        # @param e [*#to_edn] Elements to put in the placeholder. Should
-        #   be either partition or partition and a negative number to be
-        #   used as a reference.
-        #
-        # @return [EDN::Type::Unknown] Temporary id placeholder.
         def tempid(*e)
           EDN.tagged_element('db/id', e)
         end

@@ -58,6 +58,7 @@ public class DiametricConnection extends RubyObject {
         }
 
         try {
+            //System.out.println("tx_data: " + tx_data.toString() + " class: " + tx_data.getClass().getCanonicalName());
             Object future = clojure.lang.RT.var("datomic.api", "transact").invoke(conn, tx_data);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
             DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();

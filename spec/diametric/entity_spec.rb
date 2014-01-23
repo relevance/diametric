@@ -218,34 +218,18 @@ describe Diametric::Entity do
     subject { Choice }
 
     it "should generate a schema" do
-      expected = []
-      if is_jruby?
-        expected = [
-                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
-                      ":db/ident" => ":choice/item",
-                      ":db/valueType" => ":db.type/string",
-                      ":db/cardinality" => ":db.cardinality/one",
-                      ":db.install/_attribute" => ":db.part/db" },
-                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
-                      ":db/ident" => ":choice/checked",
-                      ":db/valueType" => ":db.type/boolean",
-                      ":db/cardinality" => ":db.cardinality/one",
-                      ":db.install/_attribute" => ":db.part/db" }
-                   ]
-      else
-        expected = [
-                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
-                      :"db/ident" => :"choice/item",
-                      :"db/valueType" => :"db.type/string",
-                      :"db/cardinality" => :"db.cardinality/one",
-                      :"db.install/_attribute" => :"db.part/db" },
-                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
-                      :"db/ident" => :"choice/checked",
-                      :"db/valueType" => :"db.type/boolean",
-                      :"db/cardinality" => :"db.cardinality/one",
-                      :"db.install/_attribute" => :"db.part/db" }
-                   ]
-      end
+      expected = [
+                  { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                    :"db/ident" => :"choice/item",
+                    :"db/valueType" => :"db.type/string",
+                    :"db/cardinality" => :"db.cardinality/one",
+                    :"db.install/_attribute" => :"db.part/db" },
+                  { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                    :"db/ident" => :"choice/checked",
+                    :"db/valueType" => :"db.type/boolean",
+                    :"db/cardinality" => :"db.cardinality/one",
+                    :"db.install/_attribute" => :"db.part/db" }
+                 ]
       @created_schema = subject.schema
       expected.each do |e|
         @created_schema.shift.should be_an_equivalent_hash(e)
@@ -257,34 +241,18 @@ describe Diametric::Entity do
     subject { Customer }
 
     it "should generate a schema" do
-      expected = []
-      if is_jruby?
-        expected = [
-                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
-                      ":db/ident" => ":customer/name",
-                      ":db/valueType" => ":db.type/string",
-                      ":db/cardinality" => ":db.cardinality/one",
-                      ":db.install/_attribute" => ":db.part/db" },
-                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
-                      ":db/ident" => ":customer/id",
-                      ":db/valueType" => ":db.type/uuid",
-                      ":db/cardinality" => ":db.cardinality/one",
-                      ":db.install/_attribute" => ":db.part/db" }
-                   ]
-      else
-        expected = [
-                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
-                      :"db/ident" => :"customer/name",
-                      :"db/valueType" => :"db.type/string",
-                      :"db/cardinality" => :"db.cardinality/one",
-                      :"db.install/_attribute" => :"db.part/db" },
-                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
-                      :"db/ident" => :"customer/id",
-                      :"db/valueType" => :"db.type/uuid",
-                      :"db/cardinality" => :"db.cardinality/one",
-                      :"db.install/_attribute" => :"db.part/db" }
-                   ]
-      end
+      expected = [
+                  { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                    :"db/ident" => :"customer/name",
+                    :"db/valueType" => :"db.type/string",
+                    :"db/cardinality" => :"db.cardinality/one",
+                    :"db.install/_attribute" => :"db.part/db" },
+                  { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                    :"db/ident" => :"customer/id",
+                    :"db/valueType" => :"db.type/uuid",
+                    :"db/cardinality" => :"db.cardinality/one",
+                    :"db.install/_attribute" => :"db.part/db" }
+                 ]
       @created_schema = subject.schema
       expected.each do |e|
         @created_schema.shift.should be_an_equivalent_hash(e)
@@ -296,44 +264,23 @@ describe Diametric::Entity do
     subject { Account }
 
     it "should generate a schema" do
-      expected = []
-      if is_jruby?
-        expected = [
-                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
-                      ":db/ident" => ":account/name",
-                      ":db/valueType" => ":db.type/string",
-                      ":db/cardinality" => ":db.cardinality/one",
-                      ":db.install/_attribute" => ":db.part/db" },
-                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
-                      ":db/ident" => ":account/deposit",
-                      ":db/valueType" => ":db.type/double",
-                      ":db/cardinality" => ":db.cardinality/many",
-                      ":db.install/_attribute" => ":db.part/db" },
-                    { ":db/id" => subject.send(:tempid, ":db.part/db"),
-                      ":db/ident" => ":account/amount",
-                      ":db/valueType" => ":db.type/double",
-                      ":db/cardinality" => ":db.cardinality/one",
-                      ":db.install/_attribute" => ":db.part/db" }
-                   ]
-      else
-        expected = [
-                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
-                      :"db/ident" => :"account/name",
-                      :"db/valueType" => :"db.type/string",
-                      :"db/cardinality" => :"db.cardinality/one",
-                      :"db.install/_attribute" => :"db.part/db" },
-                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
-                      :"db/ident" => :"account/deposit",
-                      :"db/valueType" => :"db.type/double",
-                      :"db/cardinality" => :"db.cardinality/many",
-                      :"db.install/_attribute" => :"db.part/db" },
-                    { :"db/id" => subject.send(:tempid, :"db.part/db"),
-                      :"db/ident" => :"account/amount",
-                      :"db/valueType" => :"db.type/double",
-                      :"db/cardinality" => :"db.cardinality/one",
-                      :"db.install/_attribute" => :"db.part/db" }
-                   ]
-      end
+      expected = [
+                  { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                    :"db/ident" => :"account/name",
+                    :"db/valueType" => :"db.type/string",
+                    :"db/cardinality" => :"db.cardinality/one",
+                    :"db.install/_attribute" => :"db.part/db" },
+                  { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                    :"db/ident" => :"account/deposit",
+                    :"db/valueType" => :"db.type/double",
+                    :"db/cardinality" => :"db.cardinality/many",
+                    :"db.install/_attribute" => :"db.part/db" },
+                  { :"db/id" => subject.send(:tempid, :"db.part/db"),
+                    :"db/ident" => :"account/amount",
+                    :"db/valueType" => :"db.type/double",
+                    :"db/cardinality" => :"db.cardinality/one",
+                    :"db.install/_attribute" => :"db.part/db" }
+                 ]
       @created_schema = subject.schema
       expected.each do |e|
         @created_schema.shift.should be_an_equivalent_hash(e)
@@ -416,27 +363,27 @@ describe Diametric::Entity do
 
       it "should create peer schema" do
         expected = [
-        { ":db/id" => subject.send(:tempid, ":db.part/db"),
-          ":db/ident" => ":district/name",
-          ":db/valueType" => ":db.type/string",
-          ":db/cardinality" => ":db.cardinality/one",
-          ":db/unique" => ":db.unique/identity",
-          ":db/doc" => "A unique district name (upsertable)",
-          ":db.install/_attribute" => ":db.part/db" },
-        { ":db/id" => subject.send(:tempid, ":db.part/db"),
-          ":db/ident" => ":district/region",
-          ":db/valueType" => ":db.type/ref",
-          ":db/cardinality" => ":db.cardinality/one",
-          ":db/doc" => "A district region enum value",
-          ":db.install/_attribute" => ":db.part/db" },
-        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/n"],
-        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/ne"],
-        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/e"],
-        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/se"],
-        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/s"],
-        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/sw"],
-        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/w"],
-        [ ":db/add", "#db/id[:db.part/user]", ":db/ident", ":district.region/nw"]
+        { :"db/id" => subject.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"district/name",
+          :"db/valueType" => :"db.type/string",
+          :"db/cardinality" => :"db.cardinality/one",
+          :"db/unique" => :"db.unique/identity",
+          :"db/doc" => "A unique district name (upsertable)",
+          :"db.install/_attribute" => :"db.part/db" },
+        { :"db/id" => subject.send(:tempid, :"db.part/db"),
+          :"db/ident" => :"district/region",
+          :"db/valueType" => :"db.type/ref",
+          :"db/cardinality" => :"db.cardinality/one",
+          :"db/doc" => "A district region enum value",
+          :"db.install/_attribute" => :"db.part/db" },
+        [ :"db/add", "#db/id[:db.part/user]", :"db/ident", :"district.region/n"],
+        [ :"db/add", "#db/id[:db.part/user]", :"db/ident", :"district.region/ne"],
+        [ :"db/add", "#db/id[:db.part/user]", :"db/ident", :"district.region/e"],
+        [ :"db/add", "#db/id[:db.part/user]", :"db/ident", :"district.region/se"],
+        [ :"db/add", "#db/id[:db.part/user]", :"db/ident", :"district.region/s"],
+        [ :"db/add", "#db/id[:db.part/user]", :"db/ident", :"district.region/sw"],
+        [ :"db/add", "#db/id[:db.part/user]", :"db/ident", :"district.region/w"],
+        [ :"db/add", "#db/id[:db.part/user]", :"db/ident", :"district.region/nw"]
       ]
         @created_schema = District.schema
         expected.each do |e|
@@ -449,5 +396,4 @@ describe Diametric::Entity do
       end
     end
   end
-
 end

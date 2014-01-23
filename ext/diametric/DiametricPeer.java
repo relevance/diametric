@@ -255,7 +255,7 @@ public class DiametricPeer extends RubyModule {
         if (query == null) {
             throw runtime.newArgumentError("The first arg should be a query string or array");
         }
-        System.out.println("query: " + query.toString());
+        //System.out.println("query: " + query.toString());
         if (!(args[1] instanceof DiametricDatabase)) {
             throw runtime.newArgumentError("The second arg should be a database.");
         }
@@ -271,8 +271,7 @@ public class DiametricPeer extends RubyModule {
                     results = Peer.q(query, database);
                 } else {
                     PersistentVector clj_args = DiametricUtils.fromRubyArray(context, (RubyArray)ruby_inputs);
-                    System.out.println("query: " + query.toString());
-                    System.out.println("query args: " + clj_args.toString());
+                    //System.out.println("query args: " + clj_args.toString());
                     results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database, clj_args);
                 }
             } else {
