@@ -36,7 +36,7 @@ describe Developer, :jruby => true do
     yoko.save(@conn)
     query = Diametric::Query.new(Developer, @conn, true).where(:name => "Yoko Harada")
     query_data = "[:find ?e :in $ [?name] :where [?e :developer/name ?name]]"
-    query.data.first.gsub(" ", "").should == query_data.gsub(" ", "")
+    query.data.first.to_edn.gsub(" ", "").should == query_data.gsub(" ", "")
     result = query.all
     result.size.should == 1
     result.first.nerd_rate.should == 50
@@ -94,8 +94,8 @@ describe Developer, :jruby => true do
     ryan.save(@conn)
 
     query = Diametric::Query.new(Developer, @conn).filter(:>, :nerd_rate, 70)
-    query_data = "[:find ?e :in $ [?nerd_rate_value] :where [?e :developer/nerd_rate ?nerd_rate] [(> ?nerd_rate ?nerd_rate_value)]]"
-    query.data.first.gsub(" ", "").should == query_data.gsub(" ", "")
+    query_data = "[:find ?e :in $ [?nerd_ratevalue] :where [?e :developer/nerd_rate ?nerd_rate] [(> ?nerd_rate ?nerd_ratevalue)]]"
+    query.data.first.to_edn.gsub(" ", "").should == query_data.gsub(" ", "")
     result = query.all
     result.size.should == 2
   end

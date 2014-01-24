@@ -8,11 +8,11 @@ module Diametric
         return true unless changed?
         connection ||= Diametric::Persistence::Peer.connect
 
-        #parsed_data = []
-        #parse_tx_data(tx_data, parsed_data)
+        parsed_data = []
+        parse_tx_data(tx_data, parsed_data)
 
-        #map = connection.transact(parsed_data).get
-        map = connection.transact(tx_data).get
+        map = connection.transact(parsed_data).get
+        #map = connection.transact(tx_data).get
 =begin
     resolve_fn = Java::ClojureLang::RT.var("datomic.api", "resolve-tempid")
     tempids_key = Java::ClojureLang::Keyword.intern("tempids")

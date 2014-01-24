@@ -191,12 +191,12 @@ EOQ
           end
         end
 
-        if filter_attrs.empty?
-          keys = conditions.keys
-        else
-          keys = (conditions.keys + filter_attrs).uniq
-          from = keys.inject(from) { |memo, key| memo << ~"?#{key}value"; memo }
+        keys = conditions.keys
+        unless filter_attrs.empty?
+          from += filter_attrs.inject([]) { |memo, key| memo << ~"?#{key}value"; memo }
+          keys += filter_attrs
         end
+        keys.uniq!
 
         clauses = keys.map { |attribute|
           [~"?e", model.namespace(model.prefix, attribute), ~"?#{attribute}"]

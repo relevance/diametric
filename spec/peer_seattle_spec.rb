@@ -94,8 +94,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
 
       result = []
       neighborhood.parse_tx_data(neighborhood.tx_data, result)
-      result.first[":neighborhood/district"].to_s.should match(/^\d+/)
-
+      result.first[:"neighborhood/district"].to_s.should match(/^\d+/)
       neighborhood.save(@n_conn2)
       district.tx_data.should be_empty
       neighborhood.tx_data.should be_empty
