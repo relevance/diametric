@@ -286,6 +286,28 @@ module Diametric
       end
 
       def reify(thing, conn_or_db=nil, resolve=false)
+        return peer_reify(thing, conn_or_db, resolve) if self.instance_variable_get("@peer")
+        rest_reify(thing)
+      end
+
+      def rest_reify(dbid)
+        query = [
+          :find, ~"?ident", ~"?v",
+          :in, ~"\$", [~"?e"],
+          :where, [~"?e", ~"?a", ~"?v"], [~"?a", :"db/ident", ~"?ident"]
+        ]
+        entities = self.q(query, [[dbid]])
+        class_name = to_classname(entities.first.first)
+        instance = eval("#{class_name}.new")
+        entities.each do |k, v|
+          matched_data = /([a-zA-Z0-9_\.]+)\/([a-zA-Z0-9_]+)/.match(k.to_s)
+          instance.send("clean_#{matched_data[2]}=", v)
+        end
+        instance.send("dbid=", dbid)
+        instance
+      end
+
+      def peer_reify(thing, conn_or_db=nil, resolve=false)
         conn_or_db ||= Diametric::Persistence::Peer.connect.db
 
         if conn_or_db.respond_to?(:db)
@@ -329,7 +351,11 @@ module Diametric
       def to_classname(key)
         names = []
         # drops the first character ":"
-        key.chars.drop(1).inject("") do |memo, c|
+        key = key.to_s
+        if key[0] == ":"
+          key = key[1..-1]
+        end
+        key.chars.inject("") do |memo, c|
           if c == "/"
             # means the end of class name
             names << memo
@@ -431,7 +457,13 @@ module Diametric
           if cardinality == :many
             value = Set.new(value)
           end
-          instance_variable_set("@#{name}", value)
+          if (self.class.attributes[name][:value_type] == Ref) &&
+              (value.respond_to? :save)
+            saved_status = value.save
+            instance_variable_set("@#{name}", value.dbid)
+          else
+            instance_variable_set("@#{name}", value)
+          end
         end
 
         define_method("clean_#{name}=") do |value|
@@ -485,7 +517,6 @@ module Diametric
       attribute_names.each do |attribute_name|
         cardinality = self.class.attributes[attribute_name.to_sym][:cardinality]
 
-        #if cardinality == :many && self.class.instance_variable_get("@peer").nil?
         if cardinality == :many
           txes += cardinality_many_tx_data(attribute_name)
         else

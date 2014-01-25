@@ -119,14 +119,14 @@ class Cage
   include Diametric::Entity
   include Diametric::Persistence::Peer
 
-  attribute :rat, Ref
+  attribute :pet, Ref
 end
 
 class Box
   include Diametric::Entity
   include Diametric::Persistence::REST
 
-  attribute :mouse, Ref
+  attribute :pet, Ref
 end
 
 class Author

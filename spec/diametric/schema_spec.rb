@@ -297,7 +297,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       [{:"db/id"=>"#db/id [:db.part/db]",
          :"db/cardinality"=>:"db.cardinality/one",
          :"db.install/_attribute"=>:"db.part/db",
-         :"db/ident"=>:"cage/rat",
+         :"db/ident"=>:"cage/pet",
          :"db/valueType"=>:"db.type/ref"}]
     }
 
@@ -319,10 +319,10 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     it "should create schema" do
       expect { Cage.create_schema(@conn).get }.
         not_to raise_exception
-      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ [?value ...] :where [?e :db/ident ?value]]", @conn.db, ":cage/rat").first.first
+      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ [?value ...] :where [?e :db/ident ?value]]", @conn.db, ":cage/pet").first.first
       entity_fn = Java::ClojureLang::RT.var("datomic.api", "entity")
       emap = entity_fn.invoke(@conn.db.to_java, dbid)
-      emap.get(":db/ident").to_s.should == ":cage/rat"
+      emap.get(":db/ident").to_s.should == ":cage/pet"
       emap.get(":db/cardinality").to_s.should == ":db.cardinality/one"
       emap.get(":db/valueType").to_s.should == ":db.type/ref"
     end
@@ -333,7 +333,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
       [{:"db/id"=>"#db/id [:db.part/db]",
          :"db/cardinality"=>:"db.cardinality/one",
          :"db.install/_attribute"=>:"db.part/db",
-         :"db/ident"=>:"box/mouse",
+         :"db/ident"=>:"box/pet",
          :"db/valueType"=>:"db.type/ref"}]
     }
 

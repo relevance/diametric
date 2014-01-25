@@ -73,8 +73,8 @@ describe Diametric::Persistence::REST, :integration do
       end
     end
   end
-=begin
-  context "simple queries for has a relation" do
+
+  context "simple queries for has_one association" do
     before do
       @db_uri = ENV['DATOMIC_URI'] || 'http://localhost:46291'
       @storage = ENV['DATOMIC_STORAGE'] || 'free'
@@ -86,7 +86,7 @@ describe Diametric::Persistence::REST, :integration do
       }
     end
 
-    it_behaves_like "supports has_one relation" do
+    it_behaves_like "supports has_one association" do
       let(:parent_class) { Box }
       let(:child_class) { Mouse }
 
@@ -96,5 +96,4 @@ describe Diametric::Persistence::REST, :integration do
       end
     end
   end
-=end
 end
