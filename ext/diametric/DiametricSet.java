@@ -31,6 +31,13 @@ public class DiametricSet extends RubyObject {
     private Integer count = null;  // unable to count the vector size that exceeds Integer
     private DiametricCommon common = null;
 
+    static IRubyObject getDiametricSet(ThreadContext context, Set value) {
+        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Set");
+        DiametricSet diametric_set = (DiametricSet)clazz.allocate();
+        diametric_set.init(value);
+        return diametric_set;
+    }
+
     public DiametricSet(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
     }
@@ -242,9 +249,9 @@ public class DiametricSet extends RubyObject {
             Var var = DiametricService.getFn("clojure.set", "union");
             if (set instanceof HashSet) {
                 PersistentHashSet value = convertHashSetToPersistentHashSet(set);
-                return DiametricUtils.getDiametricSet(context, (Set)var.invoke(value, other));
+                return DiametricSet.getDiametricSet(context, (Set)var.invoke(value, other));
             } else {
-                return DiametricUtils.getDiametricSet(context, (Set)var.invoke(set, other));
+                return DiametricSet.getDiametricSet(context, (Set)var.invoke(set, other));
             }
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
@@ -259,9 +266,9 @@ public class DiametricSet extends RubyObject {
             Var var = DiametricService.getFn("clojure.set", "difference");
             if (set instanceof HashSet) {
                 PersistentHashSet value = convertHashSetToPersistentHashSet(set);
-                return DiametricUtils.getDiametricSet(context, (Set)var.invoke(value, other));
+                return DiametricSet.getDiametricSet(context, (Set)var.invoke(value, other));
             } else {
-                return DiametricUtils.getDiametricSet(context, (Set)var.invoke(set, other));
+                return DiametricSet.getDiametricSet(context, (Set)var.invoke(set, other));
             }
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());

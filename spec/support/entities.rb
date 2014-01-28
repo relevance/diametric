@@ -129,6 +129,20 @@ class Box
   attribute :pet, Ref
 end
 
+class BigCage
+  include Diametric::Entity
+  include Diametric::Persistence::Peer
+
+  attribute :pets, Ref, :cardinality => :many
+end
+
+class BigBox
+  include Diametric::Entity
+  include Diametric::Persistence::REST
+
+  attribute :pets, Ref, :cardinality => :many
+end
+
 class Author
   include Diametric::Entity
   include Diametric::Persistence::Peer
@@ -150,7 +164,7 @@ class Writer
   include Diametric::Persistence::REST
 
   attribute :name, String
-  attribute :articles, Ref, :cardinality => :many
+  attribute :books, Ref, :cardinality => :many
 end
 
 class Article
@@ -158,7 +172,7 @@ class Article
   include Diametric::Persistence::REST
 
   attribute :title, String
-  attribute :writers, Ref, :cardinality => :many
+  attribute :authors, Ref, :cardinality => :many
 end
 
 class Role

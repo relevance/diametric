@@ -268,13 +268,19 @@ module Diametric
         parent.class.attribute_names.each do |e|
           if parent.class.attributes[e][:value_type] == "ref"
             ref = parent.instance_variable_get("@#{e.to_s}")
-            if ref.is_a?(Fixnum) || ref.is_a?(Java::DatomicQuery::EntityMap)
+            if ref.is_a?(Fixnum) || ref.is_a?(Diametric::Persistence::Entity)
               child = reify(ref, connection)
               child = resolve_ref_dbid(child, connection)
               parent.instance_variable_set("@#{e.to_s}", child)
+            elsif ref.is_a?(Diametric::Associations::Collection)
+              children = Diametric::Associations::Collection.new(parent, e.to_s)
+              ref.each do |entity|
+                children.add_reified_entities(reify(entity, connection))
+              end
+              parent.instance_variable_set("@#{e.to_s}", children)
             elsif ref.is_a?(Set)
               children = ref.inject(Set.new) do |memo, entity|
-               child = reify(entity, connection)
+                child = reify(entity, connection)
                 memo.add(child)
                 memo
               end
@@ -287,10 +293,10 @@ module Diametric
 
       def reify(thing, conn_or_db=nil, resolve=false)
         return peer_reify(thing, conn_or_db, resolve) if self.instance_variable_get("@peer")
-        rest_reify(thing)
+        rest_reify(thing, resolve)
       end
 
-      def rest_reify(dbid)
+      def rest_reify(dbid, resolve)
         query = [
           :find, ~"?ident", ~"?v",
           :in, ~"\$", [~"?e"],
@@ -304,6 +310,11 @@ module Diametric
           instance.send("clean_#{matched_data[2]}=", v)
         end
         instance.send("dbid=", dbid)
+
+        if resolve
+          instance = resolve_ref_dbid(instance, nil)
+        end
+
         instance
       end
 
@@ -449,15 +460,22 @@ module Diametric
         define_attribute_method name
 
         define_method(name) do
-          instance_variable_get("@#{name}")
+          ivar = instance_variable_get("@#{name}")
+          if ivar.nil? &&
+              self.class.attributes[name][:value_type] == Ref &&
+              self.class.attributes[name][:cardinality] == :many
+            ivar = Diametric::Associations::Collection.new(self, name)
+          end
+          ivar
         end
 
         define_method("#{name}=") do |value|
           send("#{name}_will_change!") unless value == instance_variable_get("@#{name}")
-          if cardinality == :many
+          if self.class.attributes[name][:value_type] != Ref && cardinality == :many
             value = Set.new(value)
           end
-          if (self.class.attributes[name][:value_type] == Ref) &&
+          if self.class.attributes[name][:value_type] == Ref &&
+              cardinality == :one &&
               (value.respond_to? :save)
             saved_status = value.save
             instance_variable_set("@#{name}", value.dbid)
@@ -467,8 +485,22 @@ module Diametric
         end
 
         define_method("clean_#{name}=") do |value|
-          if cardinality == :many
-            value = Set.new(value)
+          if self.class.attributes[name][:value_type] != Ref && cardinality == :many
+            if value.is_a? Enumerable
+              value = Set.new(value)
+            else
+              # used from rest reify
+              ivar = instance_variable_get("@#{name}")
+              ivar ||= Set.new
+              value = ivar.add(value)
+            end
+          end
+          if self.class.attributes[name][:value_type] == Ref && cardinality == :many
+            if value.is_a? Enumerable
+              value = Diametric::Associations::Collection.new(self, name, value)
+            else
+              value = Diametric::Associations::Collection.new(self, name, [value])
+            end
           end
           instance_variable_set("@#{name}", value)
         end
@@ -532,7 +564,9 @@ module Diametric
     end
 
     def cardinality_many_tx_data(attribute_name)
-      prev = Array(self.changed_attributes[attribute_name]).to_set
+      changed = self.changed_attributes[attribute_name]
+      prev =
+        changed.is_a?(Diametric::Associations::Collection) ? changed : Array(changed).to_set
       curr = self.send(attribute_name)
 
       protractions = curr - prev
@@ -540,23 +574,20 @@ module Diametric
 
       namespaced_attribute = self.class.namespace(self.class.prefix, attribute_name)
       txes = []
-      if self.class.instance_variable_get("@peer")
-        @dbid ||= tempid
-        txes_data(txes, ":db/retract", namespaced_attribute, retractions) unless retractions.empty?
-        txes_data(txes, ":db/add", namespaced_attribute, protractions) unless protractions.empty?
-      else
-        txes << [:"db/retract", (dbid || tempid), namespaced_attribute, retractions.to_a] unless retractions.empty?
-        txes << [:"db/add", (dbid || tempid) , namespaced_attribute, protractions.to_a] unless protractions.empty?
-      end
+      @dbid ||= tempid
+      txes << [:"db/retract", dbid, namespaced_attribute, retractions.to_a] unless retractions.empty?
+      txes << [:"db/add", dbid , namespaced_attribute, protractions.to_a] unless protractions.empty?
       txes
     end
 
+=begin
     def txes_data(txes, op, namespaced_attribute, set)
       set.to_a.each do |s|
         value = s.respond_to?(:dbid) ? s.dbid : s
         txes << [op, @dbid, namespaced_attribute, value]
       end
     end
+=end
 
     # Returns hash of all attributes for this object
     #

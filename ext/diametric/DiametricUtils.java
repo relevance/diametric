@@ -180,34 +180,20 @@ public class DiametricUtils {
         if (value instanceof Double) return RubyFloat.newFloat(runtime, (Double)value);
         if (value instanceof Date) return RubyTime.newTime(runtime, ((Date)value).getTime());
         if (value instanceof Set) {
-            return getDiametricSet(context, (Set)value);
+            return DiametricSet.getDiametricSet(context, (Set)value);
         }
         if ((value instanceof APersistentVector) ||
                 (value instanceof LazySeq) ||
                 (value instanceof PersistentVector.ChunkedSeq)){
-            return getDiametricCollection(context, (List)value);
+            return DiametricCollection.getDiametricCollection(context, (List)value);
+        }
+        if (value instanceof datomic.Entity) {
+            return DiametricEntity.getDiametricEntity(context, value);
         }
         if (value instanceof java.util.UUID) {
-            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::UUID");
-            DiametricUUID diametric_uuid = (DiametricUUID)clazz.allocate();
-            diametric_uuid.init((java.util.UUID)value);
-            return diametric_uuid;
+            return DiametricUUID.getDiametricUUID(context, (java.util.UUID)value);
         }
         return JavaUtil.convertJavaToUsableRubyObject(runtime, value);
-    }
-
-    static IRubyObject getDiametricSet(ThreadContext context, Set value) {
-        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Set");
-        DiametricSet diametric_set = (DiametricSet)clazz.allocate();
-        diametric_set.init(value);
-        return diametric_set;
-    }
-
-    static IRubyObject getDiametricCollection(ThreadContext context, List value) {
-        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
-        DiametricCollection diametric_collection = (DiametricCollection)clazz.allocate();
-        diametric_collection.init((List)value);
-        return diametric_collection;
     }
 
     static PersistentVector convertRubyTxDataToJava(ThreadContext context, IRubyObject arg) {

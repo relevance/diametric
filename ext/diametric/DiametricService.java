@@ -36,9 +36,11 @@ public class DiametricService implements BasicLibraryService {
 
         RubyClass diametric_collection = persistence.defineClassUnder("Collection", runtime.getObject(), COLLECTION_ALLOCATOR);
         diametric_collection.defineAnnotatedMethods(DiametricCollection.class);
+        diametric_collection.includeModule(runtime.getEnumerable());
 
         RubyClass diametric_set = persistence.defineClassUnder("Set", runtime.getObject(), SET_ALLOCATOR);
         diametric_set.defineAnnotatedMethods(DiametricSet.class);
+        diametric_set.includeModule(runtime.getEnumerable());
 
         RubyClass diametric_listenable = persistence.defineClassUnder("ListenableFuture", runtime.getObject(), LISTENABLE_ALLOCATOR);
         diametric_listenable.defineAnnotatedMethods(DiametricListenableFuture.class);

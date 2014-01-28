@@ -291,7 +291,6 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     end
   end
 
-
   context Cage do # Peer
     let(:expected) {
       [{:"db/id"=>"#db/id [:db.part/db]",
@@ -412,7 +411,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
        {:"db/id"=>"#db/id [:db.part/db]",
          :"db/cardinality"=>:"db.cardinality/many",
          :"db.install/_attribute"=>:"db.part/db",
-         :"db/ident"=>:"writer/articles",
+         :"db/ident"=>:"writer/books",
          :"db/valueType"=>:"db.type/ref"}]
     }
 

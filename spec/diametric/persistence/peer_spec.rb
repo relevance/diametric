@@ -68,4 +68,22 @@ describe Diametric::Persistence::Peer, :integration => true, :jruby => true do
       let(:child_class) { Rat }
     end
   end
+
+  context BigCage do
+    before do
+      datomic_uri = "datomic:mem://big-cage-#{SecureRandom.uuid}"
+      @conn = Diametric::Persistence::Peer.connect(datomic_uri)
+      BigCage.create_schema(@conn).get
+      Rat.create_schema(@conn).get
+    end
+
+    after do
+      @conn.release
+    end
+
+    it_behaves_like "supports has_many association" do
+      let(:parent_class) { BigCage }
+      let(:child_class) { Rat }
+    end
+  end
 end

@@ -32,6 +32,13 @@ public class DiametricCollection extends RubyObject {
     private Integer count = null;  // unable to count the vector size that exceeds Integer
     private DiametricCommon common = null;
 
+    static IRubyObject getDiametricCollection(ThreadContext context, List value) {
+        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Collection");
+        DiametricCollection diametric_collection = (DiametricCollection)clazz.allocate();
+        diametric_collection.init((List)value);
+        return diametric_collection;
+    }
+
     public DiametricCollection(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
     }
@@ -56,7 +63,7 @@ public class DiametricCollection extends RubyObject {
         try {
             clojure.lang.PersistentVector value =
                     (clojure.lang.PersistentVector)arg.toJava(clojure.lang.PersistentVector.class);
-            return DiametricUtils.getDiametricCollection(context, (List)value);
+            return DiametricCollection.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -69,7 +76,7 @@ public class DiametricCollection extends RubyObject {
                     (clojure.lang.PersistentVector)arg.toJava(clojure.lang.PersistentVector.class);
             Var var = DiametricService.getFn("clojure.core", "take");
             Object value = var.invoke(100, v);
-            return DiametricUtils.getDiametricCollection(context, (List)value);
+            return DiametricCollection.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -105,7 +112,7 @@ public class DiametricCollection extends RubyObject {
         }
         try {
             Object value = two_arrays_diff_fn.invoke(vector_or_seq, other);
-            return DiametricUtils.getDiametricCollection(context, (List)value);
+            return DiametricCollection.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -125,7 +132,7 @@ public class DiametricCollection extends RubyObject {
             Integer n = (Integer)arg.toJava(Integer.class);
             try {
                 Object value = append_n_times_fn.invoke(n, vector_or_seq);
-                return DiametricUtils.getDiametricCollection(context, (List)value);
+                return DiametricCollection.getDiametricCollection(context, (List)value);
             } catch (Throwable t) {
                 throw context.getRuntime().newRuntimeError(t.getMessage());
             }
@@ -145,7 +152,7 @@ public class DiametricCollection extends RubyObject {
         try {
             Var var = DiametricService.getFn("clojure.core", "concat");
             Object value = var.invoke(vector_or_seq, other);
-            return DiametricUtils.getDiametricCollection(context, (List)value);
+            return DiametricCollection.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }
@@ -255,7 +262,7 @@ public class DiametricCollection extends RubyObject {
                 if (length == null) length = last - start;
                 value = commonArefByDropTake(start, length);
             }
-            return DiametricUtils.getDiametricCollection(context, (List)value);
+            return DiametricCollection.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
             if (t instanceof IndexOutOfBoundsException) {
                 return retryAref(context, start, length, last);

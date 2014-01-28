@@ -1,5 +1,6 @@
 require "diametric/version"
 require "diametric/entity"
+require "diametric/associations/collection"
 require "diametric/query"
 require "diametric/persistence"
 require "diametric/errors"

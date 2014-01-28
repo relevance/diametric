@@ -17,6 +17,13 @@ public class DiametricUUID extends RubyObject {
     private static final long serialVersionUID = 2083281771243513904L;
     private java.util.UUID java_uuid = null;
 
+    static IRubyObject getDiametricUUID(ThreadContext context, java.util.UUID value) {
+        RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::UUID");
+        DiametricUUID diametric_uuid = (DiametricUUID)clazz.allocate();
+        diametric_uuid.init((java.util.UUID)value);
+        return diametric_uuid;
+    }
+
     public DiametricUUID(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
     }

@@ -116,7 +116,7 @@ module Diametric
       # an appropriate error if not.
       res = model.q(*data, @conn_or_db)
       collapse_results(res).each do |entity|
-        if self.model.instance_variable_get("@peer") && @resolve
+        if @resolve
           yield model.reify(entity.first, @conn_or_db, @resolve)
         elsif self.model.instance_variable_get("@peer")
           yield entity

@@ -3,7 +3,6 @@ shared_examples "supports cardinality many" do
     let(:model) { model_class.new }
 
     it "can save" do
-      # TODO deal correctly with nil values
       model.words = ["hopefully", "likely", "possibly"]
       model.save.should be_true
       model.should be_persisted

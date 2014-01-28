@@ -6,7 +6,6 @@ shared_examples "supports has_one association" do
     it "can save child" do
       # similar to thing.pet_id = pet.id; pet.save
       # diametric does pet.save; thing.pet = pet.dbid
-      # TODO: REST needs a new query to reify an entity.
       child.name = "Sophia"
       child.age = 5
       parent.pet = child
