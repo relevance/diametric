@@ -268,7 +268,8 @@ module Diametric
         parent.class.attribute_names.each do |e|
           if parent.class.attributes[e][:value_type] == "ref"
             ref = parent.instance_variable_get("@#{e.to_s}")
-            if ref.is_a?(Fixnum) || ref.is_a?(Diametric::Persistence::Entity)
+            if ref.is_a?(Fixnum) ||
+              (self.instance_variable_get("@peer") && ref.is_a?(Diametric::Persistence::Entity))
               child = reify(ref, connection)
               child = resolve_ref_dbid(child, connection)
               parent.instance_variable_set("@#{e.to_s}", child)
@@ -483,6 +484,7 @@ module Diametric
                 instance_variable_set("@#{name}", value)
               elsif value.is_a?(Enumerable)
                 # enum type
+                # however, falls here when empty array is given for entity type
                 instance_variable_set("@#{name}", Set.new(value))
               end
             when :one
@@ -588,8 +590,9 @@ module Diametric
     def cardinality_many_tx_data(attribute_name)
       changed = self.changed_attributes[attribute_name]
       prev =
-        changed.is_a?(Diametric::Associations::Collection) ? changed : Array(changed).to_set
+        changed.is_a?(Diametric::Associations::Collection) ? changed.to_set : Array(changed).to_set
       curr = self.send(attribute_name)
+      curr = curr.is_a?(Diametric::Associations::Collection) ? curr.to_set : curr
 
       protractions = curr - prev
       retractions = prev - curr
