@@ -61,6 +61,9 @@ public class DiametricObject extends RubyObject {
 
     @JRubyMethod(name={"to_s", "to_edn"})
     public IRubyObject to_s(ThreadContext context) {
+        if (java_object == null) {
+            return context.getRuntime().getNil();
+        }
         return context.getRuntime().newString(java_object.toString());
     }
 

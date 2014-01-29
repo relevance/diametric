@@ -8,13 +8,16 @@ module Diametric
       end
 
       def add(*entities)
+        old_data = @data.dup
         entities.each do |entity|
           if entity.dbid.nil? || entity.dbid.to_i < 0
             entity.save
           end
           @data << entity.dbid
         end
-        @base.send("#{@attribute_name}=", self)
+        if old_data != @data
+          @base.send("#{@attribute_name}=", self)
+        end
       end
       alias :<< :add
 
@@ -44,6 +47,18 @@ module Diametric
 
       def inspect
         return sprintf('#<%s: {%s}>', self.class, @data.to_a.inspect[1..-2])
+      end
+
+      def replace(entities)
+        @data = Set.new
+        entities.each do |entity|
+          if entity.dbid.nil? || entity.dbid.to_i < 0
+            @data << entity.dbid if entity.save
+          else
+            @data << entity
+          end
+        end
+        self
       end
 
       def method_missing(method, *args, &block)

@@ -57,9 +57,8 @@ describe Developer, :jruby => true do
 
     developer = Developer.reify(result.first.first, @conn.db, false)
     friends = developer.friends
-    friends.each do |f|
-      f.should be_a(Java::DatomicQuery::EntityMap)
-    end
+    friends.size.should == 1
+    friends.first.should be_a(Diametric::Persistence::Entity)
   end
 
   it "should find three developers" do

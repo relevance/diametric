@@ -471,16 +471,38 @@ module Diametric
 
         define_method("#{name}=") do |value|
           send("#{name}_will_change!") unless value == instance_variable_get("@#{name}")
-          if self.class.attributes[name][:value_type] != Ref && cardinality == :many
-            value = Set.new(value)
-          end
-          if self.class.attributes[name][:value_type] == Ref &&
-              cardinality == :one &&
-              (value.respond_to? :save)
-            saved_status = value.save
-            instance_variable_set("@#{name}", value.dbid)
-          else
-            instance_variable_set("@#{name}", value)
+          case self.class.attributes[name][:value_type]
+          when Ref
+            case cardinality
+            when :many
+              if value.is_a?(Enumerable) && value.first.respond_to?(:save)
+                # entity type
+                ivar = send("#{name}")
+                instance_variable_set("@#{name}", ivar.replace(value))
+              elsif value.is_a?(Diametric::Associations::Collection)
+                instance_variable_set("@#{name}", value)
+              elsif value.is_a?(Enumerable)
+                # enum type
+                instance_variable_set("@#{name}", Set.new(value))
+              end
+            when :one
+              if value.respond_to?(:save)
+                # entity type
+                if value.save
+                  instance_variable_set("@#{name}", value.dbid)
+                end
+              else
+                # enum type
+                instance_variable_set("@#{name}", value)
+              end
+            end
+          else   # not Ref
+            case cardinality
+            when :many
+              instance_variable_set("@#{name}", Set.new(value))
+            when :one
+              instance_variable_set("@#{name}", value)
+            end
           end
         end
 
