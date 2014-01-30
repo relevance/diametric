@@ -696,7 +696,7 @@ Special thanks to Mongoid for writing some solid ORM code that was liberally bor
 
 ## License
 
-This project uses the [BSD License][].
+This project uses the [MIT License][].
 
 Copyright (c) 2012, Clinton Dreisbach & Relevance Inc. All rights reserved.
 
@@ -709,4 +709,4 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 [Datomic]: http://www.datomic.com
 [Relevance]: http://www.thinkrelevance.com
-[BSD License]: http://opensource.org/licenses/BSD-2-Clause
+[MIT License]: http://opensource.org/licenses/MIT

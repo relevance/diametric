@@ -8,7 +8,7 @@ Gem::Specification.new do |gem|
   gem.name          = "diametric"
   gem.version       = Diametric::VERSION
   gem.authors       = ["Clinton N. Dreisbach", "Ryan K. Neufeld", "Yoko Harada"]
-  gem.license       = 'BSD'
+  gem.license       = 'MIT'
   gem.email         = ["crnixon@gmail.com", "ryan@thinkrelevance.com", "yoko@thinkrelevance.com"]
   gem.summary       = %q{ActiveModel for Datomic}
   gem.description   = <<EOF
