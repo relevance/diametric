@@ -7,10 +7,10 @@ require 'securerandom'
 #   bin/rest 9000 test datomic:mem://
 
 describe Diametric::Entity, :integration => true do
-  before(:all) do
+  before do
     @datomic_uri = ENV['DATOMIC_URI'] || 'http://localhost:46291'
     @storage = ENV['DATOMIC_STORAGE'] || 'free'
-    @dbname = ENV['DATOMIC_NAME'] || "test-#{SecureRandom.uuid}"
+    @dbname = ENV['DATOMIC_NAME'] || "integratin-test-#{SecureRandom.uuid}"
     @client = Datomic::Client.new @datomic_uri, @storage
     @client.create_database(@dbname)
     sleep 0.5
@@ -24,8 +24,7 @@ describe Diametric::Entity, :integration => true do
   end
 
   describe "with a schema" do
-    before(:all) do
-      @client.transact(@dbname, Person.schema)
+    before do
       @client.transact(@dbname, Goat.schema)
     end
 
@@ -40,13 +39,14 @@ describe Diametric::Entity, :integration => true do
   end
 
   describe "with an entity" do
-    before(:all) do
+    before do
+      @client.transact(@dbname, Goat.schema)
       goat = Goat.new(:name => "Josef", :birthday => DateTime.parse("1976-09-04"))
       @client.transact(@dbname, goat.tx_data)
     end
 
     it "can query for that entity" do
-      query, args = Diametric::Query.new(Goat).where(:name => "Josef").data
+      query, args = Diametric::Query.new(Goat, nil, true).where(:name => "Josef").data
       args = args.unshift({:"db/alias" => "#{@storage}/#{@dbname}"})
       resp = @client.query(query, args)
       resp.code.should == 200
@@ -67,7 +67,7 @@ describe Diametric::Entity, :integration => true do
   end
 
   describe "with persistence module" do
-    before(:all) do
+    before do
       Robin.create_schema
     end
 

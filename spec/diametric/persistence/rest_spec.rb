@@ -109,7 +109,7 @@ describe Diametric::Persistence::REST, :integration do
       }
     end
 
-    it_behaves_like "supports has_many association" do
+    it_behaves_like "supporting has_many association" do
       let(:parent_class) { BigBox }
       let(:child_class) { Mouse }
 

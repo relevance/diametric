@@ -81,7 +81,7 @@ describe Diametric::Persistence::Peer, :integration => true, :jruby => true do
       @conn.release
     end
 
-    it_behaves_like "supports has_many association" do
+    it_behaves_like "supporting has_many association" do
       let(:parent_class) { BigCage }
       let(:child_class) { Rat }
     end
