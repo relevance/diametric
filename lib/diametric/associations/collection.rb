@@ -28,8 +28,17 @@ module Diametric
         @base.send("clean_#{@attribute_name}=", self)
       end
 
-      def delete(o)
-        @data.delete_if {|e| e.dbid == o.dbid}
+      def delete(*entities)
+        entities.each do |entity|
+          return unless self.include?(entity)
+          if entity.is_a?(Fixnum) || entity.respond_to?(:to_i)
+            # dbid or dbid object
+            @data.delete_if {|e| e.to_i == entity.to_i}
+          elsif entity.respond_to?(:dbid)
+            # reified or created entity
+            @data.delete_if {|e| e.dbid == entity.dbid}
+          end
+        end
       end
 
       def destroy(*entities)

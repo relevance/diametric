@@ -57,5 +57,23 @@ shared_examples "supporting has_many association" do
       searched_children.size.should == 1
       searched_children.first.dbid.should == child2.dbid
     end
+
+    it "can delete child" do
+      child1 = child_class.new(name: "Joseph", age: 1)
+      child2 = child_class.new(name: "Janet", age: 2)
+      parent.pets = [child1, child2]
+      parent.save
+
+      searched_parent = parent.class.first
+      searched_parent.pets.size.should == 2
+
+      searched_parent.pets.delete(child1, child2)
+      searched_parent.pets.size.should == 0
+
+      searched_children = child_class.all
+      searched_children.size.should == 2
+      searched_children.collect(&:name).should =~ ["Joseph", "Janet"]
+      searched_children.collect(&:age).should =~ [1, 2]
+    end
   end
 end
