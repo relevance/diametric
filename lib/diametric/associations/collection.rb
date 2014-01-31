@@ -28,9 +28,25 @@ module Diametric
         @base.send("clean_#{@attribute_name}=", self)
       end
 
+      def delete(o)
+        @data.delete_if {|e| e.dbid == o.dbid}
+      end
+
+      def destroy(*entities)
+        entities.each do |entity|
+          return unless self.include?(entity)
+          if entity.respond_to? :destroy
+            entity.destroy
+          end
+          self.delete(entity)
+        end
+      end
+
       def include?(o)
         if o.is_a?(Fixnum) || o.respond_to?(:to_i)
-          @data.collect(&:to_i).include?(o.to_i)
+          @data.find_all {|e| e.respond_to?(:to_i)}.collect(&:to_i).include?(o.to_i)
+        elsif o.respond_to?(:dbid)
+          @data.find_all {|e| e.respond_to?(:dbid)}.collect(&:dbid).include?(o.dbid)
         else
           false
         end
