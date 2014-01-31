@@ -25,6 +25,7 @@ module Diametric
         entities.each do |entity|
           @data << entity
         end
+        @base.send("clean_#{@attribute_name}=", self)
       end
 
       def include?(o)

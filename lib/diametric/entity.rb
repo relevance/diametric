@@ -308,7 +308,12 @@ module Diametric
         instance = eval("#{class_name}.new")
         entities.each do |k, v|
           matched_data = /([a-zA-Z0-9_\.]+)\/([a-zA-Z0-9_]+)/.match(k.to_s)
-          instance.send("clean_#{matched_data[2]}=", v)
+          attribute = instance.send(matched_data[2])
+          if attribute && attribute.is_a?(Diametric::Associations::Collection)
+            attribute.add_reified_entities(v)
+          else
+            instance.send("clean_#{matched_data[2]}=", v)
+          end
         end
         instance.send("dbid=", dbid)
 
@@ -519,7 +524,9 @@ module Diametric
               value = ivar.add(value)
             end
           end
-          if self.class.attributes[name][:value_type] == Ref && cardinality == :many
+          if self.class.attributes[name][:value_type] == Ref &&
+              cardinality == :many &&
+              !(value.is_a? Diametric::Associations::Collection)
             if value.is_a? Enumerable
               value = Diametric::Associations::Collection.new(self, name, value)
             else
