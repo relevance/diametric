@@ -7,14 +7,13 @@ require 'yaml'
 datomic_versions = YAML.load(datomic_names)
 
 if ENV['DIAMETRIC_ENV'] && (ENV['DIAMETRIC_ENV'] == "pro")
+  artifactId = "datomic-pro"
   datomic_version = datomic_versions["pro"]
 else
+  artifactId = "datomic-free"
   datomic_version = datomic_versions["free"]
 end
-version = /(\d|\.)+/.match(datomic_version)[0]
-datomic_version.slice!(version)
-artifactId = datomic_version.chop
 
 group :default, :runtime do
-  jar "com.datomic:#{artifactId}:#{version}"
+  jar "com.datomic:#{artifactId}:#{datomic_version}"
 end
