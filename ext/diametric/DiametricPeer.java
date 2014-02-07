@@ -64,14 +64,27 @@ public class DiametricPeer extends RubyModule {
             return rubyConnection;
         } catch (Exception e) {
             // Diametric doesn't require creating database before connect.
-            if (e.getMessage().contains(":peer/db-not-found") && (Boolean)clojure.lang.RT.var("datomic.api", "create-database").invoke(uriOrMap)) {
+            // if database has not yet created, try that first and return the connection
+            if (e instanceof clojure.lang.ExceptionInfo) {
+                try {
+                    clojure.lang.RT.var("datomic.api", "create-database").invoke(uriOrMap);
+                    Connection connection = (Connection) clojure.lang.RT.var("datomic.api", "connect").invoke(uriOrMap);
+                    rubyConnection.init(connection);
+                    saved_connection = rubyConnection;
+                    return rubyConnection;
+                } catch (Throwable t) {
+                    throw context.getRuntime().newRuntimeError(t.getMessage());
+                }
+            }
+            /*
+            if (e.getMessage().contains(":db.error/db-not-found") && (Boolean)clojure.lang.RT.var("datomic.api", "create-database").invoke(uriOrMap)) {
                 Connection connection = (Connection) clojure.lang.RT.var("datomic.api", "connect").invoke(uriOrMap);
                 rubyConnection.init(connection);
                 saved_connection = rubyConnection;
                 return rubyConnection;
-            }
+            }*/
+            throw context.getRuntime().newRuntimeError(e.getMessage());
         }
-        throw context.getRuntime().newRuntimeError("Failed to create connection");
     }
     
     @JRubyMethod(meta=true)
