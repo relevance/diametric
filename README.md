@@ -9,37 +9,26 @@ as entities into a Datomic database.
 
 
 Diametric supports both CRuby and JRuby.
-When you are on CRuby, you can use Datomic's REST service.
-While you are creating data and making queries, Diametric is poking around Datomic's REST API.
-When you are on JRuby, you can use Datomic's REST and Peer services.
-If you are using Peer service, Diametric is poking Datomic's clojure API and some clojure functions.
+When Diametric is used on CRuby, Diametric connects to Datomic's REST service.
+Using Datomic's REST API, Diametric creates scheam/data and makes a queries to Datomic.
+When Diametric is used on JRuby, both Datomic's REST and Peer services are supported.
+The core parts of Peer service are implemented using Datomic API.
 
 
 For Rubyists who are familiar with object oriented programming, Diametric converts:
 - Ruby model definition to Datomic schema
 - Creating, saving and updating model data to Datomic transaction data
 - Ruby query to Datomic's datalog query
+- Datomic's dbid to model object (depends on the value of resolve option)
 
 
 The biggest difference between REST and Peer services is available database types.
-REST service can use memory database only, which means you can't save data in any file.
+REST service can use memory database only, which means we can't save data in any file
+as long as using free version.
 While Peer service can use memory and free version of transactor,
-which means you can save data in a file through Datomic's transactor.
+which means we can save data in a file through Datomic's transactor.
 Other than that, Peer service has excellent API to use Datomic's various features.
 
-
-## Documents
-
-Other than highlights below, there are documents on Wiki.
-
-- [Entity API](https://github.com/relevance/diametric/wiki/Entity-API)
-- [Query API](https://github.com/relevance/diametric/wiki/Query-API)
-- [Persistence API](https://github.com/relevance/diametric/wiki/Persistence-API)
-- [Rails Integration](https://github.com/relevance/diametric/wiki/Rails-Integration-%28Experimental%29)
-- [Seattle Example](https://github.com/relevance/diametric/wiki/Seattle-Example)
-
-
-This document shows how to use Diametric with simple examples.
 
 ## Installation
 
@@ -48,7 +37,7 @@ gem install diametric
 ```
 
 Diametric is a multi-platoform gem. On CRuby, above installs CRuby version of gem.
-On JRuby, it is JRuby version of gem with Java extension.
+On JRuby, above installed JRuby version of gem with Java extension.
 
 
 [note]
@@ -78,14 +67,14 @@ To learn more about the options in the above command, please go to [http://docs.
 Once the REST server starts running, go to [localhost:9000](localhost:9000) on your browser.
 You can see Datomic's REST service is running.
 
-Alternatively, you can download Datomic archive from [http://downloads.datomic.com/free.htm](http://downloads.datomic.com/free.html),
+Alternatively, you can download Datomic archive from [https://my.datomic.com/downloads/free](https://my.datomic.com/downloads/free),
 and start REST server using Datomic command, `script/datomic-rest -p 9000 free datomic:mem://`
 
 
 ## Preparation for JRuby
 
-You have 2 choices on JRuby, Peer and REST service.
-Peer service works on the same JVM as JRuby and is just a Java library for JRuby.
+You have 2 choices on JRuby, Peer and REST services.
+Peer service works on the same JVM as JRuby and looks like just a Java library for JRuby.
 
 
 When you choose REST service, follow *Preparation for CRuby* section.
@@ -612,7 +601,7 @@ Breeze likes #<Set: {"chocolate", "afternoon", "biking"}>
 ```
 The order is not guaranteed.
 
-## Association (Peer only)
+## Association
 
 On Datomic, association is fairly easy even though it is one to many or many to many.
 Association is defined by `Ref` type.
@@ -678,6 +667,45 @@ Somebody.reify(me.kids.first.mom).name
  => "Alice Wonderland"
 ```
 
+## Datomic Verion
+
+Diametric sets up the default Datomic version.
+On that version, all Daimetric's tests passes.
+However, Datomic team frequently releases a new version.
+Just to update Datomic version, Diametric won't make a new release.
+From version 0.1.3, Diametric supports user defined Datomic version.
+
+Here is how a user can use a newer version of Datomic.
+
+
+Specify a datomic version file by `ENV["DATOMIC_VERSION_PATH"]` *before* `require 'diametric'`.
+
+For example:
+```ruby
+ENV["DATOMIC_VERSION_PATH"] = File.expand_path(File.join(File.dirname(__FILE__), "..", "datomic_version.yml"))
+require 'diametric'
+```
+
+The format is:
+```ruby
+free:
+  0.9.4532
+pro:
+  0.9.4470
+```
+
+## Other Documents
+
+More than highlights above, there are documents on Wiki.
+
+- [Entity API](https://github.com/relevance/diametric/wiki/Entity-API)
+- [Query API](https://github.com/relevance/diametric/wiki/Query-API)
+- [Persistence API](https://github.com/relevance/diametric/wiki/Persistence-API)
+- [Rails Integration](https://github.com/relevance/diametric/wiki/Rails-Integration-%28Experimental%29)
+- [Seattle Example](https://github.com/relevance/diametric/wiki/Seattle-Example)
+
+
+
 ## Thanks
 
 Development of Diametric was sponsored by [Relevance][]. They are the
@@ -697,6 +725,7 @@ Special thanks to Mongoid for writing some solid ORM code that was liberally bor
 ## License
 
 This project uses the [MIT License][].
+When this project is used, a user is considered agreed to the [Datomic Free Edition License][].
 
 Copyright (c) 2012, Clinton Dreisbach & Relevance Inc. All rights reserved.
 
@@ -710,3 +739,4 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 [Datomic]: http://www.datomic.com
 [Relevance]: http://www.thinkrelevance.com
 [MIT License]: http://opensource.org/licenses/MIT
+[Datomic Free Edition License]: https://my.datomic.com/downloads/free
