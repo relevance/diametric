@@ -14,12 +14,11 @@ module Diametric
     attr_accessor :host, :port, :db_alias, :uri
 
    def initialize(conf="datomic_version.yml", dest="vendor/datomic")
-      @conf = conf
-      @dest = dest
-      @datomic_version = RestService.datomic_version(conf)
-      @datomic_home = File.join(File.dirname(__FILE__), "../..", dest, @datomic_version)
-      @datomic_version_no = RestService.datomic_version_no(@datomic_version)
-      @pid = nil
+     @conf = conf
+     @dest = dest
+     datomic_type, datomic_version = RestService.datomic_version(conf)
+     @datomic_home = File.join(File.dirname(__FILE__), "../..", dest, "datomic-#{datomic_type}-#{datomic_version}")
+     @pid = nil
     end
 
     def start(opts={})

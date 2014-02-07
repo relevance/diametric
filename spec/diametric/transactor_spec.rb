@@ -23,22 +23,22 @@ describe "Transactor Service", :transactor =>true do
   end
 
   it "should return false for version no" do
-    transactor.datomic_conf_file?("datomic-free-0.8.4122").should be_false
+    transactor.datomic_conf_file?("0.9.4497").should be_false
   end
 
   it "should know datomic version specified" do
-    transactor.datomic_version("spec/test_version_file.yml").should == "datomic-free-0.8.4122"
-    transactor.datomic_version("datomic-free-0.8.4122").should == "datomic-free-0.8.4122"
+    transactor.datomic_version("spec/test_version_file.yml").should == ["free", "0.9.4497"]
+    transactor.datomic_version("0.9.4497").should == ["free", "0.9.4497"]
   end
 
   it  "should know the specified version of datomic has been downloaded" do
     transactor.downloaded?("spec/test_version_file.yml", "tmp/datomic").should be_false
-    transactor.downloaded?("datomic-free-0.8.4122", "tmp/datomic").should be_false
+    transactor.downloaded?("0.9.4497", "tmp/datomic").should be_false
 
     transactor.download("spec/test_version_file.yml", "tmp/datomic")
   
     transactor.downloaded?("spec/test_version_file.yml", "tmp/datomic").should be_true
-    transactor.downloaded?("datomic-free-0.8.4122", "tmp/datomic").should be_true
+    transactor.downloaded?("0.9.4497", "tmp/datomic").should be_true
   end
 
   context Diametric::Transactor do
@@ -64,5 +64,4 @@ describe "Transactor Service", :transactor =>true do
       transactor.stop
     end
   end
-
 end

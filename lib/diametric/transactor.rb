@@ -8,7 +8,7 @@ module Diametric
     class << self
       def datomic_command(datomic_home)
         classpath = datomic_classpath(datomic_home)
-        java_opts = "-XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+CMSParallelRemarkEnabled -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly"
+        java_opts='-XX:NewRatio=4 -XX:SurvivorRatio=8 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+CMSParallelRemarkEnabled -XX:CMSInitiatingOccupancyFraction=60 -XX:+UseCMSInitiatingOccupancyOnly -XX:+CMSScavengeBeforeRemark'
         command = ["java -server -Xmx1g -Xms1g", java_opts, "-cp", classpath, "clojure.main", "--main datomic.launcher"].flatten.join(" ")
       end
     end
@@ -19,13 +19,14 @@ module Diametric
     def initialize(conf="datomic_version.yml", dest="vendor/datomic")
       @conf = conf
       @dest = dest
-      @datomic_version = Transactor.datomic_version(conf)
+      datomic_type, datomic_version = Transactor.datomic_version(conf)
+      datomic_path = "datomic-#{datomic_type}-#{datomic_version}"
       if Pathname.new(dest).relative?
-        @datomic_home = File.join(File.dirname(__FILE__), "../..", dest, @datomic_version)
+        @datomic_home = File.join(File.dirname(__FILE__), "../..", dest, datomic_path)
       else
-        @datomic_home = File.join(dest, @datomic_version)
+        @datomic_home = File.join(dest, datomic_path)
       end
-      @datomic_version_no = Transactor.datomic_version_no(@datomic_version)
+      #@datomic_version_no = Transactor.datomic_version_no(@datomic_version)
       @hostname = nil
       @port = nil
       @pid = nil

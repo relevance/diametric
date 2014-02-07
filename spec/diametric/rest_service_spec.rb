@@ -27,18 +27,18 @@ describe Diametric::RestService, :service =>true do
   end
 
   it "should know datomic version specified" do
-    service.datomic_version("spec/test_version_file.yml").should == "datomic-free-0.8.4122"
-    service.datomic_version("datomic-free-0.8.4122").should == "datomic-free-0.8.4122"
+    service.datomic_version("spec/test_version_file.yml").should == ["free", "0.9.4497"]
+    service.datomic_version("0.9.4497").should == ["free", "0.9.4497"]
   end
 
   it  "should know the specified version of datomic has been downloaded" do
     service.downloaded?("spec/test_version_file.yml", "tmp/datomic").should be_false
-    service.downloaded?("datomic-free-0.8.4122", "tmp/datomic").should be_false
+    service.downloaded?("0.9.4497", "tmp/datomic").should be_false
 
     service.download("spec/test_version_file.yml", "tmp/datomic")
   
     service.downloaded?("spec/test_version_file.yml", "tmp/datomic").should be_true
-    service.downloaded?("datomic-free-0.8.4122", "tmp/datomic").should be_true
+    service.downloaded?("0.9.4497", "tmp/datomic").should be_true
   end
 
   context Diametric::RestService do

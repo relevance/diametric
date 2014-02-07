@@ -21,12 +21,12 @@ module Diametric
           datomic_names = File.read(File.join(File.dirname(__FILE__), "../..", conf))
           datomic_versions = YAML.load(datomic_names)
           if ENV['DIAMETRIC_ENV'] && (ENV['DIAMETRIC_ENV'] == "pro")
-            datomic_versions["pro"]
+            return "pro", datomic_versions["pro"]
           else
-            datomic_versions["free"]
+            return "free", datomic_versions["free"]
           end
         else
-          conf
+          return "free", conf
         end
       end
 
@@ -35,17 +35,17 @@ module Diametric
       end
 
       def downloaded?(conf="datomic_version.yml", dest="vendor/datomic")
-        datomic_home = datomic_version(conf)
+        datomic_type, datomic_version = datomic_version(conf)
         if Pathname.new(dest).relative?
           dest = File.join(File.dirname(__FILE__), "..", "..", dest)
         end
-        File.exists?(File.join(dest, datomic_home))
+        File.exists?(File.join(dest, "datomic-#{datomic_type}-#{datomic_version}"))
       end
 
       def download(conf="datomic_version.yml", dest="vendor/datomic")
         return true if downloaded?(conf, dest)
-        version = datomic_version(conf)
-        url = "http://downloads.datomic.com/#{datomic_version_no(version)}/#{version}.zip"
+        type, version = datomic_version(conf)
+        url = "https://my.datomic.com/downloads/#{type}/#{version}"
         if Pathname.new(dest).relative?
           dest = File.join(File.dirname(__FILE__), "../..", dest)
         end
