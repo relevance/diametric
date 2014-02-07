@@ -28,7 +28,7 @@ RSpec.configure do |c|
   c.treat_symbols_as_metadata_keys_with_true_values = true
 
   c.before(:suite) do
-    unless :service || :transactor
+    unless ENV['RESTSERVICE']
       @rest = Diametric::RestService.new("spec/test_version_file.yml", "tmp/datomic")
       @rest.start(:port => 46291, :db_alias => @storage, :uri => "datomic:mem://")
       PID = @rest.pid
@@ -40,7 +40,7 @@ RSpec.configure do |c|
 
   c.after(:suite) do
     Diametric::Persistence::Peer.shutdown(true) if is_jruby?
-    unless :service || :transactor
+    unless ENV['RESTSERVICE']
       Process.kill("HUP", PID)
     end
     if ENV['TRANSACTOR']
