@@ -58,7 +58,7 @@ public class DiametricPeer extends RubyModule {
         DiametricConnection rubyConnection = (DiametricConnection)clazz.allocate();
         try {
             // what value will be returned when connect fails? API doc doesn't tell anything.
-            Connection connection = (Connection) clojure.lang.RT.var("datomic.api", "connect").invoke(uriOrMap);
+            Connection connection = (Connection) DiametricService.getFn("datomic.api", "connect").invoke(uriOrMap);
             rubyConnection.init(connection);
             saved_connection = rubyConnection;
             return rubyConnection;
@@ -67,8 +67,8 @@ public class DiametricPeer extends RubyModule {
             // if database has not yet created, try that first and return the connection
             if (e instanceof clojure.lang.ExceptionInfo) {
                 try {
-                    clojure.lang.RT.var("datomic.api", "create-database").invoke(uriOrMap);
-                    Connection connection = (Connection) clojure.lang.RT.var("datomic.api", "connect").invoke(uriOrMap);
+                    DiametricService.getFn("datomic.api", "create-database").invoke(uriOrMap);
+                    Connection connection = (Connection) DiametricService.getFn("datomic.api", "connect").invoke(uriOrMap);
                     rubyConnection.init(connection);
                     saved_connection = rubyConnection;
                     return rubyConnection;
@@ -86,7 +86,7 @@ public class DiametricPeer extends RubyModule {
         if (uriOrMap == null)
             throw context.getRuntime().newArgumentError("Argument should be a String");
         try {
-            boolean status = (Boolean)clojure.lang.RT.var("datomic.api", "create-database").invoke(uriOrMap);
+            boolean status = (Boolean)DiametricService.getFn("datomic.api", "create-database").invoke(uriOrMap);
             return RubyBoolean.newBoolean(context.getRuntime(), status);
         } catch (Exception e) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
@@ -101,7 +101,7 @@ public class DiametricPeer extends RubyModule {
         String newName = DiametricUtils.rubyStringToJava(args[1]);
         if (newName == null) return context.getRuntime().getNil();
         try {
-            boolean status = (Boolean)clojure.lang.RT.var("datomic.api", "rename-database").invoke(uriOrMap, newName);
+            boolean status = (Boolean)DiametricService.getFn("datomic.api", "rename-database").invoke(uriOrMap, newName);
             return RubyBoolean.newBoolean(context.getRuntime(), status);
         } catch (Exception e) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
@@ -113,7 +113,7 @@ public class DiametricPeer extends RubyModule {
         String uriOrMap = DiametricUtils.rubyStringToJava(arg);
         if (uriOrMap == null) return context.getRuntime().getNil();
         try {
-            boolean status = (Boolean)clojure.lang.RT.var("datomic.api", "delete-database").invoke(uriOrMap);
+            boolean status = (Boolean)DiametricService.getFn("datomic.api", "delete-database").invoke(uriOrMap);
             return RubyBoolean.newBoolean(context.getRuntime(), status);
         } catch (Exception e) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
@@ -127,7 +127,7 @@ public class DiametricPeer extends RubyModule {
         }
         Boolean shutdownClojure = (Boolean) arg.toJava(Boolean.class);
         try {
-            clojure.lang.RT.var("datomic.api", "shutdown").invoke(shutdownClojure);
+            DiametricService.getFn("datomic.api", "shutdown").invoke(shutdownClojure);
         } catch (Exception e) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + e.getMessage());
         }
@@ -146,7 +146,7 @@ public class DiametricPeer extends RubyModule {
         RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::UUID");
         diametric.DiametricUUID ruby_uuid = (diametric.DiametricUUID)clazz.allocate();
         try {
-            java.util.UUID java_uuid = (UUID) clojure.lang.RT.var("datomic.api", "squuid").invoke();
+            java.util.UUID java_uuid = (UUID) DiametricService.getFn("datomic.api", "squuid").invoke();
             ruby_uuid.init(java_uuid);
             return ruby_uuid;
         } catch (Throwable t) {
@@ -171,7 +171,7 @@ public class DiametricPeer extends RubyModule {
         if (squuid == null) return context.getRuntime().getNil();
         long value;
         try {
-            value = (Long) clojure.lang.RT.var("datomic.api", "squuid-time-millis").invoke(squuid);
+            value = (Long) DiametricService.getFn("datomic.api", "squuid-time-millis").invoke(squuid);
             return RubyFixnum.newFixnum(context.getRuntime(), value);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError("Datomic Exception: " + t.getMessage());
@@ -201,7 +201,7 @@ public class DiametricPeer extends RubyModule {
         RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Object");
         DiametricObject diametric_object = (DiametricObject)clazz.allocate();
         try {
-            clojure.lang.Var clj_var = clojure.lang.RT.var("datomic.api", "tempid");
+            clojure.lang.Var clj_var = DiametricService.getFn("datomic.api", "tempid");
             if (args.length > 1 && (args[1] instanceof RubyFixnum)) {
                 long idNumber = (Long) args[1].toJava(Long.class);
                 diametric_object.update(clj_var.invoke(partition, idNumber));
@@ -237,7 +237,7 @@ public class DiametricPeer extends RubyModule {
             throw context.getRuntime().newArgumentError("Wrong argument type.");
         }
         try {
-            Object dbid = clojure.lang.RT.var("datomic.api", "resolve-tempid")
+            Object dbid = DiametricService.getFn("datomic.api", "resolve-tempid")
                             .invoke(map.get(Connection.DB_AFTER), map.get(Connection.TEMPIDS), ruby_object.toJava());
             ruby_object.update(dbid);
             return ruby_object;
@@ -254,7 +254,11 @@ public class DiametricPeer extends RubyModule {
         }
         Object query = null;
         if (args[0] instanceof RubyArray) {
-            query = DiametricUtils.fromRubyArray(context, (RubyArray)args[0]);
+            try {
+                query = DiametricUtils.fromRubyArray(context, (RubyArray)args[0]);
+            } catch (Throwable t) {
+                throw runtime.newRuntimeError(t.getMessage());
+            }
         } else if (args[0] instanceof RubyString) {
             query = DiametricUtils.rubyStringToJava(args[0]);
         }
@@ -270,7 +274,7 @@ public class DiametricPeer extends RubyModule {
         Collection<List<Object>> results = null;
         try {
             if (args.length == 2) {
-                results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database);
+                results = (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database);
             } else if ((args.length == 3) && (args[2] instanceof RubyArray)) {
                 RubyArray ruby_inputs = (RubyArray)args[2];
                 if (ruby_inputs.getLength() == 0) {
@@ -278,14 +282,14 @@ public class DiametricPeer extends RubyModule {
                 } else {
                     PersistentVector clj_args = DiametricUtils.fromRubyArray(context, (RubyArray)ruby_inputs);
                     //System.out.println("query args: " + clj_args.toString());
-                    results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database, clj_args);
+                    results = (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database, clj_args);
                 }
             } else {
                 Object[] inputs = new Object[args.length-2];
                 for (int i=0; i<inputs.length; i++) {
                     inputs[i] = DiametricUtils.convertRubyToJava(context, args[i+2]);
                 }
-                results = (Collection<List<Object>>) clojure.lang.RT.var("datomic.api", "q").invoke(query, database, inputs);
+                results = (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database, inputs);
             }
         } catch (Throwable t) {
             throw runtime.newRuntimeError("Datomic Exception: " + t.getMessage());
@@ -365,8 +369,8 @@ public class DiametricPeer extends RubyModule {
         }
         if (saved_connection == null) throw runtime.newRuntimeError("Connection is not established");
         try {
-            Object database = clojure.lang.RT.var("datomic.api", "db").invoke(saved_connection.toJava());
-            Object entity = clojure.lang.RT.var("datomic.api", "entity").invoke(database, dbid);
+            Object database = DiametricService.getFn("datomic.api", "db").invoke(saved_connection.toJava());
+            Object entity = DiametricService.getFn("datomic.api", "entity").invoke(database, dbid);
             RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
             DiametricEntity ruby_entity = (DiametricEntity)clazz.allocate();
             ruby_entity.init(entity);
@@ -381,7 +385,7 @@ public class DiametricPeer extends RubyModule {
         Object dbid = DiametricUtils.convertRubyToJava(context, arg);
         List query = datomic.Util.list((datomic.Util.list(":db.fn/retractEntity", dbid)));
         try {
-            clojure.lang.RT.var("datomic.api", "transact-async").invoke(saved_connection.toJava(), query);
+            DiametricService.getFn("datomic.api", "transact-async").invoke(saved_connection.toJava(), query);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError("Datomic error: " + t.getMessage());
         }
@@ -405,9 +409,9 @@ public class DiametricPeer extends RubyModule {
             Long dbid = (Long)DiametricUtils.convertRubyToJava(context, args[1]);
             String query_string = (String)args[2].toJava(String.class);
             try {
-                Object entity = clojure.lang.RT.var("datomic.api", "entity").invoke(database, dbid);
+                Object entity = DiametricService.getFn("datomic.api", "entity").invoke(database, dbid);
                 clojure.lang.PersistentHashSet set =
-                         (PersistentHashSet) clojure.lang.RT.var("clojure.core", "get").invoke(entity, query_string);
+                         (PersistentHashSet) DiametricService.getFn("clojure.core", "get").invoke(entity, query_string);
 
                 if (set == null) {
                     return RubyArray.newEmptyArray(runtime);

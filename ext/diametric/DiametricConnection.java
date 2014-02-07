@@ -40,7 +40,7 @@ public class DiametricConnection extends RubyObject {
     @JRubyMethod
     public IRubyObject db(ThreadContext context) {
         try {
-            Object database = clojure.lang.RT.var("datomic.api", "db").invoke(conn);
+            Object database = DiametricService.getFn("datomic.api", "db").invoke(conn);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
             DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
             diametric_database.init(database);
@@ -52,14 +52,14 @@ public class DiametricConnection extends RubyObject {
 
     @JRubyMethod
     public IRubyObject transact(ThreadContext context, IRubyObject arg) {
-        List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg); // this may raise exception
-        if (tx_data == null) {
-            throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
-        }
-
         try {
+            List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg); // may raise exception
+            if (tx_data == null) {
+                throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
+            }
+
             //System.out.println("tx_data: " + tx_data.toString() + " class: " + tx_data.getClass().getCanonicalName());
-            Object future = clojure.lang.RT.var("datomic.api", "transact").invoke(conn, tx_data);
+            Object future = DiametricService.getFn("datomic.api", "transact").invoke(conn, tx_data);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
             DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
             diametric_listenable.init(future);
@@ -71,13 +71,13 @@ public class DiametricConnection extends RubyObject {
 
     @JRubyMethod
     public IRubyObject transact_async(ThreadContext context, IRubyObject arg) {
-        List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg);
-        if (tx_data == null) {
-            throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
-        }
-
         try {
-            Object future = clojure.lang.RT.var("datomic.api", "transact-async").invoke(conn, tx_data);
+            List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg); // my raise exception
+            if (tx_data == null) {
+                throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
+            }
+
+            Object future = DiametricService.getFn("datomic.api", "transact-async").invoke(conn, tx_data);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::ListenableFuture");
             DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
             diametric_listenable.init(future);
@@ -95,7 +95,7 @@ public class DiametricConnection extends RubyObject {
         RubyTime rubyTime = (RubyTime) RuntimeHelpers.invoke(context, arg, "to_time");
         Date olderThan = rubyTime.getJavaDate();
         try {
-            clojure.lang.RT.var("datomic.api", "gc-strage").invoke(conn, olderThan);
+            DiametricService.getFn("datomic.api", "gc-strage").invoke(conn, olderThan);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError("Datomic error: " + t.getMessage());
         }
@@ -105,7 +105,7 @@ public class DiametricConnection extends RubyObject {
     @JRubyMethod
     public IRubyObject release(ThreadContext context) {
         try {
-            clojure.lang.RT.var("datomic.api", "release").invoke(conn);
+            DiametricService.getFn("datomic.api", "release").invoke(conn);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }

@@ -41,7 +41,7 @@ public class DiametricUUID extends RubyObject {
         RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::UUID");
         DiametricUUID diametric_uuid = (DiametricUUID)clazz.allocate();
         try {
-            java.util.UUID java_uuid = (UUID) clojure.lang.RT.var("datomic.api", "squuid").invoke();
+            java.util.UUID java_uuid = (UUID) DiametricService.getFn("datomic.api", "squuid").invoke();
             diametric_uuid.init(java_uuid);
             return diametric_uuid;
         } catch (Throwable t) {

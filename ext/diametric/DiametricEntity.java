@@ -51,7 +51,7 @@ public class DiametricEntity extends RubyObject {
     @JRubyMethod
     public IRubyObject db(ThreadContext context) {
         try {
-            Object database = clojure.lang.RT.var("datomic.api", "db").invoke(entity);
+            Object database = DiametricService.getFn("datomic.api", "db").invoke(entity);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
             DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
             diametric_database.init(database);
@@ -64,7 +64,7 @@ public class DiametricEntity extends RubyObject {
     @JRubyMethod
     public IRubyObject touch(ThreadContext context) {
         try {
-            Object touched_entity = clojure.lang.RT.var("datomic.api", "touch").invoke(entity);
+            Object touched_entity = DiametricService.getFn("datomic.api", "touch").invoke(entity);
             entity = touched_entity;
             return this;
         } catch (Throwable t) {

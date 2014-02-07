@@ -55,7 +55,7 @@ public class DiametricDatabase extends RubyObject {
             throw context.getRuntime().newArgumentError("Argument should be Fixnum or dbid object");
         }
         try {
-            Entity entity = (Entity) clojure.lang.RT.var("datomic.api", "entity").invoke(database, entityId);
+            Entity entity = (Entity) DiametricService.getFn("datomic.api", "entity").invoke(database, entityId);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
             DiametricEntity diametric_entity = (DiametricEntity)clazz.allocate();
             diametric_entity.init(entity);
@@ -67,12 +67,13 @@ public class DiametricDatabase extends RubyObject {
     
     @JRubyMethod
     public IRubyObject with(ThreadContext context, IRubyObject arg) {
-        List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg);
-        if (tx_data == null) {
-            throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
-        }
         try {
-            Map map = (Map) clojure.lang.RT.var("datomic.api", "with").invoke(database, tx_data);
+            List<Object> tx_data = DiametricUtils.convertRubyTxDataToJava(context, arg); // may raise exception
+            if (tx_data == null) {
+                throw context.getRuntime().newArgumentError("Argument should be Array or clojure.lang.PersistentVector");
+            }
+
+            Map map = (Map) DiametricService.getFn("datomic.api", "with").invoke(database, tx_data);
             return RubyHash.newHash(context.getRuntime(), map, null);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError("Datomic Error: " + t.getMessage());
@@ -83,7 +84,7 @@ public class DiametricDatabase extends RubyObject {
     public IRubyObject as_of(ThreadContext context, IRubyObject arg) {
         Object t_value = DiametricUtils.convertRubyToJava(context, arg);
         try {
-            Database db_asof_t = (Database) clojure.lang.RT.var("datomic.api", "as-of").invoke(database, t_value);
+            Database db_asof_t = (Database) DiametricService.getFn("datomic.api", "as-of").invoke(database, t_value);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
             DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
             diametric_database.init(db_asof_t);
@@ -97,7 +98,7 @@ public class DiametricDatabase extends RubyObject {
     public IRubyObject since(ThreadContext context, IRubyObject arg) {
         Object t_value = DiametricUtils.convertRubyToJava(context, arg);
         try {
-            Database db_since_t = (Database) clojure.lang.RT.var("datomic.api", "since").invoke(database, t_value);
+            Database db_since_t = (Database) DiametricService.getFn("datomic.api", "since").invoke(database, t_value);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
             DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
             diametric_database.init(db_since_t);

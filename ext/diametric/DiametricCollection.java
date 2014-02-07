@@ -98,19 +98,19 @@ public class DiametricCollection extends RubyObject {
             throw context.getRuntime().newRuntimeError("argument should be array");
         }
         List other = (List)arg;
-        Var two_arrays_diff_fn = null;
-        if (DiametricService.fnMap.containsKey("two-arrays-diff")) {
-            two_arrays_diff_fn = DiametricService.fnMap.get("two-arrays-diff");
-        } else {
-            Var var = DiametricService.getFn("clojure.core", "load-string");
-            String fn =
-                    "(defn two-arrays-diff [this other]\n" +
-                    "  (let [f (fn [ary n] (remove (partial = n) ary))]\n"+
-                    "    (reduce f this other)))";
-            two_arrays_diff_fn = (Var)var.invoke(fn);
-            DiametricService.fnMap.put("two-arrays-diff", two_arrays_diff_fn);
-        }
         try {
+            Var two_arrays_diff_fn = null;
+            if (DiametricService.fnMap.containsKey("two-arrays-diff")) {
+                two_arrays_diff_fn = DiametricService.fnMap.get("two-arrays-diff");
+            } else {
+                Var var = DiametricService.getFn("clojure.core", "load-string");
+                String fn =
+                        "(defn two-arrays-diff [this other]\n" +
+                        "  (let [f (fn [ary n] (remove (partial = n) ary))]\n"+
+                        "    (reduce f this other)))";
+                two_arrays_diff_fn = (Var)var.invoke(fn);
+                DiametricService.fnMap.put("two-arrays-diff", two_arrays_diff_fn);
+            }
             Object value = two_arrays_diff_fn.invoke(vector_or_seq, other);
             return DiametricCollection.getDiametricCollection(context, (List)value);
         } catch (Throwable t) {
@@ -121,16 +121,16 @@ public class DiametricCollection extends RubyObject {
     @JRubyMethod(name="*")
     public IRubyObject op_times(ThreadContext context, IRubyObject arg) {
         if (arg instanceof RubyFixnum) {
-            Var append_n_times_fn = null;
-            if (DiametricService.fnMap.containsKey("append-n-times")) {
-                append_n_times_fn = DiametricService.fnMap.get("append-n-times");
-            } else {
-                Var var = DiametricService.getFn("clojure.core", "load-string");
-                append_n_times_fn = (Var)var.invoke("(defn append-n-times [n array] (reduce concat (replicate n array)))");
-                DiametricService.fnMap.put("append-n-times", append_n_times_fn);
-            }
-            Integer n = (Integer)arg.toJava(Integer.class);
             try {
+                Var append_n_times_fn = null;
+                if (DiametricService.fnMap.containsKey("append-n-times")) {
+                    append_n_times_fn = DiametricService.fnMap.get("append-n-times");
+                } else {
+                    Var var = DiametricService.getFn("clojure.core", "load-string");
+                    append_n_times_fn = (Var)var.invoke("(defn append-n-times [n array] (reduce concat (replicate n array)))");
+                    DiametricService.fnMap.put("append-n-times", append_n_times_fn);
+                }
+                Integer n = (Integer)arg.toJava(Integer.class);
                 Object value = append_n_times_fn.invoke(n, vector_or_seq);
                 return DiametricCollection.getDiametricCollection(context, (List)value);
             } catch (Throwable t) {
@@ -628,16 +628,16 @@ public class DiametricCollection extends RubyObject {
 
     @JRubyMethod(name="include?")
     public IRubyObject include_p(ThreadContext context, IRubyObject arg) {
-        Var include_p_fn = null;
-        if (DiametricService.fnMap.containsKey("include?")) {
-            include_p_fn = DiametricService.fnMap.get("include?");
-        } else {
-            Var var = DiametricService.getFn("clojure.core", "load-string");
-            include_p_fn = (Var)var.invoke("(defn include? [v array] (some (partial = v) array))");
-            DiametricService.fnMap.put("include?", include_p_fn);
-        }
-        Object java_object = DiametricUtils.convertRubyToJava(context, arg);
         try {
+            Var include_p_fn = null;
+            if (DiametricService.fnMap.containsKey("include?")) {
+                include_p_fn = DiametricService.fnMap.get("include?");
+            } else {
+                Var var = DiametricService.getFn("clojure.core", "load-string");
+                include_p_fn = (Var)var.invoke("(defn include? [v array] (some (partial = v) array))");
+                DiametricService.fnMap.put("include?", include_p_fn);
+            }
+            Object java_object = DiametricUtils.convertRubyToJava(context, arg);
             Object result = include_p_fn.invoke(java_object, vector_or_seq);
             if ((result instanceof Boolean) && (Boolean)result) {
                 return context.getRuntime().getTrue();
