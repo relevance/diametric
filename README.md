@@ -686,7 +686,7 @@ ENV["DATOMIC_VERSION_PATH"] = File.expand_path(File.join(File.dirname(__FILE__),
 require 'diametric'
 ```
 
-The format is:
+The format of datomic version file is simple yaml. For example:
 ```ruby
 free:
   0.9.4532
@@ -725,6 +725,7 @@ Special thanks to Mongoid for writing some solid ORM code that was liberally bor
 ## License
 
 This project uses the [MIT License][].
+
 When this project is used, a user is considered agreed to the [Datomic Free Edition License][].
 
 Copyright (c) 2012, Clinton Dreisbach & Relevance Inc. All rights reserved.
