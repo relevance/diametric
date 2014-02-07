@@ -76,13 +76,6 @@ public class DiametricPeer extends RubyModule {
                     throw context.getRuntime().newRuntimeError(t.getMessage());
                 }
             }
-            /*
-            if (e.getMessage().contains(":db.error/db-not-found") && (Boolean)clojure.lang.RT.var("datomic.api", "create-database").invoke(uriOrMap)) {
-                Connection connection = (Connection) clojure.lang.RT.var("datomic.api", "connect").invoke(uriOrMap);
-                rubyConnection.init(connection);
-                saved_connection = rubyConnection;
-                return rubyConnection;
-            }*/
             throw context.getRuntime().newRuntimeError(e.getMessage());
         }
     }
