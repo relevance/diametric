@@ -3,5 +3,5 @@ language: ruby
 before_script: rake prepare
 rvm:
   - 2.0.0
-  - jruby-19mode
+  - jruby-head
 script: INTEGRATION=true bundle exec rspec spec

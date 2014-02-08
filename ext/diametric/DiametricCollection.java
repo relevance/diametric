@@ -203,8 +203,8 @@ public class DiametricCollection extends RubyObject {
             return commonArefIndex(context, index);
         } else if (index_or_range instanceof RubyRange) {
             RubyRange range = (RubyRange)index_or_range;
-            Long start = (Long)range.first().toJava(Long.class);
-            Long last = (Long)range.last().toJava(Long.class);
+            Long start = (Long)range.first(context).toJava(Long.class);
+            Long last = (Long)range.last(context).toJava(Long.class);
             // subvec returns from 'start' to element (- end 1)
             if (range.exclude_end_p().isTrue()) {
                 return commonAref(context, start, null, last);
