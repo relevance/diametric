@@ -2,6 +2,6 @@ language: ruby
 #bundler_args: --without development
 before_script: rake prepare
 rvm:
-  - 1.9.3
-  - jruby-19mode
+  - 2.0.0
+  - jruby-head
 script: INTEGRATION=true bundle exec rspec spec
