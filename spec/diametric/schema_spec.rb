@@ -141,7 +141,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     it "should create schema" do
       expect { ScarletMacaw.create_schema(@conn).get }.
         not_to raise_exception
-      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ [?value ...] :where [?e :db/ident ?value]]", @conn.db, ":scarlet_macaw/serial").first.first
+      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ ?value :where [?e :db/ident ?value]]", @conn.db, ":scarlet_macaw/serial").first.first
       entity_fn = Java::ClojureLang::RT.var("datomic.api", "entity")
       emap = entity_fn.invoke(@conn.db.to_java, dbid)
       emap.get(":db/ident").to_s.should == ":scarlet_macaw/serial"
@@ -249,7 +249,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     it "should create schema" do
       expect { MyWords.create_schema(@conn).get }.
         not_to raise_exception
-      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ [?value ...] :where [?e :db/ident ?value]]", @conn.db, ":my_words/words").first.first
+      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ ?value :where [?e :db/ident ?value]]", @conn.db, ":my_words/words").first.first
       entity_fn = Java::ClojureLang::RT.var("datomic.api", "entity")
       emap = entity_fn.invoke(@conn.db.to_java, dbid)
       emap.get(":db/ident").to_s.should == ":my_words/words"
@@ -318,7 +318,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     it "should create schema" do
       expect { Cage.create_schema(@conn).get }.
         not_to raise_exception
-      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ [?value ...] :where [?e :db/ident ?value]]", @conn.db, ":cage/pet").first.first
+      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ ?value :where [?e :db/ident ?value]]", @conn.db, ":cage/pet").first.first
       entity_fn = Java::ClojureLang::RT.var("datomic.api", "entity")
       emap = entity_fn.invoke(@conn.db.to_java, dbid)
       emap.get(":db/ident").to_s.should == ":cage/pet"
@@ -392,7 +392,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     it "should create schema" do
       expect { Author.create_schema(@conn).get }.
         not_to raise_exception
-      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ [?value ...] :where [?e :db/ident ?value]]", @conn.db, ":author/books").first.first
+      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ ?value :where [?e :db/ident ?value]]", @conn.db, ":author/books").first.first
       entity_fn = Java::ClojureLang::RT.var("datomic.api", "entity")
       emap = entity_fn.invoke(@conn.db.to_java, dbid)
       emap.get(":db/ident").to_s.should == ":author/books"
@@ -475,7 +475,7 @@ describe Diametric::Entity, :integration => true, :jruby => true do
     it "should create schema" do
       expect { Role.create_schema(@conn).get }.
         not_to raise_exception
-      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ [?value ...] :where [?e :db/ident ?value]]", @conn.db, ":role.type/accountant").first.first
+      dbid = Diametric::Persistence::Peer.q("[:find ?e :in $ ?value :where [?e :db/ident ?value]]", @conn.db, ":role.type/accountant").first.first
       entity_fn = Java::ClojureLang::RT.var("datomic.api", "entity")
       emap = entity_fn.invoke(@conn.db.to_java, dbid)
       emap.get(":db/ident").to_s.should == ":role.type/accountant"

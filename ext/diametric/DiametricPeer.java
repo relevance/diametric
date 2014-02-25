@@ -273,23 +273,27 @@ public class DiametricPeer extends RubyModule {
 
         Collection<List<Object>> results = null;
         try {
-            if (args.length == 2) {
-                results = (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database);
-            } else if ((args.length == 3) && (args[2] instanceof RubyArray)) {
-                RubyArray ruby_inputs = (RubyArray)args[2];
-                if (ruby_inputs.getLength() == 0) {
-                    results = Peer.q(query, database);
-                } else {
-                    PersistentVector clj_args = DiametricUtils.fromRubyArray(context, (RubyArray)ruby_inputs);
-                    //System.out.println("query args: " + clj_args.toString());
-                    results = (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database, clj_args);
+            switch (args.length) {
+            case 2:
+                results = query_without_arg(query, database);
+                break;
+            case 3:
+                if ((args[2] instanceof RubyArray) && (((RubyArray)args[2]).getLength() == 0)) {
+                    results = query_without_arg(query, database);
+                } else if (args[2] instanceof RubyArray) {
+                    PersistentVector clj_arg = DiametricUtils.fromRubyArray(context, (RubyArray)args[2]);
+                    results = query_with_arg(query, database, clj_arg);
+                } else if (args[2] instanceof RubyString) {
+                    String arg = (String) DiametricUtils.convertRubyToJava(context, args[2]);
+                    results = query_with_arg(query, database, arg);
                 }
-            } else {
+                break;
+            default:
                 Object[] inputs = new Object[args.length-2];
                 for (int i=0; i<inputs.length; i++) {
                     inputs[i] = DiametricUtils.convertRubyToJava(context, args[i+2]);
                 }
-                results = (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database, inputs);
+                results = query_with_args(query, database, args);
             }
         } catch (Throwable t) {
             throw runtime.newRuntimeError("Datomic Exception: " + t.getMessage());
@@ -300,22 +304,22 @@ public class DiametricPeer extends RubyModule {
         DiametricSet diametric_set = (DiametricSet)clazz.allocate();
         diametric_set.init(results);
         return diametric_set;
-        /*
-        RubyArray ruby_results = RubyArray.newArray(context.getRuntime());
-        for (List list : results) {
-            RubyArray ruby_elements = RubyArray.newArray(context.getRuntime());
-            for (Object element : list) {
-                //System.out.println("OH ELEMENT IS: " + element + " [" + element.getClass().getCanonicalName() +"]");
-                ruby_elements.append(DiametricUtils.convertJavaToRuby(context, element));
-            }
-            ruby_results.append(ruby_elements);
-        }
-        return ruby_results;
-        */
     }
-    
+
+    private static Collection<List<Object>> query_without_arg(Object query, Object database) {
+        return (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database);
+    }
+
+    private static Collection<List<Object>> query_with_arg(Object query, Object database, Object arg) {
+        return (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database, arg);
+    }
+
+    private static Collection<List<Object>> query_with_args(Object query, Object database, Object[] args) {
+        return (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database, args);
+    }
+
     private static List<RubyModule> bases = new ArrayList<RubyModule>();
-    
+
     @JRubyMethod(meta=true)
     public static IRubyObject included(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
         Ruby runtime = context.getRuntime();
@@ -330,13 +334,13 @@ public class DiametricPeer extends RubyModule {
         }
         return runtime.getNil();
     }
-    
+
     @JRubyMethod(meta=true)
     public static IRubyObject connect(ThreadContext context, IRubyObject klazz) {
         if (saved_connection == null) return context.getRuntime().getNil();
         return saved_connection;
     }
-    
+
     @JRubyMethod(meta=true)
     public static IRubyObject create_schemas(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
         if (!(arg instanceof DiametricConnection))
