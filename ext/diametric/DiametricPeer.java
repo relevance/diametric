@@ -283,8 +283,8 @@ public class DiametricPeer extends RubyModule {
                 } else if (args[2] instanceof RubyArray) {
                     PersistentVector clj_arg = DiametricUtils.fromRubyArray(context, (RubyArray)args[2]);
                     results = query_with_arg(query, database, clj_arg);
-                } else if (args[2] instanceof RubyString) {
-                    String arg = (String) DiametricUtils.convertRubyToJava(context, args[2]);
+                } else {
+                    Object arg = DiametricUtils.convertRubyToJava(context, args[2]);
                     results = query_with_arg(query, database, arg);
                 }
                 break;

@@ -2,6 +2,8 @@ package diametric;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -19,6 +21,10 @@ public class DiametricConnection extends RubyObject {
     private static final long serialVersionUID = 3806301567154638371L;
     //conn should a datomic.Connection type
     private Object conn = null;
+
+    //static IRubyObject constants(String key) {
+    //    
+    //}
 
     public DiametricConnection(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
@@ -82,6 +88,17 @@ public class DiametricConnection extends RubyObject {
             DiametricListenableFuture diametric_listenable = (DiametricListenableFuture)clazz.allocate();
             diametric_listenable.init(future);
             return diametric_listenable;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
+    @JRubyMethod
+    public IRubyObject tx_report_queue(ThreadContext context) {
+        try {
+            java.util.concurrent.BlockingQueue<java.util.Map> queue =
+                    (BlockingQueue<Map>) DiametricService.getFn("datomic.api", "tx-report-queue").invoke(conn);
+            return JavaUtil.convertJavaToUsableRubyObject(context.getRuntime(), queue);
         } catch (Throwable t) {
             throw context.getRuntime().newRuntimeError(t.getMessage());
         }

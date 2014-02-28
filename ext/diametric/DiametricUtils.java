@@ -86,6 +86,29 @@ public class DiametricUtils {
         }
     }
 
+    @JRubyMethod(meta=true, required=1, rest=true)
+    public static IRubyObject fn(ThreadContext context, IRubyObject klazz, IRubyObject args[]) {
+        try {
+            Var list_fn = DiametricService.getFn("clojure.core", "list");
+            List list = (List) list_fn.invoke();
+            Var cons_fn = DiametricService.getFn("clojure.core", "conj");
+            Var read_string_fn = DiametricService.getFn("clojure.core", "read-string");
+            for (int i=args.length-1; i>-1; i--) {
+                Object value = DiametricUtils.convertRubyToJava(context, args[i]);
+                if (value instanceof RubyString) {
+                    value = read_string_fn.invoke(value);
+                }
+                list = (List) cons_fn.invoke(list, value);
+            }
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Fn");
+            DiametricFn diametric_fn = (DiametricFn)clazz.allocate();
+            diametric_fn.init(list);
+            return diametric_fn;
+        } catch (Throwable t) {
+            throw context.getRuntime().newArgumentError(t.getMessage());
+        }
+    }
+
     static String rubyStringToJava(IRubyObject arg) {
         if (arg instanceof RubyString) {
             // TODO probably, we need to specify encoding.
@@ -94,7 +117,7 @@ public class DiametricUtils {
             return null;
         }
     }
-    
+
     static Object convertRubyToJava(ThreadContext context, IRubyObject value) {
         if (value instanceof RubyNil) return null;
         if (value instanceof RubyString) {
@@ -140,6 +163,9 @@ public class DiametricUtils {
         //}
         if (value instanceof DiametricObject) {
             return ((DiametricObject)value).toJava();
+        }
+        if (value instanceof DiametricFn) {
+            return ((DiametricFn)value).toJava();
         }
         return (Object)value.toJava(Object.class);
     }

@@ -27,6 +27,8 @@ public class DiametricService implements BasicLibraryService {
 
         RubyClass connection = persistence.defineClassUnder("Connection", runtime.getObject(), CONNECTION_ALLOCATOR);
         connection.defineAnnotatedMethods(DiametricConnection.class);
+        //[:db-before, :db-after, :tx-data, :tempids]"
+        //connection.defineConstant("DB_BEFORE", );
 
         RubyClass uuid = persistence.defineClassUnder("UUID", runtime.getObject(), UUID_ALLOCATOR);
         uuid.defineAnnotatedMethods(DiametricUUID.class);
@@ -50,6 +52,9 @@ public class DiametricService implements BasicLibraryService {
 
         RubyClass diametric_entity = persistence.defineClassUnder("Entity", runtime.getObject(), ENTITY_ALLOCATOR);
         diametric_entity.defineAnnotatedMethods(DiametricEntity.class);
+
+        RubyClass diametric_fn = persistence.defineClassUnder("Fn", runtime.getObject(), FN_ALLOCATOR);
+        diametric_fn.defineAnnotatedMethods(DiametricFn.class);
 
         RubyModule diametric_utils = persistence.defineModuleUnder("Utils");
         diametric_utils.defineAnnotatedMethods(DiametricUtils.class);
@@ -110,6 +115,12 @@ public class DiametricService implements BasicLibraryService {
     public static final ObjectAllocator ENTITY_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
             return new DiametricEntity(runtime, klazz);
+        }
+    };
+
+    public static final ObjectAllocator FN_ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new DiametricFn(runtime, klazz);
         }
     };
 
