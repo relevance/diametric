@@ -2,6 +2,7 @@ package diametric;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -46,7 +47,8 @@ public class DiametricCollection extends RubyObject {
     void init(Object obj) {
         if ((obj instanceof APersistentVector) ||
                 (obj instanceof LazySeq) ||
-                (obj instanceof PersistentVector.ChunkedSeq)) {
+                (obj instanceof PersistentVector.ChunkedSeq) ||
+                (obj instanceof BlockingQueue)) {
             this.vector_or_seq = (List)obj;
         } else {
             throw new RuntimeException("Wrong type of query result");

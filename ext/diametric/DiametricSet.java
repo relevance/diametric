@@ -1,6 +1,5 @@
 package diametric;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +19,6 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import clojure.lang.IPersistentSet;
-import clojure.lang.PersistentHashMap;
 import clojure.lang.PersistentHashSet;
 import clojure.lang.Var;
 

@@ -18,6 +18,7 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
+import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
@@ -27,7 +28,7 @@ import clojure.lang.Keyword;
 import clojure.lang.PersistentHashSet;
 import clojure.lang.PersistentVector;
 import datomic.Connection;
-import datomic.Peer;
+import datomic.Database;
 
 @JRubyModule(name="Diametric::Persistence::Peer")
 public class DiametricPeer extends RubyModule {
@@ -266,10 +267,10 @@ public class DiametricPeer extends RubyModule {
             throw runtime.newArgumentError("The first arg should be a query string or array");
         }
         //System.out.println("query: " + query.toString());
-        if (!(args[1] instanceof DiametricDatabase)) {
+        Database database = DiametricPeer.getDatabase(args[1]);
+        if (database == null) {
             throw runtime.newArgumentError("The second arg should be a database.");
         }
-        Object database = ((DiametricDatabase)args[1]).toJava();
 
         Collection<List<Object>> results = null;
         try {
@@ -304,6 +305,16 @@ public class DiametricPeer extends RubyModule {
         DiametricSet diametric_set = (DiametricSet)clazz.allocate();
         diametric_set.init(results);
         return diametric_set;
+    }
+
+    private static Database getDatabase(Object value) {
+        if (value instanceof DiametricDatabase) {
+            return (Database) ((DiametricDatabase)value).toJava();
+        } else if (value instanceof MapJavaProxy) {
+            Object map = ((MapJavaProxy)value).toJava(Object.class);
+            if (map instanceof datomic.Database) return (Database)map;
+        }
+        return null;
     }
 
     private static Collection<List<Object>> query_without_arg(Object query, Object database) {

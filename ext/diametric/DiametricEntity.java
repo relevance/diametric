@@ -1,8 +1,6 @@
 package diametric;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
