@@ -293,7 +293,7 @@ public class DiametricPeer extends RubyModule {
                 for (int i=0; i<inputs.length; i++) {
                     inputs[i] = DiametricUtils.convertRubyToJava(context, args[i+2]);
                 }
-                results = query_with_args(query, database, args);
+                results = query_with_args(query, database, inputs);
             }
         } catch (Throwable t) {
             throw runtime.newRuntimeError("Datomic Exception: " + t.getMessage());
@@ -315,7 +315,19 @@ public class DiametricPeer extends RubyModule {
     }
 
     private static Collection<List<Object>> query_with_args(Object query, Object database, Object[] args) {
-        return (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database, args);
+        switch(args.length) {
+        case 2:
+            return (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q")
+                    .invoke(query, database, args[0], args[1]);
+        case 3:
+            return (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q")
+                    .invoke(query, database, args[0], args[1], args[2]);
+        case 4:
+            return (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q")
+                    .invoke(query, database, args[0], args[1], args[2], args[3]);
+        default:
+            return (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database, args);
+        }
     }
 
     private static List<RubyModule> bases = new ArrayList<RubyModule>();
