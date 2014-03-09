@@ -1,4 +1,5 @@
-require 'conf_helper'
+require 'sample_helper'
+require 'pry'
 
 class Person
   include Diametric::Entity

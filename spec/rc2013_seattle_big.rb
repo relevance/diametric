@@ -1,5 +1,6 @@
-require 'conf_helper'
+require 'sample_helper'
 require 'support/entities'
+require 'pry'
 
 describe "Seattle Sample", :jruby => true do
   context Community do

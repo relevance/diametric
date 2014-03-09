@@ -1,5 +1,6 @@
-require 'conf_helper'
+require 'sample_helper'
 require 'support/entities'
+require 'pry'
 
 describe Diametric::Entity, :jruby => true do
   context Community do
