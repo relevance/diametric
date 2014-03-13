@@ -726,7 +726,7 @@ Special thanks to Mongoid for writing some solid ORM code that was liberally bor
 
 This project uses the [MIT License][].
 
-When this project is used, a user is considered agreed to the [Datomic Free Edition License][].
+When this project is used, a user is considered to have agreed to the [Datomic Free Edition License][].
 
 Copyright (c) 2012, Clinton Dreisbach & Relevance Inc. All rights reserved.
 
@@ -740,4 +740,4 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 [Datomic]: http://www.datomic.com
 [Relevance]: http://www.thinkrelevance.com
 [MIT License]: http://opensource.org/licenses/MIT
-[Datomic Free Edition License]: https://my.datomic.com/downloads/free
+[Datomic Free Edition License]: http://www.datomic.com/datomic-free-edition-license.html
