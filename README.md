@@ -10,7 +10,7 @@ as entities into a Datomic database.
 
 Diametric supports both CRuby and JRuby.
 When Diametric is used on CRuby, Diametric connects to Datomic's REST service.
-Using Datomic's REST API, Diametric creates scheam/data and makes a queries to Datomic.
+Using Datomic's REST API, Diametric creates schema/data and makes a queries to Datomic.
 When Diametric is used on JRuby, both Datomic's REST and Peer services are supported.
 The core parts of Peer service are implemented using Datomic API.
 
@@ -27,7 +27,7 @@ REST service can use memory database only, which means we can't save data in any
 as long as using free version.
 While Peer service can use memory and free version of transactor,
 which means we can save data in a file through Datomic's transactor.
-Other than that, Peer service has excellent API to use Datomic's various features.
+Other than that, Peer service has an excellent API to use Datomic's various features.
 
 
 ## Installation
@@ -36,14 +36,14 @@ Other than that, Peer service has excellent API to use Datomic's various feature
 gem install diametric
 ```
 
-Diametric is a multi-platoform gem. On CRuby, above installs CRuby version of gem.
-On JRuby, above installed JRuby version of gem with Java extension.
+Diametric is a multi-platform gem. On CRuby, the above installs the CRuby version of the gem.
+On JRuby, the above installs the JRuby version of gem, with a Java extension.
 
 
 [note]
 When you install diametric on JRuby, you'll see a message, "Building native extensions.  This could take a while...."
-Although Diametric doesn't rely on C library, it depends on a several Java libraries.
-While installing gem, diametric downloads thoes jar archives including dependencies on your local maven repo. 
+Although Diametric doesn't rely on a C library, it depends on several Java libraries.
+While installing gem, diametric downloads those jar archives, including dependencies on your local maven repo. 
 The message shows up because of this.
 
 
@@ -55,10 +55,10 @@ Diametric has a command to start REST server.
 Type `datomic-rest -p port -a db_alias -u uri`, for example
 
 ```
-datomc-rest -p 9000 -a free -u datomic:mem://
+datomic-rest -p 9000 -a free -u datomic:mem://
 ```
 
-When you run the command at the very first time, it takes long to start running.
+When you run the command at the very first time, it takes a while to start running.
 This is because Diametric downloads datomic if it doesn't exist in Diametric's directory tree.
 If it is the second time or later, the REST server starts quickly.
 
@@ -68,7 +68,7 @@ Once the REST server starts running, go to [localhost:9000](localhost:9000) on y
 You can see Datomic's REST service is running.
 
 Alternatively, you can download Datomic archive from [https://my.datomic.com/downloads/free](https://my.datomic.com/downloads/free),
-and start REST server using Datomic command, `script/datomic-rest -p 9000 free datomic:mem://`
+and start REST server using the Datomic command, `script/datomic-rest -p 9000 free datomic:mem://`
 
 
 ## Preparation for JRuby
@@ -85,12 +85,12 @@ You even don't need to start Datomic. Diametric does everything for you.
 What you need to do is just coding in Ruby using Diametric API.
 
 
-Although Diametric API makes coding very easy, you still have a freedom to hit Datomic's Java API directly.
+Although Diametric API makes coding very easy, you still have the freedom to hit Datomic's Java API directly.
 
 
 ## Typical coding steps
 
-Typical Diametric coding takes steps below:
+Typical Diametric coding follows the steps below:
 
 1. Connect to Datomic
 2. Define entities
@@ -101,7 +101,7 @@ Typical Diametric coding takes steps below:
 
 ##  Connect to the Datomic REST Service
 
-To establish connection to Datomic REST Service, you can do as in below:
+To establish a connection to Datomic REST Service, you can do as such:
 
 ```ruby
 require 'diametric'
@@ -119,7 +119,7 @@ require 'datomic/client'
 @client.create_database(@dbname)
 ```
 
-Each parameter should be consistent to the ones used to start REST service.
+Each parameter should be consistent to the ones used to start the REST service.
 
 
 ##  Connect to the Datomic Peer service (JRuby only)
@@ -137,7 +137,7 @@ datomic_uri = "datomic:mem://sample-#{SecureRandom.uuid}"
 
 ## Define an entity
 
-While a relational databse inserts a record, Diametric saves `Entity`.
+While a relational databse inserts a record, Diametric saves an `Entity`.
 To save data by Diametric, you need to define `Entity` first.
 Defining entities loosely corresponds to defining database tables.
 
@@ -164,13 +164,13 @@ The `attribute` definition is consists of:
 - attribute type (required)
 - attribute options (optional)
 
-This is a Diametric way of converting [Datomic schema](http://docs.datomic.com/schema.html)
-to Ruby model definition.
+This is the Diametric way of converting [Datomic schema](http://docs.datomic.com/schema.html)
+to a Ruby model definition.
 
 The attribute name goes to `:db/ident` and the value will be `:<class name>/<attribute name>`.
 This is interpreted as `:<namespace>/<name>` on Datomic.
 
-Currently, Diametric supports following data types:
+Currently, Diametric supports the following data types:
 
 | Diametric  | Datomic            |
 | ---------- |:------------------:|  
@@ -185,9 +185,9 @@ Currently, Diametric supports following data types:
 | DateTime   | `:db.type/instant` |
 | UUID       | `:db.type/uuid`    |
 
-In addition, Diametric supports `Enum` type.
+In addition, Diametric supports an `Enum` type.
 
-Avaialbe options are:
+Available options are:
 
 | Diametric                        | Datomic                |
 | -------------------------------- |:----------------------:|  
@@ -202,7 +202,7 @@ Avaialbe options are:
 
 ## Create a schema
 
-Creating schema on Datomic is similar to a migration on Ruby on Rails.
+Creating schema in Datomic is similar to a migration in Ruby on Rails.
 However, schema creation can be done as a part of a program.
 For Datomic, the difference between schema and entity is quite small.
 Like saving entities, schemas are saved in Datomic.
@@ -241,7 +241,7 @@ person.save
 puts "dbid (after save): #{person.dbid}"
 ```
 
-Above prints:
+The above prints:
 
 ```
 dbid (before save): 
@@ -249,7 +249,7 @@ dbid (after save): 17592186045418
 ```
 
 The *dbid* is equivalent to *id* of ordinary ActiveModel objects. 
-Before `save`, person object doesn't have `dbid` value.
+Before `save`, the person object doesn't have `dbid` value.
 But after `save`, it will have an auto-generated value as dbid.
 
 Alternatively, you can create an entity in one line:
@@ -279,18 +279,18 @@ Diametric::Query.new(entity_class, db_or_conn=nil, resolve=false)
 The second and the third options work only on Peer service.
 
 
-On REST service, the query results are array of entity objects.
+On REST service, the query results are an array of entity objects.
 On Peer service, the result data type depends on the constructor arguments.
 In default setting, the query result is a Set of Arrays.
-Each array has entity id (future Daimetric version will have a couple of attributes depends on the query).
+Each array has an entity id (future Daimetric version will have a couple of attributes depends on the query).
 This data structure is exactly the same as what Datomic returns.
-Also, to avoid overhead comes from converting to Ruby's Set and Arrays,
+Also, to avoid the overhead that comes from converting to Ruby's Set and Arrays,
 Diametric wraps in Diametric::Persistence::Set or Diametric::Persistence::Collection.
 (Diametric's wrappers are not a perfect Ruby Array nor Ruby Set in this version.
 Those will be improved in future versions.)
 
 The reason Diametric doesn't create entity instances by defualt is to save memory.
-When dealing with millions or billions of data, saving memory is key to run faster,
+When dealing with millions or billions of data, saving memory is key to running faster,
 and, more importantly, to avoid OutOfMemoryError.
 In terms of saving memory, Diametric returns minimum by default.
 
@@ -298,11 +298,11 @@ If you don't have a lot of data and want to get instances directly from query re
 set true to the third option, `resolve`.
 
 When resolve option is set to true, the query result will be an Array of entity instances.
-You should be careful to set this option to true. When it is true, Diametric tries to
+You should be careful when setting this option to true. When it is true, Diametric tries to
 create instances recursively following associations.
-If friends or friends of friends includs self, you'll likely to get StackOverflowError.
+If friends or friends of friends includes self, you'll likely to get StackOverflowError.
 
-To resolve entity from a dbid, use Entity's reify method.
+To resolve an entity from a dbid, use Entity's reify method.
 The reify method creates an instance from the dbid.
 
 The second option, `db_or_conn` is to specify the database state at some time in the past.
@@ -416,9 +416,9 @@ name: Rain, dbid: 17592186045426, birthday: 2005-05-04 20:00:00 -0400, awesomene
 ### short cut methods
 
 So far, the query examples use `Diametric::Query.new(...)`.
-Other than that, Diametric supports consice short cut query methods.
+Other than that, Diametric supports concise short-cut query methods.
 The examples above can be rewritten below.
-In this case, resolve option is set to true by default.
+In this case, the resolve option is set to true by default.
 
 ```ruby
 #query = Diametric::Query.new(Person)
@@ -509,7 +509,7 @@ returns:
 
 ### Delete entities
 
-To delete an entity, use destroy method:
+To delete an entity, use the destroy method:
 
 ```ruby
 query = Person.where(:name => "Sleet")
@@ -518,7 +518,7 @@ query.all.each {|p| p.destroy }
 
 ## Validation
 
-ActiveModel's validation are included by default. All you need to do is start using them!
+ActiveModel's validations are included by default. All you need to do is start using them!
 
 ```ruby
 require 'diametric'
@@ -670,7 +670,7 @@ Somebody.reify(me.kids.first.mom).name
 ## Datomic Verion
 
 Diametric sets up the default Datomic version.
-On that version, all Daimetric's tests passes.
+On that version, all Diametric's tests pass.
 However, Datomic team frequently releases a new version.
 Just to update Datomic version, Diametric won't make a new release.
 From version 0.1.3, Diametric supports user defined Datomic version.
