@@ -3,5 +3,9 @@ language: ruby
 before_script: rake prepare
 rvm:
   - 2.0.0
-  - jruby-head
+  - jruby-19mode
+
+jdk:
+  - openjdk7
+
 script: INTEGRATION=true bundle exec rspec spec
