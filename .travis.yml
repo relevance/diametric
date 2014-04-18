@@ -8,4 +8,13 @@ rvm:
 jdk:
   - openjdk7
 
+matrix:
+  exclude:
+    - rvm: 2.0.0
+      openjdk7
+
+branches:
+  only:
+    - master
+
 script: INTEGRATION=true bundle exec rspec spec
