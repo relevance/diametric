@@ -3,6 +3,7 @@ require "diametric/entity"
 require "diametric/associations/collection"
 require "diametric/query"
 require "diametric/persistence"
+require "diametric/persistence/function"
 require "diametric/errors"
 
 require 'diametric/config'

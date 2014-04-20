@@ -12,6 +12,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.BasicLibraryService;
 
+import clojure.lang.Keyword;
 import clojure.lang.RT;
 import clojure.lang.Var;
 
@@ -56,10 +57,14 @@ public class DiametricService implements BasicLibraryService {
         RubyClass diametric_fn = persistence.defineClassUnder("Fn", runtime.getObject(), FN_ALLOCATOR);
         diametric_fn.defineAnnotatedMethods(DiametricFn.class);
 
+        RubyClass diametric_function = persistence.defineClassUnder("Function", runtime.getObject(), FUNCTION_ALLOCATOR);
+        diametric_function.defineAnnotatedMethods(DiametricFunction.class);
+
         RubyModule diametric_utils = persistence.defineModuleUnder("Utils");
         diametric_utils.defineAnnotatedMethods(DiametricUtils.class);
 
         setupClojureRT();
+        initializeKeywordMap();
 
         return false;
     }
@@ -124,6 +129,12 @@ public class DiametricService implements BasicLibraryService {
         }
     };
 
+    public static final ObjectAllocator FUNCTION_ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new DiametricFunction(runtime, klazz);
+        }
+    };
+
     static Map<String, Var> fnMap = null;
 
     private void setupClojureRT() {
@@ -144,5 +155,17 @@ public class DiametricService implements BasicLibraryService {
             fnMap.put(fullname, var);
             return var;
         }
+    }
+
+    static final Map<String, Keyword> keywords = new HashMap<String, Keyword>();
+    private void initializeKeywordMap() {
+        Var keyword_fn = getFn("clojure.core", "keyword");
+        keywords.put("lang", (Keyword)keyword_fn.invoke("lang"));
+        keywords.put("clojure", (Keyword)keyword_fn.invoke("clojure"));
+        keywords.put("java", (Keyword)keyword_fn.invoke("java"));
+        keywords.put("params", (Keyword)keyword_fn.invoke("params"));
+        keywords.put("code", (Keyword)keyword_fn.invoke("code"));
+        keywords.put("requires", (Keyword)keyword_fn.invoke("required"));
+        keywords.put("imports", (Keyword)keyword_fn.invoke("imports"));
     }
 }

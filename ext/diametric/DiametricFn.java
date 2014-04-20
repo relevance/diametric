@@ -20,7 +20,7 @@ public class DiametricFn extends RubyObject {
         super(runtime, klazz);
     }
 
-    void init(Object function) {
+    void init(List function) {
         this.function = (List)function;
     }
 
@@ -37,7 +37,7 @@ public class DiametricFn extends RubyObject {
     public static IRubyObject rbNew(ThreadContext context, IRubyObject klazz, IRubyObject arg) {
         RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Fn");
         DiametricFn diametric_object = (DiametricFn)clazz.allocate();
-        diametric_object.init(DiametricUtils.convertRubyToJava(context, arg));
+        diametric_object.init((List)DiametricUtils.convertRubyToJava(context, arg));
         return diametric_object;
     }
 

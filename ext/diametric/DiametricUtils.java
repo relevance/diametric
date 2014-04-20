@@ -167,6 +167,9 @@ public class DiametricUtils {
         if (value instanceof DiametricFn) {
             return ((DiametricFn)value).toJava();
         }
+        if (value instanceof DiametricFunction) {
+            return ((DiametricFunction)value).toJava();
+        }
         return (Object)value.toJava(Object.class);
     }
 

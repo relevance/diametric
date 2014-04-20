@@ -5,8 +5,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
+import org.h2.expression.Function;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
@@ -25,8 +27,10 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import clojure.lang.Keyword;
+import clojure.lang.PersistentArrayMap;
 import clojure.lang.PersistentHashSet;
 import clojure.lang.PersistentVector;
+import clojure.lang.Var;
 import datomic.Connection;
 import datomic.Database;
 
@@ -339,6 +343,84 @@ public class DiametricPeer extends RubyModule {
         default:
             return (Collection<List<Object>>) DiametricService.getFn("datomic.api", "q").invoke(query, database, args);
         }
+    }
+
+    /**
+     * Generates a function object given a map with required keys.
+     * This method takes hash as an argument.
+     * Given hash should have keys of
+     *     :lang (either :clojure or :java)
+     *     :params (list of parameters for code)
+     *     :code (code in string)
+     * The given has may have keys of
+     *     :requires
+     *     :imports
+     *
+     * @param context
+     * @param klazz
+     * @param args
+     * @return
+     */
+    @JRubyMethod(meta=true, required=1, rest=true)
+    public static IRubyObject function(ThreadContext context, IRubyObject klazz, IRubyObject[] args) {
+        if ((args.length < 1) || !(args[0] instanceof RubyHash)) {
+            throw context.getRuntime().newArgumentError("This method takes one Hash as an argument");
+        }
+        RubyHash params = (RubyHash)args[0];
+        if (params.size() < 3) {
+            throw context.getRuntime().newArgumentError("This method needs at least :lang, :params, and :code keys with values");
+        }
+        try {
+            Var hash_map_fn = DiametricService.getFn("clojure.core", "hash-map");
+            clojure.lang.PersistentArrayMap clj_map =
+                    (PersistentArrayMap) hash_map_fn.invoke();
+            Var assoc_fn = DiametricService.getFn("clojure.core", "assoc");
+            String[] keys = new String[] { "lang", "params", "code", "requires", "imports" };
+            Class[] valueTypes =
+                    new Class[] { RubySymbol.class, RubyArray.class, RubyString.class, RubyArray.class, RubyArray.class };
+            for (int i = 0; i < keys.length; i++) {
+                RubySymbol ruby_key = context.getRuntime().newSymbol(keys[i]);
+                IRubyObject ruby_value = params.op_aref(context, ruby_key);
+                if (ruby_value.isNil()) continue;
+                clj_map = (PersistentArrayMap) assoc_fn.invoke(
+                            clj_map,
+                            DiametricService.keywords.get(ruby_key.toString()),
+                            convertRubyValueToJava(context, ruby_value, valueTypes[i]));
+            }
+            RubyClass clazz = (RubyClass) context.getRuntime().getClassFromPath("Diametric::Persistence::Function");
+            DiametricFunction ruby_function = (DiametricFunction) clazz.allocate();
+            Var function_fn = DiametricService.getFn("datomic.api", "function");
+            ruby_function.init((datomic.function.Function) function_fn.invoke(clj_map));
+            return ruby_function;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
+    private static Object convertRubyValueToJava(ThreadContext context, IRubyObject value, Class clazz) {
+        if (clazz == RubySymbol.class) {
+            return DiametricService.keywords.get(((RubySymbol)value).toString());
+        } else if (clazz == RubyArray.class) {
+            return convertArrayElementsToJava(context, (RubyArray)value);
+        } else if (clazz == RubyString.class) {
+            return ((RubyString)value).asJavaString();
+        } else {
+            throw context.getRuntime().newRuntimeError("Given arguments or some of them are worng");
+        }
+    }
+
+    private static List convertArrayElementsToJava(ThreadContext context, RubyArray ruby_array) {
+        List list = new ArrayList<clojure.lang.Symbol>();
+        Var symbol_fn = DiametricService.getFn("clojure.core", "symbol");
+        for (int i=0; i<ruby_array.size(); i++) {
+            IRubyObject element = ruby_array.at(context.getRuntime().newFixnum(i));
+            if (element instanceof RubySymbol) { // params
+                list.add(symbol_fn.invoke(((RubySymbol)element).toString()));
+            } else if (element instanceof RubyString) { // requires and imports
+                list.add(((RubyString)element).asJavaString());
+            }
+        }
+        return list;
     }
 
     private static List<RubyModule> bases = new ArrayList<RubyModule>();
