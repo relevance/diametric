@@ -8,11 +8,7 @@ rvm:
 jdk:
   - openjdk7
 
-matrix:
-  exclude:
-    - rvm: 2.0.0
-      openjdk7
-
+# whitelist
 branches:
   only:
     - master
