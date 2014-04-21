@@ -9,14 +9,19 @@ import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import clojure.lang.Keyword;
+import clojure.lang.Var;
+
 import datomic.Database;
 import datomic.Entity;
+import datomic.function.Function;
 
 @JRubyClass(name = "Diametric::Persistence::Database")
 public class DiametricDatabase extends RubyObject {
@@ -46,25 +51,47 @@ public class DiametricDatabase extends RubyObject {
         Long entityId = null;
         if (arg instanceof RubyFixnum) {
             entityId = (Long) arg.toJava(Long.class);
+            return createEntity(context, entityId);
+        } else if (arg instanceof RubySymbol) {
+            return createFunction(context, (RubySymbol)arg);
         } else if (arg instanceof DiametricObject) {
             if (((DiametricObject)arg).toJava() instanceof Long) {
                 entityId = (Long)((DiametricObject)arg).toJava();
+                return createEntity(context, entityId);
             }
         }
-        if (entityId == null) {
-            throw context.getRuntime().newArgumentError("Argument should be Fixnum or dbid object");
-        }
+        throw context.getRuntime().newArgumentError("Argument should be Fixnum or dbid object");
+    }
+
+    private IRubyObject createEntity(ThreadContext context, Long entityId) {
         try {
-            Entity entity = (Entity) DiametricService.getFn("datomic.api", "entity").invoke(database, entityId);
+            Var entity_fn = DiametricService.getFn("datomic.api", "entity");
+            Entity entity = (Entity) entity_fn.invoke(database, entityId);
             RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Entity");
             DiametricEntity diametric_entity = (DiametricEntity)clazz.allocate();
             diametric_entity.init(entity);
             return diametric_entity;
         } catch (Throwable t) {
-            throw context.getRuntime().newRuntimeError("Datomic Error: " + t.getMessage());
+            throw context.getRuntime().newRuntimeError(t.getMessage());
         }
     }
-    
+
+    private IRubyObject createFunction(ThreadContext context, RubySymbol arg) {
+        try {
+            Var keyword_fn = DiametricService.getFn("clojure.core", "keyword");
+            Keyword entityKey = (Keyword) keyword_fn.invoke(arg.toString());
+            Var entity_fn = DiametricService.getFn("datomic.api", "entity");
+            Entity entity = (Entity) entity_fn.invoke(database, entityKey);
+            datomic.function.Function function = (Function) entity.get(DiametricService.keywords.get("db/fn"));
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Function");
+            DiametricFunction diametric_function = (DiametricFunction)clazz.allocate();
+            diametric_function.init(function);
+            return diametric_function;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
     @JRubyMethod
     public IRubyObject with(ThreadContext context, IRubyObject arg) {
         try {

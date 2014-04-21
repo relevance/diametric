@@ -167,5 +167,6 @@ public class DiametricService implements BasicLibraryService {
         keywords.put("code", (Keyword)keyword_fn.invoke("code"));
         keywords.put("requires", (Keyword)keyword_fn.invoke("required"));
         keywords.put("imports", (Keyword)keyword_fn.invoke("imports"));
+        keywords.put("db/fn", (Keyword)keyword_fn.invoke("db/fn"));
     }
 }

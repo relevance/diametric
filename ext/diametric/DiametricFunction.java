@@ -89,7 +89,7 @@ public class DiametricFunction extends RubyObject {
 
     private Object invoke_function(ThreadContext context, IRubyObject[] args) {
         try {
-            Object arg0, arg1, arg2, arg3;
+            Object arg0, arg1, arg2, arg3, arg4, arg5;
             switch(args.length) {
             case 1:
                 arg0 = DiametricUtils.convertRubyToJava(context, args[0]);
@@ -109,6 +109,21 @@ public class DiametricFunction extends RubyObject {
                 arg2 = DiametricUtils.convertRubyToJava(context, args[2]);
                 arg3 = DiametricUtils.convertRubyToJava(context, args[3]);
                 return java_object.invoke(arg0, arg1, arg2, arg3);
+            case 5:
+                arg0 = DiametricUtils.convertRubyToJava(context, args[0]);
+                arg1 = DiametricUtils.convertRubyToJava(context, args[1]);
+                arg2 = DiametricUtils.convertRubyToJava(context, args[2]);
+                arg3 = DiametricUtils.convertRubyToJava(context, args[3]);
+                arg4 = DiametricUtils.convertRubyToJava(context, args[4]);
+                return java_object.invoke(arg0, arg1, arg2, arg3, arg4);
+            case 6:
+                arg0 = DiametricUtils.convertRubyToJava(context, args[0]);
+                arg1 = DiametricUtils.convertRubyToJava(context, args[1]);
+                arg2 = DiametricUtils.convertRubyToJava(context, args[2]);
+                arg3 = DiametricUtils.convertRubyToJava(context, args[3]);
+                arg4 = DiametricUtils.convertRubyToJava(context, args[4]);
+                arg5 = DiametricUtils.convertRubyToJava(context, args[4]);
+                return java_object.invoke(arg0, arg1, arg2, arg3, arg4, arg5);
             default:
                 return null;
             }
