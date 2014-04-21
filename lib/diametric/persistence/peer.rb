@@ -190,6 +190,23 @@ module Diametric
           end
           Diametric::Persistence::Peer.q(query, db, args.flatten(1))
         end
+
+        def add_function(function)
+          function_map = self.instance_variable_get("@function_map")
+          function_map ||= Hash.new
+          function_map[function.name]=function
+          self.instance_variable_set("@function_map", function_map)
+        end
+
+        def method_missing(method_name, *args, &block)
+          function_map = self.instance_variable_get("@function_map")
+          if function_map && function_map[method_name]
+            function = function_map[method_name]
+            function.exec(*args)
+          else
+            super
+          end
+        end
       end
     end
   end

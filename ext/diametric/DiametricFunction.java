@@ -74,6 +74,49 @@ public class DiametricFunction extends RubyObject {
         String code = (String)java_object.get(DiametricService.keywords.get("code"));
         return context.getRuntime().newString(code);
     }
+
+    @JRubyMethod
+    public IRubyObject exec(ThreadContext context) {
+        Object result = java_object.invoke();
+        return DiametricUtils.convertJavaToRuby(context, result);
+    }
+
+    @JRubyMethod(required=1, rest=true)
+    public IRubyObject exec(ThreadContext context, IRubyObject[] args) {
+        Object result = invoke_function(context, args);
+        return DiametricUtils.convertJavaToRuby(context, result);
+    }
+
+    private Object invoke_function(ThreadContext context, IRubyObject[] args) {
+        try {
+            Object arg0, arg1, arg2, arg3;
+            switch(args.length) {
+            case 1:
+                arg0 = DiametricUtils.convertRubyToJava(context, args[0]);
+                return java_object.invoke(arg0);
+            case 2:
+                arg0 = DiametricUtils.convertRubyToJava(context, args[0]);
+                arg1 = DiametricUtils.convertRubyToJava(context, args[1]);
+                return java_object.invoke(arg0, arg1);
+            case 3:
+                arg0 = DiametricUtils.convertRubyToJava(context, args[0]);
+                arg1 = DiametricUtils.convertRubyToJava(context, args[1]);
+                arg2 = DiametricUtils.convertRubyToJava(context, args[2]);
+                return java_object.invoke(arg0, arg1, arg2);
+            case 4:
+                arg0 = DiametricUtils.convertRubyToJava(context, args[0]);
+                arg1 = DiametricUtils.convertRubyToJava(context, args[1]);
+                arg2 = DiametricUtils.convertRubyToJava(context, args[2]);
+                arg3 = DiametricUtils.convertRubyToJava(context, args[3]);
+                return java_object.invoke(arg0, arg1, arg2, arg3);
+            default:
+                return null;
+            }
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError(t.getMessage());
+        }
+    }
+
 /*
     @JRubyMethod(name={"to_s", "to_edn"})
     public IRubyObject to_s(ThreadContext context) {
