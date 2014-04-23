@@ -45,7 +45,7 @@ describe Diametric::Persistence::Function, :integration => true, :jruby => true 
     end
 
     it "saves in database" do
-      function = Diametric::Persistence::Function.create_function(hello_with_info, @conn)
+      function = Diametric::Persistence::Function.create(hello_with_info, @conn)
       function.name.should == :hello
     end
   end
@@ -63,7 +63,7 @@ describe Diametric::Persistence::Function, :integration => true, :jruby => true 
     before do
       datomic_uri = "datomic:mem://function-#{SecureRandom.uuid}"
       @conn = Diametric::Persistence::Peer.connect(datomic_uri)
-      Diametric::Persistence::Function.create_function(hello_with_info, @conn)
+      Diametric::Persistence::Function.create(hello_with_info, @conn)
     end
 
     after do

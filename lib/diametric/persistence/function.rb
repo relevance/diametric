@@ -12,7 +12,7 @@ module Diametric
       #     code: %{(str "Hello, " name)}})
       #
       # @return Diametric::Persistence::Function Function placeholder.
-      def self.define_function(function_map)
+      def self.define(function_map)
         return Diametric::Persistence::Peer.function(function_map)
       end
 
@@ -22,14 +22,14 @@ module Diametric
       #   The second argument is a connection to datomic. (optional)
       #
       # @example Defines and saves a database function in datomic.
-      #   Function.create_function({
+      #   Function.create({
       #     name: :hello,
       #     lang: :clojure,
       #     params: [:name],
       #     code: %{(str "Hello, " name)}}, connection)
       #
       # @return result of the transaction
-      def self.create_function(function_map, conn=nil)
+      def self.create(function_map, conn=nil)
         conn ||= Diametric::Persistence::Peer.connection
         map = function_map.dup
         name = map.delete(:name)

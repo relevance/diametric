@@ -194,7 +194,7 @@ module Diametric
         def add_db_function(function_name, db=nil)
           function_map = self.instance_variable_get("@function_map")
           function_map ||= Hash.new
-          db ||= Diametric::Persistence::Peer.connection.db
+          db ||= Diametric::Persistence::Peer.connect.db
           unless function_map[function_name]
             function_map[function_name] = db.entity(function_name)
             self.instance_variable_set("@function_map", function_map)
