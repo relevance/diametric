@@ -71,8 +71,39 @@ describe Diametric::Persistence::Function, :integration => true, :jruby => true 
     end
 
     it "can be added to an entity and run" do
-      Rat.add_db_function(:hello, @conn.db)
-      Rat.hello("Nancy").should == "Hello, Nancy"
+      Rat.db_functions << :hello
+      Rat.hello(@conn, "Nancy").should == "Hello, Nancy"
+    end
+  end
+
+  context "with saved transaction function" do
+    let(:inc_fn) {
+      { name: :inc_fn,
+        doc: "Increments the given attribute value by amount",
+        lang: :clojure,
+        params: [:db, :id, :attr, :amount],
+        code: %{(let [e (datomic.api/entity db id) orig (attr e 0)]
+                  [[:db/add id attr (+ orig amount) ]])}
+      }
+    }
+
+    before do
+      datomic_uri = "datomic:mem://function-#{SecureRandom.uuid}"
+      @conn = Diametric::Persistence::Peer.connect(datomic_uri)
+      function = Diametric::Persistence::Function.create(inc_fn, @conn)
+      Rat.create_schema(@conn)
+    end
+
+    after do
+      @conn.release
+    end
+
+    it "can be added to an entity and run" do
+      jay = Rat.new({name: "Jay", age: 10})
+      jay.save
+      jay.transaction_functions << :inc_fn
+      jay = jay.inc_fn(@conn, :age, 3)
+      jay.age.should == 13
     end
   end
 end

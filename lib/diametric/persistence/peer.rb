@@ -117,7 +117,20 @@ module Diametric
         Diametric::Persistence::Peer.retract_entity(dbid)
       end
 
+      def transaction_functions
+        functions = self.instance_variable_get("@transaction_functions")
+        unless functions
+          functions = ::Set.new
+          self.instance_variable_set("@transaction_functions", functions)
+        end
+        functions
+      end
+
       def method_missing(method_name, *args, &block)
+        functions = self.instance_variable_get("@transaction_functions")
+        if functions && functions.include?(method_name)
+          return invoke_function(method_name, args)
+        end
         result = /(.+)_from_this_(.+)/.match(method_name)
         if result
           query_string = ":#{result[1]}/_#{result[2]}"
@@ -126,6 +139,21 @@ module Diametric
         else
           super
         end
+      end
+
+      def invoke_function(method_name, args)
+        params = args.dup
+        conn = params.shift
+        attribute_names = self.class.attribute_names
+        params = params.map do |e|
+          if attribute_names.include?(e)
+            e = (self.class.prefix + "/" + e.to_s).to_sym
+          else
+            e
+          end
+        end
+        conn.transact([[method_name, self.dbid, *params]]).get
+        self.class.reify(self.dbid, conn)
       end
 
       module ClassMethods
