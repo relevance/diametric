@@ -191,21 +191,22 @@ module Diametric
           Diametric::Persistence::Peer.q(query, db, args.flatten(1))
         end
 
-        def add_db_function(function_name, db=nil)
-          function_map = self.instance_variable_get("@function_map")
-          function_map ||= Hash.new
-          db ||= Diametric::Persistence::Peer.connect.db
-          unless function_map[function_name]
-            function_map[function_name] = db.entity(function_name)
-            self.instance_variable_set("@function_map", function_map)
+        def db_functions
+          db_functions = self.instance_variable_get("@db_functions")
+          unless db_functions
+            db_functions = ::Set.new
+            self.instance_variable_set("@db_functions", db_functions)
           end
+          db_functions
         end
 
         def method_missing(method_name, *args, &block)
-          function_map = self.instance_variable_get("@function_map")
-          if function_map && function_map[method_name]
-            function = function_map[method_name]
-            function.exec(*args)
+          db_functions = self.instance_variable_get("@db_functions")
+          if db_functions && db_functions.include?(method_name)
+            params = args.dup
+            conn = params.shift
+            function = conn.db.entity(method_name)
+            function.exec(*params)
           else
             super
           end
