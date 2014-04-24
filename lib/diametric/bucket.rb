@@ -10,6 +10,7 @@ module Diametric
     def build(entity_class, attributes)
       tempid = entity_class.tempid(:"db.part/user", next_temp_ref)
       data = Hash[attributes.map {|k, v| [(entity_class.prefix + "/" + k.to_s).to_sym, v]}]
+      data.merge!({:"db/id" => tempid})
       @tempids << tempid
       @holder[tempid] = data
       tempid

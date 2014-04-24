@@ -7,8 +7,8 @@ shared_examples "bucket API" do
       /-\d+/.match(sally.to_s).should_not be_nil
       name_key = (model_class.prefix + "/name").to_sym
       age_key = (model_class.prefix + "/age").to_sym
-      bucket[sally].should ==
-        {name_key => "Sally", age_key => 5}
+      bucket[sally][name_key].should == "Sally"
+      bucket[sally][age_key].should == 5
     end
   end
 end
