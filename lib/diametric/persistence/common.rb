@@ -32,6 +32,15 @@ module Diametric
           end
           return true
         end
+
+        def transaction_functions
+          functions = self.instance_variable_get("@transaction_functions")
+          unless functions
+            functions = ::Set.new
+            self.instance_variable_set("@transaction_functions", functions)
+          end
+          functions
+        end
       end
     end
   end

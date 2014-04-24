@@ -117,15 +117,6 @@ module Diametric
         Diametric::Persistence::Peer.retract_entity(dbid)
       end
 
-      def transaction_functions
-        functions = self.instance_variable_get("@transaction_functions")
-        unless functions
-          functions = ::Set.new
-          self.instance_variable_set("@transaction_functions", functions)
-        end
-        functions
-      end
-
       def method_missing(method_name, *args, &block)
         functions = self.instance_variable_get("@transaction_functions")
         if functions && functions.include?(method_name)

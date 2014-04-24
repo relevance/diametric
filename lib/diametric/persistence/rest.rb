@@ -128,6 +128,29 @@ module Diametric
         query = [[:"db.fn/retractEntity", dbid.to_i]]
         self.class.transact(query)
       end
+
+      def method_missing(method_name, *args, &block)
+        functions = self.instance_variable_get("@transaction_functions")
+        if functions && functions.include?(method_name)
+          return invoke_function(method_name, args)
+        end
+      end
+
+      def invoke_function(method_name, args)
+        params = args.dup
+        conn = params.shift
+        conn ||= Diametric::Persistence::REST.connection
+        attribute_names = self.class.attribute_names
+        params = params.map do |e|
+          if attribute_names.include?(e)
+            e = (self.class.prefix + "/" + e.to_s).to_sym
+          else
+            e
+          end
+        end
+        conn.transact(Diametric::Persistence::REST.database, [[method_name, self.dbid, *params]])
+        self.class.reify(self.dbid, conn)
+      end
     end
   end
 end

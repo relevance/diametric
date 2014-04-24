@@ -45,8 +45,8 @@ describe Diametric::Persistence::Function, :integration => true, :jruby => true 
     end
 
     it "saves in database" do
-      function = Diametric::Persistence::Function.create(hello_with_info, @conn)
-      function.name.should == :hello
+      result = Diametric::Persistence::Function.create(hello_with_info, @conn)
+      result.should_not be_nil
     end
   end
 
@@ -87,23 +87,60 @@ describe Diametric::Persistence::Function, :integration => true, :jruby => true 
       }
     }
 
-    before do
-      datomic_uri = "datomic:mem://function-#{SecureRandom.uuid}"
-      @conn = Diametric::Persistence::Peer.connect(datomic_uri)
-      function = Diametric::Persistence::Function.create(inc_fn, @conn)
-      Rat.create_schema(@conn)
+    describe "Peer" do
+      before do
+        datomic_uri = "datomic:mem://function-#{SecureRandom.uuid}"
+        @conn = Diametric::Persistence::Peer.connect(datomic_uri)
+        Diametric::Persistence::Function.create(inc_fn, @conn)
+        Rat.create_schema(@conn)
+      end
+
+      after do
+        @conn.release
+      end
+
+      it "can be added to an entity and run" do
+        jay = Rat.new({name: "Jay", age: 10})
+        jay.save
+        jay.transaction_functions << :inc_fn
+        jay = jay.inc_fn(@conn, :age, 3)
+        jay.age.should == 13
+      end
     end
 
-    after do
-      @conn.release
-    end
+    describe "REST" do
+      before do
+        @db_uri = ENV['DATOMIC_URI'] || 'http://localhost:46291'
+        @storage = ENV['DATOMIC_STORAGE'] || 'free'
+        @dbname = ENV['DATOMIC_NAME'] || "function-#{SecureRandom.uuid}"
+        @connection_options = {
+          :uri => @db_uri,
+          :storage => @storage,
+          :database => @dbname
+        }
+        Diametric::Persistence::REST.connect(@connection_options)
+        Diametric::Persistence::REST.create_schemas
+      end
 
-    it "can be added to an entity and run" do
-      jay = Rat.new({name: "Jay", age: 10})
-      jay.save
-      jay.transaction_functions << :inc_fn
-      jay = jay.inc_fn(@conn, :age, 3)
-      jay.age.should == 13
+      it "can create and save transaction funcrion" do
+        result = Diametric::Persistence::Function.create(inc_fn)
+        result.should_not be_nil
+      end
+
+      context "with saved transaction function" do
+        before do
+          Diametric::Persistence::Function.create(inc_fn)
+        end
+
+        it "can be added to an entity and run" do
+          juliet = Mouse.new({name: "Juliet", age: 13})
+          juliet.save
+          juliet.transaction_functions << :inc_fn
+          juliet = juliet.inc_fn(nil, :age, 4)
+          pending("REST fails to transact function")
+          juliet.age.should == 17
+        end
+      end
     end
   end
 end

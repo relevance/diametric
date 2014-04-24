@@ -4,6 +4,8 @@ require "diametric/associations/collection"
 require "diametric/query"
 require "diametric/persistence"
 require "diametric/persistence/function"
+require "diametric/persistence/rest_function"
+require "diametric/persistence/peer_function"
 require "diametric/errors"
 
 require 'diametric/config'
