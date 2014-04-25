@@ -1,9 +1,17 @@
 module Diametric
+  module Persistence
+    module Peer
+    end
+  end
+end
+
+module Diametric
   class Bucket
     def initialize
       @tempids = Array.new
       @holder = Hash.new
       @temp_ref = -1000000
+      @entity_class = nil
     end
 
     # Builds transact data
@@ -13,6 +21,7 @@ module Diametric
       data.merge!({:"db/id" => tempid})
       @tempids << tempid
       @holder[tempid] = data
+      @entity_class ||= entity_class
       tempid
     end
 
@@ -22,6 +31,33 @@ module Diametric
 
     def [](key)
       @holder[key]
+    end
+
+    def size
+      @tempids.size
+    end
+    alias :length :size
+    alias :count :size
+
+    def tx_data
+      @tempids.inject([]) do |memo, id|
+        memo << @holder[id]
+        memo
+      end
+    end
+
+    def save(conn=nil)
+      if @entity_class.ancestors.include?(Diametric::Persistence::Peer)
+        conn ||= Diametric::Persistence::Peer.connect
+        conn.transact(tx_data).get
+      else
+        conn ||= Diametric::Persistence::REST.connection
+        conn.transact(Diametric::Persistence::REST.database, tx_data)
+      end
+      @tempids = Array.new
+      @holder = Hash.new
+      @temp_ref = -1000000
+      @entity_class = nil
     end
   end
 end
