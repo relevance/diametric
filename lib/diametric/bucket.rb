@@ -1,11 +1,4 @@
 module Diametric
-  module Persistence
-    module Peer
-    end
-  end
-end
-
-module Diametric
   class Bucket
     def initialize
       @tempids = Array.new
@@ -47,12 +40,12 @@ module Diametric
     end
 
     def save(conn=nil)
-      if @entity_class.ancestors.include?(Diametric::Persistence::Peer)
-        conn ||= Diametric::Persistence::Peer.connect
-        conn.transact(tx_data).get
-      else
+      if @entity_class.ancestors.include?(Diametric::Persistence::REST)
         conn ||= Diametric::Persistence::REST.connection
         conn.transact(Diametric::Persistence::REST.database, tx_data)
+      else
+        conn ||= Diametric::Persistence::Peer.connect
+        conn.transact(tx_data).get
       end
       @tempids = Array.new
       @holder = Hash.new

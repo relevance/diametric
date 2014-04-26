@@ -13,7 +13,7 @@ module Diametric
         if doc
           schema.merge!({:"db/doc" => doc})
         end
-        conn.transact([schema]).get
+        result = conn.transact([schema]).get
       end
     end
   end

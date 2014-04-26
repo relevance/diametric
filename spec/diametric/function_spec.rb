@@ -123,13 +123,13 @@ describe Diametric::Persistence::Function, :integration => true, :jruby => true 
       end
 
       it "can create and save transaction funcrion" do
-        result = Diametric::Persistence::Function.create(inc_fn)
+        result = Diametric::Persistence::Function.create(inc_fn, nil)
         result.should_not be_nil
       end
 
       context "with saved transaction function" do
         before do
-          Diametric::Persistence::Function.create(inc_fn)
+          Diametric::Persistence::Function.create(inc_fn, nil)
         end
 
         it "can be added to an entity and run" do

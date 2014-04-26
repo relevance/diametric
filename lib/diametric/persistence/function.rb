@@ -16,13 +16,12 @@ module Diametric
       #     connection)
       #
       # @return result of the updated entity.
-      def self.create(function_map, conn=nil)
-        if Diametric::Persistence::REST.connection
-          self.extend(Diametric::Persistence::RestFunction)
-        elsif Diametric::Persistence::Peer.connect
+      def self.create(function_map, conn)
+        if conn && conn.is_a?(Diametric::Persistence::Connection)
           self.extend(Diametric::Persistence::PeerFunction)
         else
-          raise RuntimeError 'Connection is not established'
+          conn = Diametric::Persistence::REST.connection
+          self.extend(Diametric::Persistence::RestFunction)
         end
         self.create_function(function_map, conn)
       end
