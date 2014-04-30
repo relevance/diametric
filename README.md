@@ -282,14 +282,14 @@ The second and the third options work only on Peer service.
 On REST service, the query results are an array of entity objects.
 On Peer service, the result data type depends on the constructor arguments.
 In default setting, the query result is a Set of Arrays.
-Each array has an entity id (future Daimetric version will have a couple of attributes depends on the query).
+Each array has an entity id (future Diametric version will have a couple of attributes depends on the query).
 This data structure is exactly the same as what Datomic returns.
 Also, to avoid the overhead that comes from converting to Ruby's Set and Arrays,
 Diametric wraps in Diametric::Persistence::Set or Diametric::Persistence::Collection.
 (Diametric's wrappers are not a perfect Ruby Array nor Ruby Set in this version.
 Those will be improved in future versions.)
 
-The reason Diametric doesn't create entity instances by defualt is to save memory.
+The reason Diametric doesn't create entity instances by default is to save memory.
 When dealing with millions or billions of data, saving memory is key to running faster,
 and, more importantly, to avoid OutOfMemoryError.
 In terms of saving memory, Diametric returns minimum by default.
