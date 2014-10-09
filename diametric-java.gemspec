@@ -33,8 +33,9 @@ EOF
   gem.add_dependency 'lock_jar', '~> 0.7', '>= 0.7.5'
   gem.add_dependency 'jruby-openssl', '~> 0.8', '>= 0.8.8'
   gem.add_dependency 'uuid', '~> 2.3', '>= 2.3.7'
-  gem.add_dependency 'rspec', '~> 2.14', '>= 2.14.1'
   gem.add_dependency 'rake-compiler', '~> 0.9', '>= 0.9.1'
+  gem.add_development_dependency 'rspec', '~> 2.14', '>= 2.14.1'
+
 
   gem.extensions = ['Rakefile']
 end
