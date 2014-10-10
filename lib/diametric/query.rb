@@ -61,7 +61,8 @@ module Diametric
     # filter and it must be an EDN list.
     #
     # @example Passing arguments to be converted.
-    #   query.filter(:>, :age, 21)
+    #   query.filter(:>, :age, 21)                # REST
+    #   query.filter(connection, :>, :age, 21)    # Peer
     #
     # @example Passing EDN, which will not be converted.
     #   query.filter(EDN::Type::List.new(EDN::Type::Symbol(">"),
