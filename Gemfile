@@ -12,10 +12,10 @@ gem 'lock_jar', '~> 0.7.5', :platform => :jruby
 gem 'jruby-openssl', :platform => :jruby
 gem 'uuid', '~> 2.3.7'
 
-gem 'rspec', '~> 2.14.1'
-gem 'pry', '~> 0.9.12.2'
 
 group :test, :development do
+  gem 'rspec', '~> 2.14.1'
+  gem 'pry', '~> 0.9.12.2'
   gem 'rake-compiler', '~> 0.9.1', :platform => :jruby
   gem 'guard', '~> 1.8.2'
   gem 'guard-rspec', '~> 3.0.2'
