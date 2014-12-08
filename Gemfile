@@ -3,8 +3,8 @@
 source 'https://rubygems.org'
 
 gem 'edn', '~> 1.0.2'
-gem 'activesupport', '~> 3.2.16'
-gem 'activemodel', '~> 3.2.16'
+gem 'activesupport', '>= 3.2.16'
+gem 'activemodel', '>= 3.2.16'
 gem 'datomic-client', '~> 0.4.1'
 gem 'rubyzip', '~> 0.9.9'
 
