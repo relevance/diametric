@@ -25,8 +25,8 @@ EOF
   gem.executables = ["datomic-rest", "download-datomic"]
 
   gem.add_dependency 'edn', '~> 1.0', '>= 1.0.2'
-  gem.add_dependency 'activesupport', '~> 3.2', '>= 3.2.16'
-  gem.add_dependency 'activemodel', '~> 3.2', '>= 3.2.16'
+  gem.add_dependency 'activesupport', '>= 3.2.16'
+  gem.add_dependency 'activemodel', '>= 3.2.16'
   gem.add_dependency 'datomic-client', '~> 0.4', '>= 0.4.1'
   gem.add_dependency 'rubyzip', '~> 0.9', '>= 0.9.9'
   gem.add_dependency 'uuid', '~> 2.3', '>= 2.3.7'
