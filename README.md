@@ -108,7 +108,7 @@ require 'diametric'
 Diametric::Persistence.establish_base_connection({:uri => 'http://localhost:9000', :storage => 'free', :database => 'sample'})
 ```
 
-Optionally, you can connect using datomic-clinet gem:
+Optionally, you can connect using datomic-client gem:
 ```ruby
 require 'datomic/client'
 
