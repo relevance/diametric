@@ -8,7 +8,7 @@ for Datomic from Ruby objects. It is also used to map Ruby objects
 as entities into a Datomic database.
 
 
-Diametric supports both CRuby and JRuby.
+Diametric supports both CRuby (MRI) and JRuby.
 When Diametric is used on CRuby, Diametric connects to Datomic's REST service.
 Using Datomic's REST API, Diametric creates schema/data and makes a queries to Datomic.
 When Diametric is used on JRuby, both Datomic's REST and Peer services are supported.
@@ -47,7 +47,7 @@ While installing gem, diametric downloads those jar archives, including dependen
 The message shows up because of this.
 
 
-## Preparation for CRuby
+## Preparation for CRuby (MRI)
 
 On CRuby, you need to start Datomic's REST server.
 
