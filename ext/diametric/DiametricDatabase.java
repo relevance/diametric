@@ -122,6 +122,29 @@ public class DiametricDatabase extends RubyObject {
     }
 
     @JRubyMethod
+    public IRubyObject basis_t(ThreadContext context) {
+        try {
+            Long time = (Long) DiametricService.getFn("datomic.api", "basis-t").invoke(database);
+            return context.getRuntime().newFixnum(time);
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + t.getMessage());
+        }
+    }
+
+    @JRubyMethod
+    public IRubyObject history(ThreadContext context) {
+        try {
+            Database db_history = (Database) DiametricService.getFn("datomic.api", "history").invoke(database);
+            RubyClass clazz = (RubyClass)context.getRuntime().getClassFromPath("Diametric::Persistence::Database");
+            DiametricDatabase diametric_database = (DiametricDatabase)clazz.allocate();
+            diametric_database.init(db_history);
+            return diametric_database;
+        } catch (Throwable t) {
+            throw context.getRuntime().newRuntimeError("Datomic Error: " + t.getMessage());
+        }
+    }
+
+    @JRubyMethod
     public IRubyObject since(ThreadContext context, IRubyObject arg) {
         Object t_value = DiametricUtils.convertRubyToJava(context, arg);
         try {
